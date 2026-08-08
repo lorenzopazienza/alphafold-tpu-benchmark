@@ -164,6 +164,9 @@ forward pass:
 2. **Recycle depth** (0 to 3 iterations): steady-state execution scales
    **linearly** per extra recycle, but compile time does **not** grow the
    same way; it jumps once recycling is present at all, then stays flat.
+
+   ![Sequence length and recycle depth scaling](figures/scaling_charts.png)
+
 3. **Chip visibility** (1 vs 8 chips): **no measurable difference**, direct
    confirmation that AlphaFold's base inference path runs a single query on
    exactly one chip regardless of how many are visible. We also attempted
@@ -179,6 +182,9 @@ forward pass:
    of 8 chips is ever used regardless of batch size. `vmap` vectorizes
    within a single chip; real multi-chip parallelism needs explicit
    sharding (`pmap`/`pjit`).
+
+   ![Multi-query batching throughput](figures/batching_chart.png)
+
 6. **Compilation cache** (the actual mitigation): persisting JAX's
    compilation cache across a real process restart gave a measured **6.8x
    speedup on `init_params`** and **1.9x on first `predict`**, the concrete
@@ -206,6 +212,8 @@ forward pass:
     combined with cost pricing, shows cost per prediction is roughly
     chip-count-invariant, so chip count should be chosen for throughput
     needs, not cost.
+
+    ![Empirical scaling law: throughput vs chips and length](figures/scaling_law_chart.png)
 
 Full tables, reasoning, and a scaling chart: `results/sweep/README.md`.
 The economics behind these findings: `results/cost_analysis.md`.
