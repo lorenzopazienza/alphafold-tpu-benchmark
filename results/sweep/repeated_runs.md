@@ -20,6 +20,6 @@ the exact same configuration (model_3, 118 residues, recycle=0, float32)
 Extremely low variance across all three metrics (stdev under 1% of the
 mean in every case). This means every other single-measurement number
 reported elsewhere in this project (CPU/GPU/TPU comparison, sequence
-length sweep, recycle sweep, etc.) is very unlikely to be a fluke --
+length sweep, recycle sweep, and so on) is very unlikely to be a fluke;
 the underlying measurement is highly reproducible run-to-run on this
 hardware.

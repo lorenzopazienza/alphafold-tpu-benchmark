@@ -2,10 +2,10 @@
 
 ## What this tests
 
-AlphaFold ships 5 official model configs (model_1-5), each with slightly
-different architecture choices. Only model_3/4/5 default to
+AlphaFold ships 5 official model configs (model_1 through model_5), each
+with slightly different architecture choices. Only model_3/4/5 default to
 `use_templates=False`, matching this project's minimal (no-template)
-pipeline -- model_1/2 need template features we don't build.
+pipeline; model_1/2 need template features we don't build.
 
 ## Results (118 residues, recycle=0, float32)
 
@@ -17,11 +17,10 @@ pipeline -- model_1/2 need template features we don't build.
 
 ## Finding
 
-model_3 and model_4 are essentially identical across every metric.
-model_5 is consistently ~15% faster at steady-state (0.403s vs ~0.47s)
-while having near-identical compile time -- a real, measurable
-architectural difference between the model variants, not noise (the
-gap is far larger than the run-to-run variation measured in
-`repeated_runs.json`, ~0.06% stdev). Worth noting for anyone choosing
-which of AlphaFold's model checkpoints to deploy for latency-sensitive
-serving.
+model_3 and model_4 are essentially identical across every metric. model_5
+is consistently ~15% faster at steady-state (0.403s vs ~0.47s) while
+having near-identical compile time, a real, measurable architectural
+difference between the model variants, not noise (the gap is far larger
+than the run-to-run variation measured in `repeated_runs.md`, ~0.06%
+stdev). Worth noting for anyone choosing which of AlphaFold's model
+checkpoints to deploy for latency-sensitive serving.

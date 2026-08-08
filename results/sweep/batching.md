@@ -11,7 +11,7 @@ throughput speedup versus running them one at a time.
 A separate script, `src/spike_batch_forward_pass.py`, builds B independent
 feature dicts (same sequence length, different sequences), stacks them
 along a new leading axis, and wraps the existing single-query
-`RunModel.apply` with `jax.vmap(apply, in_axes=(None, None, 0))` -- vmap
+`RunModel.apply` with `jax.vmap(apply, in_axes=(None, None, 0))`. `vmap`
 adds a genuinely new batch dimension without touching the model's own
 internal ensemble-dimension semantics.
 
@@ -26,15 +26,15 @@ internal ensemble-dimension semantics.
 
 ![Batching charts](../../figures/batching_chart.png)
 
-## Honest finding: batching made things WORSE, not better
+## Honest finding: batching made things worse, not better
 
 Throughput (proteins/sec) **never exceeds** the batch=1 baseline, and
-per-protein cost **increases** as batch size grows (0.49s -> 0.66s).
-Total wall-clock time scales almost exactly **linearly** with batch size
--- the signature of *no* parallel speedup at all.
+per-protein cost **increases** as batch size grows (0.49s to 0.66s). Total
+wall-clock time scales almost exactly **linearly** with batch size, the
+signature of *no* parallel speedup at all.
 
 **Root cause, confirmed by the memory data:** across every batch size,
-**only `TPU_0` ever shows nonzero HBM usage** -- chips 1 through 7 stay at
+**only `TPU_0` ever shows nonzero HBM usage**; chips 1 through 7 stay at
 0 MB regardless of batch size. `jax.vmap` vectorizes the computation
 *within* a single chip's compiled program; it does not distribute work
 across the TPU slice's 8 physical chips. Stacking more proteins into one
@@ -48,7 +48,6 @@ demonstrates the concrete difference between **vectorization** (`vmap`,
 same-chip, same-program, multiple data lanes) and **distributed
 parallelism** (`pmap` or explicit `pjit`/mesh sharding, which place
 different batch elements on *different* physical chips). Getting real
-throughput scaling on this 8-chip slice would require rewriting the
-forward pass with explicit device-mesh sharding -- a legitimate, larger
-follow-on engineering task, and the natural "next steps" line for this
-project's conclusion slide.
+throughput scaling on this 8-chip slice requires rewriting the forward
+pass with explicit device-mesh sharding, which `sweep/sharding.md` does
+next.
