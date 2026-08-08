@@ -1,7 +1,5 @@
 # AlphaFold on TPU: A CPU/GPU/TPU Scaling Study
 
-![Human ubiquitin, ESMFold prediction](figures/ubiquitin_structure.png)
-
 **Stanford University**  
 Summer Session 2026, IHP
 
@@ -10,6 +8,10 @@ Summer Session 2026, IHP
 **Professors:** Steve Jones, Mourad Bouache
 
 ---
+
+## Human ubiquitin, ESMFold prediction
+
+![Human ubiquitin, ESMFold prediction](figures/ubiquitin_structure.png)
 
 ## Problem
 
