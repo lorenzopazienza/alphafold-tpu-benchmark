@@ -4,7 +4,7 @@
 Summer Session 2026 – IHP
 
 **Course:** Introduction to High Performance Computing and AI Systems  
-**Student:** Lorenzo Pazienza  
+**Student:** Lorenzo Pazienza & Ihab El Bani
 **Professors:** Steve Jones, Mourad Bouache
 
 ---
