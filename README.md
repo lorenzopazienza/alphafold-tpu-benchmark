@@ -1,7 +1,7 @@
 # AlphaFold on TPU: A CPU/GPU/TPU Scaling Study
 
 **Course:** Stanford HPC — Custom Domain Workflow (Project 2)
-**Team:** Lorenzo et al.
+**Team:** Lorenzo Pazienza, Ihab El Bani
 
 ## Problem
 
