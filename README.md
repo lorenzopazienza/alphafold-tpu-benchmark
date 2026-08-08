@@ -1,11 +1,13 @@
 # AlphaFold on TPU: A CPU/GPU/TPU Scaling Study
 
-Stanford University
+**Stanford University**  
 Summer Session 2026 – IHP
 
-Course: Introduction to High Performance Computing and AI Systems
-Student: Lorenzo Pazienza
-Professors: Steve Jones, Mourad Bouache
+**Course:** Introduction to High Performance Computing and AI Systems  
+**Student:** Lorenzo Pazienza  
+**Professors:** Steve Jones, Mourad Bouache
+
+---
 
 ## Problem
 
