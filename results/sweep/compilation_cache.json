@@ -1,0 +1,7 @@
+{
+  "config": "model_3, 118 residues, recycle=0, float32, two SEPARATE processes sharing /tmp/jax_cache",
+  "cold": {"init_params_seconds": 37.68, "first_predict_seconds": 28.80, "steady_state_seconds": 0.470},
+  "warm": {"init_params_seconds": 5.53, "first_predict_seconds": 15.19, "steady_state_seconds": 0.469},
+  "speedup_init_params": 6.81,
+  "speedup_first_predict": 1.90
+}

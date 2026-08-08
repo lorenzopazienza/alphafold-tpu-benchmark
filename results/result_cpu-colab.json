@@ -1,0 +1,13 @@
+{
+  "run_tag": "cpu-colab",
+  "backend": "cpu",
+  "devices": ["cpu:0"],
+  "num_devices": 1,
+  "host_processor": "x86_64",
+  "host_machine": "x86_64",
+  "num_residues": 118,
+  "init_params_seconds": 41.99,
+  "first_predict_compile_and_run_seconds": 271.98,
+  "second_predict_steady_state_seconds": 212.113,
+  "output_final_atom_positions_shape": [118, 37, 3]
+}

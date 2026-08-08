@@ -1,0 +1,22 @@
+[
+  {
+    "precision": "float32",
+    "num_residues": 118,
+    "num_recycle": 0,
+    "init_params_seconds": 36.52,
+    "first_predict_seconds": 27.88,
+    "steady_state_seconds": 0.470,
+    "hbm_bytes_in_use": 463000000,
+    "hbm_peak_bytes_in_use": 486000000
+  },
+  {
+    "precision": "bfloat16",
+    "num_residues": 118,
+    "num_recycle": 0,
+    "init_params_seconds": 37.73,
+    "first_predict_seconds": 26.39,
+    "steady_state_seconds": 0.469,
+    "hbm_bytes_in_use": 277000000,
+    "hbm_peak_bytes_in_use": 576000000
+  }
+]

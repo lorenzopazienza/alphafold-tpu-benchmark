@@ -1,0 +1,19 @@
+{
+  "pmap_data_parallelism": {
+    "description": "8 independent proteins, one per physical chip, via jax.pmap",
+    "single_protein_baseline_seconds": 0.470,
+    "pmap_8chips_steady_state_seconds": 0.5435,
+    "per_protein_amortized_seconds": 0.0679,
+    "throughput_proteins_per_sec": 14.718,
+    "speedup_vs_single_protein_baseline": 6.92,
+    "memory_per_chip_mb": [644, 452, 445, 447, 447, 446, 454, 469],
+    "verdict": "real multi-chip parallelism confirmed"
+  },
+  "mesh_auto_sharding": {
+    "description": "single protein, GSPMD auto-sharding mesh (same pattern as course's own Tunix Lab 2), reproduced twice",
+    "run_1": {"init_params_seconds": 37.56, "first_predict_seconds": 14.76, "steady_state_seconds": 0.472, "memory_per_chip_mb": 463},
+    "run_2": {"init_params_seconds": 36.81, "first_predict_seconds": 14.46, "steady_state_seconds": 0.473, "memory_per_chip_mb": 463},
+    "single_chip_baseline_mb": 463,
+    "verdict": "replication, not sharding -- every chip holds an identical full-size copy (463MB, matching the single-chip baseline exactly), not a fraction of a split computation"
+  }
+}

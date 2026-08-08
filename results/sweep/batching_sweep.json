@@ -1,0 +1,6 @@
+[
+  {"batch_size": 1, "steady_state_seconds": 0.4875, "throughput_proteins_per_sec": 2.051, "per_protein_amortized_seconds": 0.4875, "hbm_tpu0_mb": 487},
+  {"batch_size": 2, "steady_state_seconds": 1.0374, "throughput_proteins_per_sec": 1.928, "per_protein_amortized_seconds": 0.5187, "hbm_tpu0_mb": 532},
+  {"batch_size": 4, "steady_state_seconds": 2.6905, "throughput_proteins_per_sec": 1.487, "per_protein_amortized_seconds": 0.6726, "hbm_tpu0_mb": 630},
+  {"batch_size": 8, "steady_state_seconds": 5.3053, "throughput_proteins_per_sec": 1.508, "per_protein_amortized_seconds": 0.6632, "hbm_tpu0_mb": 821}
+]

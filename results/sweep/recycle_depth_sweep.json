@@ -1,0 +1,5 @@
+[
+  {"num_recycle": 0, "num_residues": 118, "init_params_seconds": 35.74, "first_predict_seconds": 27.66, "steady_state_seconds": 0.469},
+  {"num_recycle": 1, "num_residues": 118, "init_params_seconds": 37.71, "first_predict_seconds": 55.46, "steady_state_seconds": 0.933},
+  {"num_recycle": 3, "num_residues": 118, "init_params_seconds": 40.31, "first_predict_seconds": 54.94, "steady_state_seconds": 1.845}
+]

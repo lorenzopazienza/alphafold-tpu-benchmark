@@ -1,0 +1,31 @@
+[
+  {
+    "chips_visible": 1,
+    "num_residues": 118,
+    "num_recycle": 0,
+    "init_params_seconds": 36.32,
+    "first_predict_seconds": 27.37,
+    "steady_state_seconds": 0.469,
+    "memory_stats_per_device": [
+      {"device": "TPU_0", "bytes_in_use": 463000000, "peak_bytes_in_use": 486000000, "bytes_limit": 16909000000}
+    ]
+  },
+  {
+    "chips_visible": 8,
+    "num_residues": 118,
+    "num_recycle": 0,
+    "init_params_seconds": 36.18,
+    "first_predict_seconds": 27.43,
+    "steady_state_seconds": 0.470,
+    "memory_stats_per_device": [
+      {"device": "TPU_0", "bytes_in_use": 463000000, "peak_bytes_in_use": 486000000, "bytes_limit": 16909000000},
+      {"device": "TPU_1", "bytes_in_use": 0, "peak_bytes_in_use": 0, "bytes_limit": 16909000000},
+      {"device": "TPU_2", "bytes_in_use": 0, "peak_bytes_in_use": 0, "bytes_limit": 16909000000},
+      {"device": "TPU_3", "bytes_in_use": 0, "peak_bytes_in_use": 0, "bytes_limit": 16909000000},
+      {"device": "TPU_4", "bytes_in_use": 0, "peak_bytes_in_use": 0, "bytes_limit": 16909000000},
+      {"device": "TPU_5", "bytes_in_use": 0, "peak_bytes_in_use": 0, "bytes_limit": 16909000000},
+      {"device": "TPU_6", "bytes_in_use": 0, "peak_bytes_in_use": 0, "bytes_limit": 16909000000},
+      {"device": "TPU_7", "bytes_in_use": 0, "peak_bytes_in_use": 0, "bytes_limit": 16909000000}
+    ]
+  }
+]

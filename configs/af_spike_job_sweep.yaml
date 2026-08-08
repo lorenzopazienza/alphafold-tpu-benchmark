@@ -1,0 +1,73 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: af-spike-sweep-${TEAM}
+  labels:
+    kueue.x-k8s.io/queue-name: student-queue
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+        cloud.google.com/gke-tpu-topology: 2x4
+      containers:
+      - name: af-spike-sweep
+        image: python:3.12-slim
+        command: ["bash", "-c"]
+        args:
+          - |
+            set -euxo pipefail
+            apt-get update && apt-get install -y --no-install-recommends git curl && rm -rf /var/lib/apt/lists/*
+
+            pip install --no-cache-dir -q uv
+            uv pip install --system --no-cache \
+              "jax[tpu]==0.10.2" \
+              dm-haiku ml_collections absl-py "tensorflow-cpu>=2.18" biopython numpy \
+              -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+
+            git clone --depth 1 https://github.com/google-deepmind/alphafold.git /alphafold
+            cp /mnt/script/spike_tpu_forward_pass.py /alphafold/spike_tpu_forward_pass.py
+            cd /alphafold
+
+            # Background TPU utilization logger -- samples duty cycle / HBM
+            # usage every 3s for the whole sweep, using the same tpu-info
+            # tool the course's own Lab 2 uses.
+            mkdir -p results
+            ( pip install --no-cache-dir -q tpu-info 2>/dev/null || true )
+            ( while true; do
+                echo "--- $(date -u +%H:%M:%S) ---" >> results/tpu_utilization.log
+                tpu-info >> results/tpu_utilization.log 2>&1 || echo "(tpu-info unavailable)" >> results/tpu_utilization.log
+                sleep 3
+              done ) &
+            LOGGER_PID=$!
+
+            # Sequence-length sweep (fixed recycle=0, fastest -- the scale-bounds study)
+            for LEN in 60 120 250 500; do
+              python3 spike_tpu_forward_pass.py --run_tag=tpu-v5e-podslice --num_residues=$LEN --num_recycle=0
+            done
+
+            # Recycle-depth sweep (fixed length=118, the default toy sequence)
+            for RECYCLE in 0 1 3; do
+              python3 spike_tpu_forward_pass.py --run_tag=tpu-v5e-podslice --num_residues=118 --num_recycle=$RECYCLE
+            done
+
+            kill $LOGGER_PID 2>/dev/null || true
+            echo "=== TPU utilization log ==="
+            cat results/tpu_utilization.log || echo "(no utilization log captured)"
+            echo "=== All result JSONs ==="
+            ls -la results/*.json
+        resources:
+          requests:
+            google.com/tpu: "8"
+            memory: 32Gi
+          limits:
+            google.com/tpu: "8"
+            memory: 64Gi
+        volumeMounts:
+          - { name: script, mountPath: /mnt/script }
+      volumes:
+        - name: script
+          configMap:
+            name: af-spike-script-${TEAM}

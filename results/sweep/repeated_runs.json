@@ -1,0 +1,12 @@
+{
+  "config": "model_3, 118 residues, recycle=0, float32",
+  "n_repeats": 3,
+  "runs": [
+    {"rep": 1, "init_params_seconds": 37.54, "first_predict_seconds": 27.56, "steady_state_seconds": 0.470},
+    {"rep": 2, "init_params_seconds": 37.02, "first_predict_seconds": 27.96, "steady_state_seconds": 0.469},
+    {"rep": 3, "init_params_seconds": 37.01, "first_predict_seconds": 27.43, "steady_state_seconds": 0.469}
+  ],
+  "init_params_seconds": {"mean": 37.19, "stdev": 0.303},
+  "first_predict_seconds": {"mean": 27.65, "stdev": 0.276},
+  "steady_state_seconds": {"mean": 0.4693, "stdev": 0.0006}
+}

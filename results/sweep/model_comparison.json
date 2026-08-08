@@ -1,0 +1,5 @@
+[
+  {"model_name": "model_3", "init_params_seconds": 36.67, "first_predict_seconds": 28.72, "steady_state_seconds": 0.471},
+  {"model_name": "model_4", "init_params_seconds": 35.75, "first_predict_seconds": 28.24, "steady_state_seconds": 0.472},
+  {"model_name": "model_5", "init_params_seconds": 35.62, "first_predict_seconds": 28.00, "steady_state_seconds": 0.403}
+]

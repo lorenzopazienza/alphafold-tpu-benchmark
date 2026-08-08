@@ -1,0 +1,21 @@
+{
+  "run_tag": "tpu-v5e-podslice",
+  "backend": "tpu",
+  "devices": [
+    "TPU_0(process=0,(0,0,0,0))",
+    "TPU_1(process=0,(1,0,0,0))",
+    "TPU_2(process=0,(0,1,0,0))",
+    "TPU_3(process=0,(1,1,0,0))",
+    "TPU_4(process=0,(0,2,0,0))",
+    "TPU_5(process=0,(1,2,0,0))",
+    "TPU_6(process=0,(0,3,0,0))",
+    "TPU_7(process=0,(1,3,0,0))"
+  ],
+  "num_devices": 8,
+  "host_machine": "x86_64",
+  "num_residues": 118,
+  "init_params_seconds": 36.6,
+  "first_predict_compile_and_run_seconds": 27.78,
+  "second_predict_steady_state_seconds": 0.47,
+  "output_final_atom_positions_shape": [118, 37, 3]
+}

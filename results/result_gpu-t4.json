@@ -1,0 +1,13 @@
+{
+  "run_tag": "gpu-t4",
+  "backend": "gpu",
+  "devices": ["cuda:0"],
+  "num_devices": 1,
+  "host_processor": "x86_64",
+  "host_machine": "x86_64",
+  "num_residues": 118,
+  "init_params_seconds": 109.16,
+  "first_predict_compile_and_run_seconds": 97.62,
+  "second_predict_steady_state_seconds": 13.086,
+  "output_final_atom_positions_shape": [118, 37, 3]
+}

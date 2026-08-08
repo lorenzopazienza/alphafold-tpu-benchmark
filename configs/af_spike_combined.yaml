@@ -1,0 +1,87 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: af-spike-combined-${TEAM}
+  labels:
+    kueue.x-k8s.io/queue-name: student-queue
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+        cloud.google.com/gke-tpu-topology: 2x4
+      containers:
+      - name: af-spike-combined
+        image: python:3.12-slim
+        command: ["bash", "-c"]
+        args:
+          - |
+            set -euxo pipefail
+            apt-get update && apt-get install -y --no-install-recommends git curl && rm -rf /var/lib/apt/lists/*
+            pip install --no-cache-dir -q uv
+            uv pip install --system --no-cache \
+              "jax[tpu]==0.10.2" \
+              dm-haiku ml_collections absl-py "tensorflow-cpu>=2.18" biopython numpy \
+              -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+            git clone --depth 1 https://github.com/google-deepmind/alphafold.git /alphafold
+            cp /mnt/script/spike_tpu_forward_pass.py /alphafold/spike_tpu_forward_pass.py
+            cd /alphafold
+
+            echo "############################################"
+            echo "# PART 1: Model comparison (model_3/4/5)"
+            echo "############################################"
+            for M in model_3 model_4 model_5; do
+              echo "=== model=$M ==="
+              python3 spike_tpu_forward_pass.py \
+                --run_tag=tpu-v5e-podslice --model_name=$M --num_residues=118 --num_recycle=0 \
+                || echo "!!! model=$M FAILED !!!"
+            done
+
+            echo "############################################"
+            echo "# PART 2: Repeated baseline runs (statistical rigor)"
+            echo "############################################"
+            for REP in 1 2 3; do
+              echo "=== repeat=$REP ==="
+              python3 spike_tpu_forward_pass.py \
+                --run_tag=tpu-v5e-podslice-rep${REP} --model_name=model_3 --num_residues=118 --num_recycle=0 \
+                || echo "!!! repeat=$REP FAILED !!!"
+            done
+
+            echo "############################################"
+            echo "# PART 3: Compilation cache experiment"
+            echo "############################################"
+            mkdir -p /tmp/jax_cache
+            echo "--- Process A: cold, writes cache ---"
+            python3 spike_tpu_forward_pass.py \
+              --run_tag=cache-cold --model_name=model_3 --num_residues=118 --num_recycle=0 \
+              --cache_dir=/tmp/jax_cache \
+              || echo "!!! cache cold run FAILED !!!"
+            echo "--- Process B: fresh process, SAME cache dir, should reuse compiled artifact ---"
+            python3 spike_tpu_forward_pass.py \
+              --run_tag=cache-warm --model_name=model_3 --num_residues=118 --num_recycle=0 \
+              --cache_dir=/tmp/jax_cache \
+              || echo "!!! cache warm run FAILED !!!"
+            echo "Cache dir contents:"
+            ls -la /tmp/jax_cache || echo "(empty or missing)"
+
+            echo "############################################"
+            echo "# All result JSONs"
+            echo "############################################"
+            ls -la results/*.json 2>/dev/null || echo "(none)"
+            echo "=== DONE, sleeping 90s so you can grab logs before cleanup ==="
+            sleep 90
+        resources:
+          requests:
+            google.com/tpu: "8"
+            memory: 32Gi
+          limits:
+            google.com/tpu: "8"
+            memory: 64Gi
+        volumeMounts:
+          - { name: script, mountPath: /mnt/script }
+      volumes:
+        - name: script
+          configMap:
+            name: af-spike-script-${TEAM}

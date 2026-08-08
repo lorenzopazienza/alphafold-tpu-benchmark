@@ -1,0 +1,6 @@
+[
+  {"num_residues": 60,  "init_params_seconds": 36.12, "first_predict_seconds": 25.95, "steady_state_seconds": 0.208},
+  {"num_residues": 120, "init_params_seconds": 36.50, "first_predict_seconds": 24.88, "steady_state_seconds": 0.408},
+  {"num_residues": 250, "init_params_seconds": 36.10, "first_predict_seconds": 29.37, "steady_state_seconds": 1.170},
+  {"num_residues": 500, "init_params_seconds": 35.49, "first_predict_seconds": 31.46, "steady_state_seconds": 3.031}
+]

@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: af-spike-batch-${TEAM}
+  labels:
+    kueue.x-k8s.io/queue-name: student-queue
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+        cloud.google.com/gke-tpu-topology: 2x4
+      containers:
+      - name: af-spike-batch
+        image: python:3.12-slim
+        command: ["bash", "-c"]
+        args:
+          - |
+            set -euxo pipefail
+            apt-get update && apt-get install -y --no-install-recommends git curl && rm -rf /var/lib/apt/lists/*
+            pip install --no-cache-dir -q uv
+            uv pip install --system --no-cache \
+              "jax[tpu]==0.10.2" \
+              dm-haiku ml_collections absl-py "tensorflow-cpu>=2.18" biopython numpy \
+              -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+            git clone --depth 1 https://github.com/google-deepmind/alphafold.git /alphafold
+            cp /mnt/script/spike_batch_forward_pass.py /alphafold/spike_batch_forward_pass.py
+            cd /alphafold
+
+            for B in 1 2 4 8; do
+              echo "=== Running with batch_size=$B ==="
+              python3 spike_batch_forward_pass.py \
+                --run_tag=tpu-v5e-podslice --num_residues=118 --num_recycle=0 --batch_size=$B \
+                || echo "!!! batch_size=$B FAILED, continuing !!!"
+            done
+
+            echo "=== All result JSONs ==="
+            ls -la results/*.json 2>/dev/null || echo "(none)"
+            echo "=== DONE, sleeping 60s so you can grab logs before cleanup ==="
+            sleep 60
+        resources:
+          requests:
+            google.com/tpu: "8"
+            memory: 32Gi
+          limits:
+            google.com/tpu: "8"
+            memory: 64Gi
+        volumeMounts:
+          - { name: script, mountPath: /mnt/script }
+      volumes:
+        - name: script
+          configMap:
+            name: af-batch-script-${TEAM}

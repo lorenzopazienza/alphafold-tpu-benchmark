@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: af-spike-recycle3-${TEAM}
+  labels:
+    kueue.x-k8s.io/queue-name: student-queue
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+        cloud.google.com/gke-tpu-topology: 2x4
+      containers:
+      - name: af-spike-recycle3
+        image: python:3.12-slim
+        command: ["bash", "-c"]
+        args:
+          - |
+            set -euxo pipefail
+            apt-get update && apt-get install -y --no-install-recommends git curl && rm -rf /var/lib/apt/lists/*
+            pip install --no-cache-dir -q uv
+            uv pip install --system --no-cache \
+              "jax[tpu]==0.10.2" \
+              dm-haiku ml_collections absl-py "tensorflow-cpu>=2.18" biopython numpy \
+              -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+            git clone --depth 1 https://github.com/google-deepmind/alphafold.git /alphafold
+            cp /mnt/script/spike_tpu_forward_pass.py /alphafold/spike_tpu_forward_pass.py
+            cd /alphafold
+
+            ( pip install --no-cache-dir -q tpu-info 2>/dev/null || true )
+            ( while true; do
+                echo "--- $(date -u +%H:%M:%S) ---"
+                tpu-info || echo "(tpu-info unavailable)"
+                sleep 3
+              done > /tmp/tpu_util.log ) &
+            LOGGER_PID=$!
+
+            python3 spike_tpu_forward_pass.py --run_tag=tpu-v5e-podslice --num_residues=118 --num_recycle=3
+
+            sleep 2
+            kill $LOGGER_PID 2>/dev/null || true
+            echo "=== TPU UTILIZATION LOG ==="
+            cat /tmp/tpu_util.log
+            echo "=== DONE, sleeping 60s to give you time to grab logs before the pod is cleaned up ==="
+            sleep 60
+        resources:
+          requests:
+            google.com/tpu: "8"
+            memory: 32Gi
+          limits:
+            google.com/tpu: "8"
+            memory: 64Gi
+        volumeMounts:
+          - { name: script, mountPath: /mnt/script }
+      volumes:
+        - name: script
+          configMap:
+            name: af-spike-script-${TEAM}
