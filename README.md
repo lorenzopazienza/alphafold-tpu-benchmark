@@ -1,6 +1,6 @@
 # AlphaFold on TPU: A CPU/GPU/TPU Scaling Study
 
-![Ubiquitin per-residue confidence](figures/ubiquitin_confidence.png)
+![Human ubiquitin, ESMFold prediction](figures/ubiquitin_structure.png)
 
 **Stanford University**  
 Summer Session 2026, IHP
@@ -180,6 +180,7 @@ result. `structure/` contains a **real folded protein**.
 | File | What it is |
 |---|---|
 | `structure/ubiquitin_predicted.pdb` | Real predicted 3D structure |
+| `figures/ubiquitin_structure.png` | Backbone trace colored by per-residue pLDDT |
 | `figures/ubiquitin_confidence.png` | Per-residue confidence plot |
 
 ## Scale-bounds study (sequence length, recycle depth, chip count)
