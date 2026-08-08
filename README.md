@@ -251,6 +251,17 @@ forward pass:
 Full tables, reasoning, and a scaling chart: `results/sweep/README.md`.
 The economics behind these findings: `results/cost_analysis.md`.
 
+## Project website
+
+Vite + React site in [`website/`](website/). Deploy on Vercel from the repo root
+(root `vercel.json` builds `website/` → `website/dist`), or set the Vercel
+**Root Directory** to `website`.
+
+```bash
+cd website && npm install && npm run dev
+cd website && npm run audit:layout   # multi-viewport Playwright check
+```
+
 ## Repository layout
 
 ```
@@ -262,5 +273,6 @@ structure/      Real predicted protein structure (PDB file)
 profiling/      Notes from XLA profiler traces
 results/        Per-backend JSON results, comparison.md, cost_analysis.md, and sweep/ (scaling study)
 scripts/        Helper shell scripts (cluster connect, job launch)
+website/        Project showcase site (Vite + React; Vercel-ready)
 presentation/   Slide deck source
 ```
