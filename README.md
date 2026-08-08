@@ -1,10 +1,12 @@
 # AlphaFold on TPU: A CPU/GPU/TPU Scaling Study
 
+![Ubiquitin per-residue confidence](figures/ubiquitin_confidence.png)
+
 **Stanford University**  
-Summer Session 2026 – IHP
+Summer Session 2026, IHP
 
 **Course:** Introduction to High Performance Computing and AI Systems  
-**Student:** Lorenzo Pazienza & Ihab El Bani
+**Student:** Lorenzo Pazienza & Ihab El Bani  
 **Professors:** Steve Jones, Mourad Bouache
 
 ---
@@ -74,6 +76,34 @@ kubectl create configmap af-spike-script-${TEAM} --from-file=src/spike_tpu_forwa
 envsubst < configs/af_spike_job.yaml | kubectl apply -f -
 kubectl logs -f job/af-spike-${TEAM}
 ```
+
+### TPU (Google Colab, no cluster access needed)
+
+If you don't have access to the Stanford GKE cluster, Colab also exposes a
+free TPU runtime and is the easiest way to reproduce a TPU number. The
+same single-accelerator-per-session rule applies here as for the GPU
+notebook above: Colab gives you one backend per session, so run this in
+its own notebook, separate from the CPU/GPU runs.
+
+1. In Colab, go to **Runtime > Change runtime type** and select **TPU**.
+2. Install JAX's TPU backend and AlphaFold's dependencies, then run the
+   benchmark script exactly as on the class cluster:
+
+```bash
+!pip install -U "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+!pip install dm-haiku==0.0.12 ml_collections absl-py "tensorflow-cpu==2.16.1" biopython numpy
+!git clone --depth 1 https://github.com/google-deepmind/alphafold.git
+!cp src/spike_tpu_forward_pass.py alphafold/
+!cd alphafold && python3 spike_tpu_forward_pass.py --run_tag=tpu-colab
+```
+
+3. `jax.devices()` should report the Colab TPU (typically a `v2-8`, not
+   the `v5e-8` used for this project's headline numbers). Results from a
+   Colab TPU are a valid reproduction of the methodology but **not**
+   directly comparable to the `results/result_tpu-v5e-podslice.json`
+   numbers in this repo: different TPU generation, different topology,
+   and Colab's shared, variable infrastructure (the same caveat that
+   applies to its CPU/GPU runtimes).
 
 ## TPU configuration
 
