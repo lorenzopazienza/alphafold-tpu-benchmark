@@ -121,7 +121,7 @@ its own notebook, separate from the CPU/GPU runs.
 
 Each baseline run varies only the **backend** (CPU / GPU / TPU); the model
 config, input sequence, and code path are identical across all three. On top
-of that baseline, `results/sweep/` runs ten further scaling and mitigation
+of that baseline, `results/sweep/` runs eleven further scaling and mitigation
 experiments on the TPU, summarized below.
 
 ## Profiling
@@ -182,12 +182,12 @@ result. `structure/` contains a **real folded protein**.
 | File | What it is |
 |---|---|
 | `structure/ubiquitin_predicted.pdb` | Real predicted 3D structure |
-| `figures/ubiquitin_structure.png` | Backbone trace colored by per-residue pLDDT |
+| `figures/ubiquitin_structure.png` | Cartoon rendering of the predicted backbone (py3Dmol) |
 | `figures/ubiquitin_confidence.png` | Per-residue confidence plot |
 
 ## Scale-bounds study (sequence length, recycle depth, chip count)
 
-Beyond the fixed-size CPU/GPU/TPU comparison, `results/sweep/` contains ten
+Beyond the fixed-size CPU/GPU/TPU comparison, `results/sweep/` contains eleven
 scaling and mitigation experiments on the TPU, all on the real AlphaFold
 forward pass:
 
