@@ -24,7 +24,7 @@ internal ensemble-dimension semantics.
 | 4 | 2.6905 | 1.487 | 0.6726 | 630 MB |
 | 8 | 5.3053 | 1.508 | 0.6632 | 821 MB |
 
-![Batching charts](batching_chart.png)
+![Batching charts](../../figures/batching_chart.png)
 
 ## Honest finding: batching made things WORSE, not better
 

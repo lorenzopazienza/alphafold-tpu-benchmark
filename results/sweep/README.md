@@ -60,7 +60,7 @@ not worth the added infrastructure risk given time constraints -- this is
 disclosed here as a known gap rather than worked around with a fabricated
 number.
 
-![Scaling charts](scaling_charts.png)
+![Scaling charts](../../figures/scaling_charts.png)
 
 
 ## 3. Chip-visibility experiment (1 vs 8 chips)
@@ -123,3 +123,14 @@ reproduced twice, every chip held an identical full-size 463MB copy
 (replication, not a split), confirmed via honest, reproduced
 measurement rather than trusting the naive "nonzero memory" heuristic.
 See `sharding.md`.
+
+
+## 10. Empirical scaling law: throughput(chips, length)
+
+Fitted a power law to a 16-point grid (4 chip counts x 4 lengths, all
+real TPU measurements): **throughput ~ 4527.77 * chips^0.963 *
+length^-1.572** (R^2 = 0.981). The chip exponent confirms pmap's
+near-linear speedup generalizes across every length tested. Combined
+with cost_analysis.md's pricing, this shows cost per prediction is
+roughly chip-count-invariant -- more chips should be chosen for
+throughput/latency needs, not for cost. See `scaling_law.md`.

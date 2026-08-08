@@ -1,0 +1,64 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: af-spike-grid-${TEAM}
+  labels:
+    kueue.x-k8s.io/queue-name: student-queue
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+        cloud.google.com/gke-tpu-topology: 2x4
+      containers:
+      - name: af-spike-grid
+        image: python:3.12-slim
+        command: ["bash", "-c"]
+        args:
+          - |
+            set -uxo pipefail
+            apt-get update && apt-get install -y --no-install-recommends git curl && rm -rf /var/lib/apt/lists/*
+            pip install --no-cache-dir -q uv
+            uv pip install --system --no-cache \
+              "jax[tpu]==0.10.2" \
+              dm-haiku ml_collections absl-py "tensorflow-cpu>=2.18" biopython numpy \
+              -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+            git clone --depth 1 https://github.com/google-deepmind/alphafold.git /alphafold
+            cp /mnt/script/spike_pmap_forward_pass.py /alphafold/spike_pmap_forward_pass.py
+            cd /alphafold
+
+            TOTAL=16
+            N=0
+            for CHIPS in 1 2 4 8; do
+              for LEN in 100 250 500 1000; do
+                N=$((N+1))
+                echo "############################################"
+                echo "# GRID POINT $N/$TOTAL -- chips=$CHIPS, length=$LEN"
+                echo "############################################"
+                python3 spike_pmap_forward_pass.py \
+                  --run_tag=grid --num_residues=$LEN --num_recycle=0 --batch_size=$CHIPS \
+                  || echo "!!! FAILED: chips=$CHIPS, length=$LEN !!!"
+              done
+            done
+
+            echo "############################################"
+            echo "# All result JSONs"
+            echo "############################################"
+            ls -la results/*.json 2>/dev/null || echo "(none)"
+            echo "=== DONE, sleeping 90s so you can grab logs before cleanup ==="
+            sleep 90
+        resources:
+          requests:
+            google.com/tpu: "8"
+            memory: 32Gi
+          limits:
+            google.com/tpu: "8"
+            memory: 64Gi
+        volumeMounts:
+          - { name: script, mountPath: /mnt/script }
+      volumes:
+        - name: script
+          configMap:
+            name: af-sharding-script-${TEAM}

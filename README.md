@@ -149,7 +149,7 @@ biological result. `structure/` contains a **real folded protein**:
 | File | What it is |
 |---|---|
 | `structure/ubiquitin_predicted.pdb` | Real predicted 3D structure |
-| `structure/ubiquitin_confidence.png` | Per-residue confidence plot |
+| `figures/ubiquitin_confidence.png` | Per-residue confidence plot |
 
 ## Scale-bounds study (sequence length, recycle depth, chip visibility)
 
@@ -217,6 +217,14 @@ minimal image doesn't set up (also documented, not faked).
   real sharding, reproduced twice -- documented as a genuine negative
   result, not hidden or spun.
 
+
+- **Empirical scaling law**: fitted `throughput(chips, length) =
+  4527.77 * chips^0.963 * length^-1.572` (R^2 = 0.981) from a 16-point
+  real-measurement grid. The near-1.0 chip exponent confirms pmap's
+  speedup generalizes across sequence lengths; combined with cost
+  pricing, shows cost-per-prediction is roughly chip-count-invariant --
+  chip count should be chosen for throughput needs, not cost.
+
 Full tables, reasoning, and a scaling chart: `results/sweep/README.md`.
 
 ## Repository layout
@@ -225,7 +233,8 @@ Full tables, reasoning, and a scaling chart: `results/sweep/README.md`.
 configs/        Kubernetes Job manifests (single run + length/recycle sweeps)
 src/            The benchmark script (single source of truth, all backends)
 notebooks/      Colab/Jupyter notebooks (GPU run, CPU run, real protein fold)
-structure/      Real predicted protein structure (PDB) + confidence plot
+figures/        Every generated chart/plot image, in one place
+structure/      Real predicted protein structure (PDB file)
 profiling/      Notes/screenshots from XLA profiler traces
 results/        Per-backend JSON results, comparison.md, and sweep/ (scaling study)
 scripts/        Helper shell scripts (cluster connect, job launch)

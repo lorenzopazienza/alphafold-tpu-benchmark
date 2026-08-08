@@ -1,0 +1,26 @@
+{
+  "grid": [
+    {"chips": 1, "length": 100,  "throughput_per_sec": 2.935},
+    {"chips": 1, "length": 250,  "throughput_per_sec": 0.864},
+    {"chips": 1, "length": 500,  "throughput_per_sec": 0.332},
+    {"chips": 1, "length": 1000, "throughput_per_sec": 0.066},
+    {"chips": 2, "length": 100,  "throughput_per_sec": 5.509},
+    {"chips": 2, "length": 250,  "throughput_per_sec": 1.694},
+    {"chips": 2, "length": 500,  "throughput_per_sec": 0.659},
+    {"chips": 2, "length": 1000, "throughput_per_sec": 0.131},
+    {"chips": 4, "length": 100,  "throughput_per_sec": 10.417},
+    {"chips": 4, "length": 250,  "throughput_per_sec": 3.344},
+    {"chips": 4, "length": 500,  "throughput_per_sec": 1.309},
+    {"chips": 4, "length": 1000, "throughput_per_sec": 0.262},
+    {"chips": 8, "length": 100,  "throughput_per_sec": 19.153},
+    {"chips": 8, "length": 250,  "throughput_per_sec": 6.450},
+    {"chips": 8, "length": 500,  "throughput_per_sec": 2.575},
+    {"chips": 8, "length": 1000, "throughput_per_sec": 0.522}
+  ],
+  "fitted_power_law": {
+    "formula": "throughput(chips, length) = 4527.77 * chips^0.9631 * length^-1.5724",
+    "r_squared_log_log": 0.9813,
+    "chip_exponent": 0.9631,
+    "length_exponent": -1.5724
+  }
+}
