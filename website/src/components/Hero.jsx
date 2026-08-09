@@ -29,44 +29,50 @@ export default function Hero() {
 
   return (
     <section id="top" className="viewport relative">
-      <div className="shell grid flex-1 content-center gap-12 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-16">
-        <div className="max-w-xl">
-          <p className="animate-rise kicker">Stanford HPC · Summer 2026</p>
-          <h1 className="animate-rise delay-1 mt-5 font-display text-[clamp(2.75rem,7vw,4.5rem)] font-semibold leading-[0.98] tracking-[-0.03em] text-ink">
-            AlphaFold
-            <br />
-            on TPU
-          </h1>
-          <p className="animate-rise delay-2 mt-6 text-[1.125rem] leading-[1.55] text-slate md:text-[1.25rem]">
-            We timed the same AlphaFold JAX forward pass on CPU, GPU (T4), and
-            TPU (v5e-8). At steady-state the TPU is 451× faster than CPU.
-          </p>
-          <p className="animate-rise delay-3 mt-8">
-            <a href="#structure" className="link-quiet text-[15px] font-medium">
-              Structure
-            </a>
-            <span className="mx-3 text-line">/</span>
-            <a href="#results" className="link-quiet text-[15px] font-medium">
-              Results
-            </a>
-          </p>
-        </div>
+      <div className="shell flex flex-1 flex-col justify-center">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
+          <div className="min-w-0 max-w-md">
+            <p className="animate-rise kicker">Stanford HPC · Summer 2026</p>
+            <h1 className="animate-rise delay-1 mt-4 font-display text-[clamp(2.85rem,6vw,4.35rem)] font-semibold leading-[0.96] tracking-[-0.035em] text-ink">
+              AlphaFold
+              <br />
+              on TPU
+            </h1>
+            <p className="animate-rise delay-2 mt-5 text-[1.0625rem] leading-[1.55] text-slate md:text-[1.125rem]">
+              We timed the same AlphaFold JAX forward pass on CPU, GPU (T4), and
+              TPU (v5e-8). At steady-state the TPU is 451× faster than CPU.
+            </p>
+            <p className="animate-rise delay-3 mt-7">
+              <a href="#structure" className="link-quiet text-base font-medium">
+                Structure
+              </a>
+              <span className="mx-3 text-line">/</span>
+              <a href="#results" className="link-quiet text-base font-medium">
+                Results
+              </a>
+              <span className="mx-3 text-line">/</span>
+              <a href="#reproduce" className="link-quiet text-base font-medium">
+                Reproduce
+              </a>
+            </p>
+          </div>
 
-        <div className="animate-rise delay-2 lg:pb-1 lg:text-right">
-          <p className="kicker">Steady-state vs CPU</p>
-          <p className="eq mt-2 font-display text-[clamp(4.75rem,22vw,10.5rem)] font-bold leading-[0.85] tracking-[-0.05em] text-ink">
-            {n}
-            <span className="text-teal">×</span>
-          </p>
-          <p className="mt-4 text-sm text-mute lg:ml-auto lg:max-w-[16rem]">
-            TPU 0.47s · GPU 13.1s (16.2×) · CPU 212s
-          </p>
+          <div className="animate-rise delay-2 shrink-0 lg:text-right">
+            <p className="kicker">Steady-state vs CPU</p>
+            <p className="eq mt-1 font-display text-[clamp(5rem,14vw,8.5rem)] font-bold leading-[0.84] tracking-[-0.05em] text-ink">
+              {n}
+              <span className="text-teal">×</span>
+            </p>
+            <p className="mt-3 text-sm text-mute lg:ml-auto lg:max-w-[16rem]">
+              TPU 0.47s · GPU 13.1s (16.2×) · CPU 212s
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="shell mt-auto pt-14">
+      <div className="shell shrink-0 pt-8">
         <hr className="rule" />
-        <p className="pt-5 text-[13px] leading-relaxed text-mute">
+        <p className="pt-4 text-[13px] leading-relaxed text-mute">
           Lorenzo Pazienza & Ihab El Bani · Intro to HPC and AI Systems · Profs.
           Steve Jones & Mourad Bouache
         </p>

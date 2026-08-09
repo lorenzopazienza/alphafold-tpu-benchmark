@@ -10,72 +10,95 @@ const LINKS = [
   { href: '#reproduce', label: 'Reproduce' },
 ]
 
+const SECTION_IDS = LINKS.map((l) => l.href.slice(1))
+
+function navOffset() {
+  const header = document.querySelector('header')
+  return (header?.offsetHeight || 64) + 12
+}
+
+/** Active = last section whose top has crossed below the sticky nav. */
+function sectionAtScroll() {
+  const y = window.scrollY + navOffset()
+  let current = ''
+  for (const id of SECTION_IDS) {
+    const el = document.getElementById(id)
+    if (!el) continue
+    const top = el.getBoundingClientRect().top + window.scrollY
+    if (top <= y) current = `#${id}`
+  }
+  return current
+}
+
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState('')
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8)
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    const sync = () => {
+      setScrolled(window.scrollY > 8)
+      setActive(sectionAtScroll())
+    }
+    sync()
+    window.addEventListener('scroll', sync, { passive: true })
+    window.addEventListener('resize', sync)
+    window.addEventListener('hashchange', sync)
+    return () => {
+      window.removeEventListener('scroll', sync)
+      window.removeEventListener('resize', sync)
+      window.removeEventListener('hashchange', sync)
+    }
   }, [])
 
-  useEffect(() => {
-    const ids = LINKS.map((l) => l.href.slice(1))
-    const els = ids.map((id) => document.getElementById(id)).filter(Boolean)
-    if (!els.length) return
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
-        if (visible[0]) setActive(`#${visible[0].target.id}`)
-      },
-      { rootMargin: '-30% 0px -55% 0px', threshold: [0, 0.25, 0.5] },
-    )
-    els.forEach((el) => io.observe(el))
-    return () => io.disconnect()
-  }, [])
+  const go = (href) => {
+    setActive(href)
+    setOpen(false)
+  }
 
   return (
     <header
       className={`sticky top-0 z-50 transition-[background,border-color] duration-300 ${
         scrolled
-          ? 'border-b border-line bg-paper/85 backdrop-blur-md'
-          : 'border-b border-transparent bg-transparent'
+          ? 'border-b border-line bg-paper/90 backdrop-blur-md'
+          : 'border-b border-transparent bg-paper/70 backdrop-blur-sm'
       }`}
     >
-      <nav className="shell flex h-14 items-center justify-between gap-6">
+      <nav className="shell flex h-16 items-center justify-between gap-6 lg:h-[4.25rem]">
         <a
           href="#top"
-          className="inline-flex min-h-11 items-center font-display text-[15px] font-semibold tracking-tight text-ink"
+          onClick={() => go('')}
+          className="inline-flex min-h-11 items-center font-display text-base font-semibold tracking-tight text-ink md:text-lg"
         >
           AlphaFold on TPU
         </a>
 
-        <ul className="hidden items-center gap-5 xl:flex">
-          {LINKS.map((link) => (
-            <li key={link.href}>
-              <a
-                href={link.href}
-                className={`text-[13px] transition-colors ${
-                  active === link.href
-                    ? 'font-medium text-ink'
-                    : 'text-mute hover:text-ink'
-                }`}
-              >
-                {link.label}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <div className="hidden items-center gap-1 lg:flex">
+          <ul className="flex items-center gap-1 xl:gap-0.5">
+            {LINKS.map((link) => {
+              const on = active === link.href
+              return (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    onClick={() => go(link.href)}
+                    className={`inline-flex items-center rounded-md px-2.5 py-2 text-[0.9375rem] transition-colors xl:px-3 ${
+                      on
+                        ? 'font-semibold text-teal'
+                        : 'font-medium text-mute hover:text-ink'
+                    }`}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
 
         <button
           type="button"
-          className="inline-flex min-h-11 min-w-11 items-center justify-center text-[13px] font-medium text-ink xl:hidden"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center text-[0.9375rem] font-semibold text-ink lg:hidden"
           aria-expanded={open}
           aria-controls="mobile-nav"
           onClick={() => setOpen((v) => !v)}
@@ -85,13 +108,17 @@ export default function Nav() {
       </nav>
 
       {open && (
-        <ul id="mobile-nav" className="shell border-t border-line py-3 xl:hidden">
+        <ul id="mobile-nav" className="shell border-t border-line py-3 lg:hidden">
           {LINKS.map((link) => (
             <li key={link.href}>
               <a
                 href={link.href}
-                className="block py-2.5 text-sm text-slate"
-                onClick={() => setOpen(false)}
+                className={`block py-3 text-base ${
+                  active === link.href
+                    ? 'font-semibold text-teal'
+                    : 'text-slate'
+                }`}
+                onClick={() => go(link.href)}
               >
                 {link.label}
               </a>

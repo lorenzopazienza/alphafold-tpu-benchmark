@@ -23,7 +23,10 @@ function PhaseFigure({ src, caption }) {
     <figure className="border-t border-line bg-paper/60 px-3.5 py-4 md:px-8 md:py-5 lg:px-10">
       <img
         src={src}
-        alt={caption || 'Phase figure'}
+        alt={
+          caption ||
+          'Experiment figure from the AlphaFold on TPU TPU scaling study'
+        }
         className="w-full border border-line bg-panel"
         loading="lazy"
       />
@@ -142,7 +145,7 @@ function DesktopRow({ exp, open, onToggle }) {
                 </span>
               )}
             </div>
-            <p className="mt-2 text-[15px] leading-relaxed text-slate">
+            <p className="mt-2 text-base leading-relaxed text-slate">
               {exp.finding}
             </p>
           </div>
@@ -155,7 +158,7 @@ function DesktopRow({ exp, open, onToggle }) {
             >
               {exp.stat}
             </p>
-            <p className="mt-1.5 max-w-[9rem] text-[11px] leading-snug text-mute lg:max-w-[10.5rem]">
+            <p className="mt-1.5 max-w-[9rem] text-sm leading-snug text-mute lg:max-w-[10.5rem]">
               {exp.statLabel}
             </p>
           </div>
@@ -253,7 +256,7 @@ export default function DeepDive() {
 
   return (
     <section id="experiments" className="border-t border-line bg-panel">
-      <div className="shell py-[clamp(4rem,9vh,6.5rem)]">
+      <div className="shell section-y">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-6">
           <div className="max-w-xl">
             <p className="kicker">Experiments</p>
@@ -261,14 +264,14 @@ export default function DeepDive() {
               Eleven TPU follow-ups
             </h2>
           </div>
-          <p className="max-w-sm text-[14px] leading-relaxed text-mute md:text-right">
+          <p className="max-w-sm text-sm leading-relaxed text-mute md:text-right">
             Click <span className="font-medium text-ink">+</span> on a row for
             method notes. Shared figures sit under each phase. Amber rail =
             negative result.
           </p>
         </div>
 
-        <div className="mt-8 space-y-8 md:mt-12 md:space-y-10">
+        <div className="mt-6 space-y-7 md:mt-8 md:space-y-8">
           {PHASES.map((phase) => (
             <PhaseBlock
               key={phase.id}

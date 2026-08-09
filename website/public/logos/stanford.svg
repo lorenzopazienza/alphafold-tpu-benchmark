@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" role="img" aria-label="Stanford">
+  <!-- Typographic wordmark in Stanford Cardinal; for course deck attribution -->
+  <text
+    x="0"
+    y="34"
+    fill="#8C1515"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="36"
+    font-weight="600"
+    letter-spacing="-0.5"
+  >Stanford</text>
+</svg>

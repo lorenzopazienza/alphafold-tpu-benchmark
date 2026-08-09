@@ -4,33 +4,438 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AlphaFold on TPU · CPU vs GPU vs TPU Scaling Study · Stanford HPC</title>
     <meta
       name="description"
-      content="Stanford HPC project: same AlphaFold forward pass timed on CPU, GPU, and TPU. Steady-state TPU is 451× faster than CPU."
+      content="Stanford HPC study by Lorenzo Pazienza and Ihab El Bani: the same AlphaFold JAX/Haiku forward pass timed on CPU, GPU (T4), and TPU v5e-8. Steady-state TPU is 451× faster than CPU (0.47s vs 212s). Full page transcript for assistants: /llms.txt. Includes ubiquitin structure, eleven TPU experiments, charts, and cost analysis."
     />
+    <meta
+      name="keywords"
+      content="AlphaFold, TPU, GPU, CPU, JAX, XLA, Stanford, HPC, protein structure, ESMFold, ubiquitin, scaling, pmap, compilation cache, v5e"
+    />
+    <meta name="author" content="Lorenzo Pazienza, Ihab El Bani" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="theme-color" content="#f7f8f9" />
-    <meta property="og:title" content="AlphaFold on TPU · Stanford HPC" />
+    <link rel="canonical" href="https://alphafold-tpu.vercel.app/" />
+    <link rel="alternate" type="text/plain" href="https://alphafold-tpu.vercel.app/llms.txt" title="Full LLM page transcript" />
+
+    <meta property="og:site_name" content="AlphaFold on TPU" />
+    <meta property="og:title" content="AlphaFold on TPU · Stanford HPC Scaling Study" />
     <meta
       property="og:description"
-      content="Same AlphaFold JAX forward pass on CPU, GPU, and TPU. Steady-state TPU is 451× faster than CPU."
+      content="Same AlphaFold forward pass on CPU, GPU T4, and TPU v5e-8. Steady-state: TPU 0.47s (451× vs CPU), GPU 13.1s (16.2×). Eleven TPU follow-ups with charts, cost analysis, open code. Full text: /llms.txt"
     />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://alphafold-tpu.vercel.app/" />
+    <meta
+      property="og:image"
+      content="https://alphafold-tpu.vercel.app/figures/ubiquitin_structure.png"
+    />
+    <meta property="og:image:alt" content="ESMFold cartoon of human ubiquitin colored by pLDDT confidence" />
+    <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="AlphaFold on TPU · Stanford HPC" />
+    <meta name="twitter:title" content="AlphaFold on TPU · Stanford HPC Scaling Study" />
     <meta
       name="twitter:description"
-      content="Same AlphaFold JAX forward pass on CPU, GPU, and TPU. Steady-state TPU is 451× faster than CPU."
+      content="CPU 212s · GPU T4 13.1s (16.2×) · TPU v5e-8 0.47s (451×). Section-by-section transcript at /llms.txt"
     />
+    <meta
+      name="twitter:image"
+      content="https://alphafold-tpu.vercel.app/figures/ubiquitin_structure.png"
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://alphafold-tpu.vercel.app/#website",
+            "url": "https://alphafold-tpu.vercel.app/",
+            "name": "AlphaFold on TPU",
+            "description": "Stanford HPC project comparing AlphaFold forward-pass performance on CPU, GPU, and TPU. Full assistant transcript at /llms.txt.",
+            "inLanguage": "en",
+            "hasPart": {
+              "@type": "WebPage",
+              "url": "https://alphafold-tpu.vercel.app/llms.txt",
+              "name": "LLM page transcript"
+            }
+          },
+          {
+            "@type": "ScholarlyArticle",
+            "@id": "https://alphafold-tpu.vercel.app/#article",
+            "url": "https://alphafold-tpu.vercel.app/",
+            "headline": "AlphaFold on TPU: A CPU/GPU/TPU Scaling Study",
+            "datePublished": "2026-08-01",
+            "dateModified": "2026-08-09",
+            "inLanguage": "en",
+            "isAccessibleForFree": true,
+            "image": [
+              "https://alphafold-tpu.vercel.app/figures/ubiquitin_structure.png",
+              "https://alphafold-tpu.vercel.app/figures/scaling_charts.png",
+              "https://alphafold-tpu.vercel.app/figures/batching_chart.png",
+              "https://alphafold-tpu.vercel.app/figures/scaling_law_chart.png",
+              "https://alphafold-tpu.vercel.app/figures/ubiquitin_confidence.png"
+            ],
+            "author": [
+              { "@type": "Person", "name": "Lorenzo Pazienza" },
+              { "@type": "Person", "name": "Ihab El Bani" }
+            ],
+            "contributor": [
+              { "@type": "Person", "name": "Steve Jones", "jobTitle": "Professor" },
+              { "@type": "Person", "name": "Mourad Bouache", "jobTitle": "Professor" }
+            ],
+            "publisher": { "@type": "Organization", "name": "Stanford University" },
+            "keywords": [
+              "AlphaFold",
+              "TPU v5e",
+              "GPU T4",
+              "JAX",
+              "XLA",
+              "protein structure prediction",
+              "pmap",
+              "compilation cache"
+            ],
+            "abstract": "We timed the same AlphaFold JAX/Haiku forward pass on CPU, NVIDIA T4 GPU, and Google TPU v5e-8. Steady-state: TPU 0.47s (451× vs CPU), GPU 13.1s (16.2× vs CPU), CPU 212s. Default TPU path used 1 of 8 chips; after pmap, throughput scales nearly linearly with chips while cost per prediction stays flat. Eleven follow-ups cover length, recycles, compile cache, bf16, batching, sharding, R² 0.981 scaling fit, and repeats. Interactive ubiquitin ESMFold exhibit is separate from systems clocks. Full section/image transcript: https://alphafold-tpu.vercel.app/llms.txt",
+            "citation": "https://github.com/lorenzopazienza/alphafold-tpu-benchmark",
+            "mainEntityOfPage": "https://alphafold-tpu.vercel.app/"
+          },
+          {
+            "@type": "ImageObject",
+            "contentUrl": "https://alphafold-tpu.vercel.app/figures/ubiquitin_structure.png",
+            "name": "Human ubiquitin ESMFold structure",
+            "description": "Cartoon ribbon of 76-residue human ubiquitin colored by pLDDT. High-confidence blue/cyan core; lower confidence (warmer colors) at the flexible C-terminal tail residues ~71–76. Mean pLDDT 90.5."
+          },
+          {
+            "@type": "ImageObject",
+            "contentUrl": "https://alphafold-tpu.vercel.app/figures/ubiquitin_confidence.png",
+            "name": "Per-residue pLDDT chart",
+            "description": "Line chart of pLDDT vs residue index 1–76 for ubiquitin. Confidence high through the core; shaded drop in residues 70–76."
+          },
+          {
+            "@type": "ImageObject",
+            "contentUrl": "https://alphafold-tpu.vercel.app/figures/scaling_charts.png",
+            "name": "TPU sequence length and recycle scaling",
+            "description": "Two panels on TPU v5e-8: left latency vs sequence length, right latency vs recycle depth. Orange = first call (compile+run), blue = steady-state second call."
+          },
+          {
+            "@type": "ImageObject",
+            "contentUrl": "https://alphafold-tpu.vercel.app/figures/batching_chart.png",
+            "name": "Multi-query batching results",
+            "description": "Batching with jax.vmap: wall-clock grows roughly linearly with batch size; per-protein cost rises; work stays on one chip (negative result vs batch=1)."
+          },
+          {
+            "@type": "ImageObject",
+            "contentUrl": "https://alphafold-tpu.vercel.app/figures/scaling_law_chart.png",
+            "name": "Empirical TPU scaling law",
+            "description": "Throughput vs chip count and sequence length on a 16-run grid fitting throughput ≈ 4527.77 · chips^0.963 · length^−1.572 (R² 0.981)."
+          }
+        ]
+      }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,6..72,500;1,6..72,400;1,6..72,500&display=swap"
       rel="stylesheet"
     />
-    <title>AlphaFold on TPU · Stanford HPC</title>
+    <style>
+      .js #crawl-content {
+        display: none !important;
+      }
+      #crawl-content {
+        max-width: 46rem;
+        margin: 2rem auto;
+        padding: 0 1.25rem 4rem;
+        font-family: "IBM Plex Sans", system-ui, sans-serif;
+        line-height: 1.55;
+        color: #111827;
+      }
+      #crawl-content h1,
+      #crawl-content h2,
+      #crawl-content h3 {
+        font-family: "Bricolage Grotesque", system-ui, sans-serif;
+        letter-spacing: -0.02em;
+      }
+      #crawl-content img {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid #e4e7eb;
+        margin: 0.75rem 0 0.25rem;
+      }
+      #crawl-content figcaption {
+        font-size: 0.85rem;
+        color: #6b7684;
+        margin-bottom: 1.25rem;
+      }
+      #crawl-content table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 1rem 0;
+        font-size: 0.95rem;
+      }
+      #crawl-content th,
+      #crawl-content td {
+        border: 1px solid #e4e7eb;
+        padding: 0.4rem 0.6rem;
+        text-align: left;
+      }
+      #crawl-content .ai-banner {
+        background: #e8f4f5;
+        border: 1px solid #e4e7eb;
+        padding: 0.85rem 1rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+
+    <article id="crawl-content">
+      <p class="ai-banner">
+        <strong>For AI assistants / crawlers:</strong> This HTML block is the
+        full page content (React UI is empty without JS). Prefer the complete
+        transcript at
+        <a href="https://alphafold-tpu.vercel.app/llms.txt"
+          >https://alphafold-tpu.vercel.app/llms.txt</a
+        >
+        — it describes every section, chart, and image.
+      </p>
+
+      <h1>AlphaFold on TPU: A CPU/GPU/TPU Scaling Study</h1>
+      <p>
+        Lorenzo Pazienza &amp; Ihab El Bani · Stanford University · Intro to HPC
+        and AI Systems (Summer 2026) · Profs. Steve Jones &amp; Mourad Bouache
+      </p>
+      <p>
+        Live site:
+        <a href="https://alphafold-tpu.vercel.app/"
+          >alphafold-tpu.vercel.app</a
+        >
+        · Code:
+        <a href="https://github.com/lorenzopazienza/alphafold-tpu-benchmark"
+          >github.com/lorenzopazienza/alphafold-tpu-benchmark</a
+        >
+        · LLM transcript:
+        <a href="/llms.txt">/llms.txt</a>
+      </p>
+
+      <nav aria-label="On-page sections">
+        <h2>Site structure (nav)</h2>
+        <ol>
+          <li><a href="#top">Hero — 451× headline</a></li>
+          <li><a href="#structure">Structure — ubiquitin 3D + pLDDT</a></li>
+          <li><a href="#problem">Problem</a></li>
+          <li><a href="#approach">Approach — one script, three backends</a></li>
+          <li><a href="#results">Results — latency bars</a></li>
+          <li><a href="#experiments">Experiments — eleven TPU follow-ups</a></li>
+          <li><a href="#cost">Cost — scaling law + $/1k</a></li>
+          <li><a href="#reproduce">Reproduce — repo + docker</a></li>
+        </ol>
+      </nav>
+
+      <h2 id="top">Hero</h2>
+      <p>
+        Giant metric <strong>451×</strong> (steady-state TPU vs CPU). Subline:
+        TPU 0.47s · GPU 13.1s (16.2× vs CPU) · CPU 212s. Title “AlphaFold on
+        TPU”. Blurb: same AlphaFold JAX forward pass on CPU, GPU (T4), and TPU
+        (v5e-8).
+      </p>
+
+      <h2 id="structure">Structure — Human ubiquitin</h2>
+      <p>
+        ESMFold prediction · 76 residues · mean pLDDT 90.5. Interactive 3D
+        (drag/zoom) colored by AlphaFold pLDDT scale. Biology demo — not the
+        systems timing workload.
+      </p>
+      <figure>
+        <img
+          src="/figures/ubiquitin_structure.png"
+          alt="Cartoon ribbon of human ubiquitin colored by pLDDT: blue/cyan high-confidence core, warmer lower-confidence C-terminal tail around residues 71–76"
+          width="1200"
+          height="900"
+        />
+        <figcaption>
+          Structure still / 3D fallback. PDB:
+          <a href="/structure/ubiquitin_predicted.pdb"
+            >/structure/ubiquitin_predicted.pdb</a
+          >
+        </figcaption>
+      </figure>
+      <figure>
+        <img
+          src="/figures/ubiquitin_confidence.png"
+          alt="Line chart of per-residue pLDDT for ubiquitin residues 1–76; high through the core with a drop highlighted in residues 70–76"
+          width="1200"
+          height="700"
+        />
+        <figcaption>Per-residue pLDDT chart (mean 90.5). Shaded band: 70–76.</figcaption>
+      </figure>
+
+      <h2 id="problem">Problem</h2>
+      <p>
+        <strong>Where does AlphaFold spend time on CPU, GPU, and TPU?</strong>
+        Same model config, script, and input shape; measure init, first predict
+        (compile + run), steady-state. Hardware: Colab CPU/T4; Stanford TPU
+        v5e-8 (2×4).
+      </p>
+
+      <h2 id="approach">Approach</h2>
+      <p>
+        One script <code>spike_tpu_forward_pass.py</code> → CPU
+        (result_cpu.json), GPU T4 (result_gpu-t4.json), TPU v5e-8 (result_tpu +
+        traces). Systems timings: Haiku random init (no ~350MB weights).
+      </p>
+
+      <h2 id="results">Results — Steady-state predict latency</h2>
+      <p>Callout: <strong>0.47s</strong>. model_3, 0 recycles, 118 residues. Log-scaled bars.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Backend</th>
+            <th>Time</th>
+            <th>vs CPU</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CPU</td>
+            <td>212.1s</td>
+            <td>1×</td>
+          </tr>
+          <tr>
+            <td>GPU T4</td>
+            <td>13.1s</td>
+            <td>16.2×</td>
+          </tr>
+          <tr>
+            <td>TPU v5e</td>
+            <td>0.47s</td>
+            <td>451×</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>First/steady-state: CPU 1.28× · GPU 7.46× · TPU 59.1×.</p>
+
+      <h2 id="experiments">Experiments — Eleven TPU follow-ups</h2>
+      <p>Amber rail = negative result. Click + for method notes on the live UI.</p>
+
+      <h3>Scaling</h3>
+      <ol>
+        <li>
+          <strong>Sequence length — 14.6×</strong> time for 8.3× length.
+          Super-linear; swept 60–500 residues.
+        </li>
+        <li>
+          <strong>Recycle depth — ~0.46s</strong> per extra recycle; compile flat
+          after first.
+        </li>
+        <li>
+          <strong>Chip visibility — 1 of 8</strong> chips used on default path.
+        </li>
+      </ol>
+      <figure>
+        <img
+          src="/figures/scaling_charts.png"
+          alt="Two TPU v5e-8 charts: left latency vs sequence length, right vs recycle depth; orange first-call compile+run above blue steady-state"
+          width="1600"
+          height="700"
+        />
+        <figcaption>
+          Left: sequence length. Right: recycle depth. Same TPU v5e-8 runs.
+        </figcaption>
+      </figure>
+
+      <h3>Bottleneck &amp; fix</h3>
+      <ol start="4">
+        <li>
+          <strong>Profiler trace — 76%</strong> of first call in pjit cache_miss
+          (host JIT).
+        </li>
+        <li>
+          <strong>Compilation cache — 6.8×</strong> faster init_params; steady-state
+          unchanged.
+        </li>
+        <li>
+          <strong>Precision bf16 — −40%</strong> steady-state HBM; little runtime
+          change.
+        </li>
+      </ol>
+
+      <h3>Multi-chip</h3>
+      <ol start="7">
+        <li>
+          <strong>Multi-query batching — lower</strong> proteins/sec vs batch=1
+          (negative). vmap stayed on one chip.
+        </li>
+      </ol>
+      <figure>
+        <img
+          src="/figures/batching_chart.png"
+          alt="Batching chart: wall-clock rises with batch size and per-protein cost worsens versus batch size 1"
+          width="1200"
+          height="700"
+        />
+        <figcaption>
+          Wall-clock scales ~linearly; per-protein cost rises with batch size.
+        </figcaption>
+      </figure>
+      <ol start="8">
+        <li>
+          <strong>pmap — 6.92×</strong> throughput (2.13 → 14.72 proteins/sec on 8
+          chips).
+        </li>
+        <li>
+          <strong>Auto-sharding GSPMD — 0×</strong> tensor split (negative);
+          ~463 MB copy on every chip.
+        </li>
+      </ol>
+
+      <h3>Fit &amp; rigor</h3>
+      <ol start="10">
+        <li>
+          <strong>Empirical scaling law — R² 0.981</strong> on 16 runs:
+          throughput ≈ 4527.77 · chips<sup>0.963</sup> · length<sup>−1.572</sup>.
+        </li>
+      </ol>
+      <figure>
+        <img
+          src="/figures/scaling_law_chart.png"
+          alt="Scaling-law chart of throughput versus chip count and sequence length on the measured 16-point TPU grid"
+          width="1200"
+          height="700"
+        />
+        <figcaption>
+          Throughput vs chips and sequence length on the measured grid.
+        </figcaption>
+      </figure>
+      <ol start="11">
+        <li>
+          <strong>Model pick &amp; repeats — &lt;1%</strong> stdev; model_5 ~15%
+          faster steady-state than model_3/4.
+        </li>
+      </ol>
+
+      <h2 id="cost">Cost</h2>
+      <p>
+        Headline: cost per prediction is nearly flat in chip count. Baseline path
+        1 of 8 chips active (~87% idle) → TPU $1.25 vs GPU $1.27 per 1k; CPU
+        $11.19. After pmap, unit cost stays roughly constant as chips grow.
+      </p>
+
+      <h2 id="reproduce">Reproduce</h2>
+      <p>
+        Repo layout: configs/, src/, notebooks/, figures/, structure/,
+        profiling/, results/, website/. Example:
+      </p>
+      <pre>
+docker build --build-arg JAX_VARIANT=cpu -t af-bench:cpu .
+docker run -v $(pwd)/results:/alphafold/results af-bench:cpu --run_tag=cpu
+      </pre>
+    </article>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

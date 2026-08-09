@@ -24,12 +24,13 @@ export default function Architecture() {
     <section id="approach" className="border-t border-line bg-panel">
       <div className="viewport-tight shell">
         <div className="max-w-2xl">
-          <p className="kicker">Approach</p>
+          <p className="kicker">System topology</p>
           <h2 className="mt-3 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-semibold tracking-[-0.03em] text-ink">
             One script, three backends
           </h2>
           <p className="mt-4 text-[1.05rem] leading-relaxed text-slate">
-            Every timing run calls{' '}
+            Docker for CPU/GPU images; Kubernetes Job + Kueue on GKE for the
+            TPU worker. Every timing run calls{' '}
             <code className="font-mono text-[0.92em] text-ink">
               spike_tpu_forward_pass.py
             </code>
@@ -37,7 +38,7 @@ export default function Architecture() {
           </p>
         </div>
 
-        <div className="mt-12 grid gap-0 border-y border-line md:grid-cols-[1.1fr_repeat(3,1fr)]">
+        <div className="mt-8 grid gap-0 border-y border-line md:mt-10 md:grid-cols-[1.1fr_repeat(3,1fr)]">
           <div className="border-b border-line bg-ink px-5 py-6 text-paper md:border-b-0 md:border-r md:border-line/20">
             <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/50">
               Script
@@ -65,7 +66,7 @@ export default function Architecture() {
           ))}
         </div>
 
-        <p className="mt-10 max-w-2xl text-[15px] leading-relaxed text-mute">
+        <p className="mt-8 max-w-2xl text-[15px] leading-relaxed text-mute">
           <span className="font-medium text-ink">Parameters.</span> Systems
           timings use Haiku random init so we exercise the same compiled graph
           without downloading trained weights (~350MB). The ubiquitin structure

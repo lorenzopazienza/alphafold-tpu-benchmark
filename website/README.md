@@ -1,6 +1,8 @@
 # AlphaFold on TPU · Project Website
 
-Single-page showcase for the Stanford HPC AlphaFold / TPU scaling study.
+Phase 4 showcase for the Stanford ME344 AlphaFold / TPU scaling study.
+
+**Repo:** [lorenzopazienza/alphafold-tpu-benchmark](https://github.com/lorenzopazienza/alphafold-tpu-benchmark)
 
 ## Stack
 

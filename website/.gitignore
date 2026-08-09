@@ -23,3 +23,7 @@ audit-shots
 *.njsproj
 *.sln
 *.sw?
+.vercel
+
+# Office lock files from open PPTX
+~$*

@@ -46,10 +46,10 @@ export default function HeadlineResults() {
 
   return (
     <section id="results" className="border-t border-line">
-      <div className="viewport shell">
+      <div className="viewport-tight shell">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="max-w-lg">
-            <p className="kicker">Results</p>
+            <p className="kicker">Performance delta</p>
             <h2 className="mt-3 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-semibold tracking-[-0.03em] text-ink">
               Steady-state predict latency
             </h2>
@@ -59,12 +59,12 @@ export default function HeadlineResults() {
           </p>
         </div>
 
-        <p className="mt-4 max-w-xl text-[15px] text-mute">
+        <p className="mt-4 max-w-xl text-base text-mute">
           model_3, 0 recycles, 118-residue input, identical code path. Bar
           lengths are log-scaled.
         </p>
 
-        <div ref={ref} className="mt-12 space-y-5">
+        <div ref={ref} className="mt-8 space-y-5 md:mt-10">
           {DATA.map((d) => (
             <div
               key={d.name}
@@ -97,11 +97,11 @@ export default function HeadlineResults() {
           ))}
         </div>
 
-        <hr className="rule mt-14" />
+        <hr className="rule mt-10 md:mt-12" />
 
-        <div className="mt-8">
+        <div className="mt-6 md:mt-8">
           <p className="kicker">First predict / steady-state</p>
-          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-slate">
+          <p className="mt-3 max-w-2xl text-base leading-relaxed text-slate">
             First predict includes XLA compile. The gap to the second predict
             shows how compile-bound each backend is.
           </p>
@@ -112,11 +112,11 @@ export default function HeadlineResults() {
               { k: 'TPU v5e', v: '59.1×', s: 'Cold path is compile' },
             ].map((row) => (
               <div key={row.k}>
-                <dt className="text-[13px] text-mute">{row.k}</dt>
+                <dt className="text-sm text-mute">{row.k}</dt>
                 <dd className="eq mt-1 font-display text-2xl font-semibold tracking-tight text-ink">
                   {row.v}
                 </dd>
-                <p className="mt-1 text-[13px] leading-snug text-mute">{row.s}</p>
+                <p className="mt-1 text-sm leading-snug text-mute">{row.s}</p>
               </div>
             ))}
           </dl>

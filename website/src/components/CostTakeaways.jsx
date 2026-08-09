@@ -1,19 +1,19 @@
 export default function CostTakeaways() {
   return (
     <section id="cost" className="border-t border-line">
-      <div className="shell pt-[clamp(4rem,9vh,6.5rem)]">
+      <div className="shell pt-[clamp(3.25rem,7vh,5rem)]">
         <div className="max-w-2xl">
           <p className="kicker">Cost</p>
           <h2 className="mt-3 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-semibold tracking-[-0.03em] text-ink">
             Cost per prediction is nearly flat in chip count
           </h2>
-          <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-slate">
+          <p className="mt-4 max-w-xl text-base leading-relaxed text-slate">
             Choose how many chips you need for latency or throughput. Do not
             expect a lower unit cost from renting a larger slice.
           </p>
         </div>
 
-        <div className="mt-14 overflow-x-auto border-y border-line py-10 text-center">
+        <div className="mt-10 overflow-x-auto border-y border-line py-8 text-center md:mt-12">
           <p className="kicker">Empirical fit · 16 TPU runs · R² 0.981</p>
           <p className="eq mt-5 font-mono text-[clamp(0.95rem,2.6vw,1.35rem)] leading-relaxed tracking-tight text-ink">
             <span className="text-mute">throughput</span>
@@ -24,13 +24,13 @@ export default function CostTakeaways() {
             <span className="mx-1.5 text-mute">·</span>
             length<sup className="text-teal">−1.572</sup>
           </p>
-          <p className="mx-auto mt-4 max-w-lg text-[13px] text-mute">
+          <p className="mx-auto mt-4 max-w-lg text-sm text-mute">
             chips {'{'}1, 2, 4, 8{'}'} × length {'{'}100, 250, 500, 1000{'}'}
           </p>
         </div>
       </div>
 
-      <div className="bg-ink py-14 text-paper">
+      <div className="bg-ink py-10 text-paper md:py-12">
         <div className="shell max-w-3xl">
           <p className="text-[1.15rem] leading-relaxed md:text-[1.25rem]">
             On the baseline path only 1 of 8 chips was active (~87% idle), so
@@ -41,8 +41,8 @@ export default function CostTakeaways() {
         </div>
       </div>
 
-      <div className="shell pb-[clamp(4rem,9vh,6.5rem)] pt-12">
-        <p className="mb-6 text-center text-[13px] text-mute">
+      <div className="shell pb-[clamp(3.25rem,7vh,5rem)] pt-10">
+        <p className="mb-6 text-center text-sm text-mute">
           Cost per 1,000 predictions
         </p>
         <dl className="grid gap-8 sm:grid-cols-3 sm:gap-6">
@@ -52,7 +52,7 @@ export default function CostTakeaways() {
             { k: 'TPU 8-chip', v: '$1.25' },
           ].map((row) => (
             <div key={row.k} className="text-center">
-              <dt className="text-[13px] text-mute">{row.k}</dt>
+              <dt className="text-sm text-mute">{row.k}</dt>
               <dd className="eq mt-1 font-display text-3xl font-semibold tracking-tight text-ink">
                 {row.v}
               </dd>

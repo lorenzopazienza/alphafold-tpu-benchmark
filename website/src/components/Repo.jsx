@@ -9,7 +9,7 @@ const TREE = [
   ['website/', 'This site'],
 ]
 
-const REPO = 'https://github.com/lorenzopazienza/alphafold-tpu'
+const REPO = 'https://github.com/lorenzopazienza/alphafold-tpu-benchmark'
 
 export default function Repo() {
   return (
@@ -34,12 +34,12 @@ export default function Repo() {
           >
             <span className="sm:hidden">Open on GitHub</span>
             <span className="hidden break-all sm:inline">
-              github.com/lorenzopazienza/alphafold-tpu
+              github.com/lorenzopazienza/alphafold-tpu-benchmark
             </span>
           </a>
         </div>
 
-        <div className="mt-12 grid min-w-0 gap-12 lg:grid-cols-2 lg:gap-16">
+        <div className="mt-8 grid min-w-0 gap-10 lg:grid-cols-2 lg:mt-10 lg:gap-12">
           <div className="min-w-0">
             <p className="kicker">Layout</p>
             <ul className="mt-5 space-y-0 font-mono text-[13px]">

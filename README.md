@@ -1,49 +1,172 @@
-# AlphaFold on TPU: A CPU/GPU/TPU Scaling Study
+# AlphaFold on TPU: Executive Technical Report
 
-**Stanford University**  
-Summer Session 2026, IHP
-
-**Course:** Introduction to High Performance Computing and AI Systems  
-**Student:** Lorenzo Pazienza & Ihab El Bani  
+**Stanford University** · Summer Session 2026, IHP  
+**Course:** Introduction to High Performance Computing and AI Systems (ME344)  
+**Pathway:** Option 2 — Custom Scientific ML Workload  
+**Students:** Lorenzo Pazienza & Ihab El Bani  
 **Professors:** Steve Jones, Mourad Bouache
+
+**Live site:** [alphafold-tpu.vercel.app](https://alphafold-tpu.vercel.app) · **Repo:** [lorenzopazienza/alphafold-tpu-benchmark](https://github.com/lorenzopazienza/alphafold-tpu-benchmark)
 
 ---
 
-## Human ubiquitin, ESMFold prediction
+## Executive Summary
+
+Protein structure prediction (AlphaFold’s JAX/Haiku forward pass) is a deployed scientific ML workload. We ran the **same model, same script, and same input shape** across three accelerator backends—CPU, NVIDIA GPU (T4), and Google Cloud TPU v5e—to answer a systems question: **where does this workload spend time, and how does that change per backend?**
+
+| Tooling matrix (course requirement: ≥3 stack elements) | Choice |
+|---|---|
+| **Compute targets** | Colab CPU · Colab NVIDIA T4 · Stanford GKE TPU v5e-8 (`2×4`) |
+| **Orchestration** | Docker (multi-backend image) · Kubernetes Jobs on GKE + Kueue |
+| **Compilation layer** | JAX/XLA (JIT, compile cache, `vmap` / `pmap`) |
+| **Telemetry** | `jax.profiler` traces · TensorBoard Profile · in-process HBM / `tpu-info` |
+
+**Headline result:** steady-state TPU inference is **451×** faster than CPU and **27.8×** faster than a T4 GPU (0.47s vs 212s / 13s). Cold TPU calls are dominated by host-side XLA compilation (~76% in `pjit` `cache_miss`). Default single-query path uses **1 of 8 chips**; `jax.pmap` recovers **6.92×** multi-query throughput across the full slice.
 
 ![Human ubiquitin, ESMFold prediction](figures/ubiquitin_structure.png)
 
-## Problem
+---
 
-Protein structure prediction (AlphaFold's JAX/Haiku forward pass) is a real,
-deployed scientific ML workload. We benchmark the same model and the same
-inference code, unmodified, across three accelerator backends: CPU, GPU, and
-TPU. The engineering question: **where does this workload actually spend its
-time, and how does that change per backend?**
+## System Topology Diagram
 
-## Architecture
+Cluster layout, storage paths, and compute workers used for this study:
+
+```text
+┌──────────────────────────────────────────────────────────────────────────┐
+│  Client / CI                                                             │
+│  spike_tpu_forward_pass.py  (one script, all backends)                   │
+└───────────────┬──────────────────────────┬───────────────────────────────┘
+                │                          │
+     Docker build (JAX_VARIANT)     kubectl apply (Kueue Job)
+                │                          │
+    ┌───────────▼───────────┐   ┌──────────▼──────────────────────────────┐
+    │ Local / Colab         │   │ GKE: class-tpu-cluster-west4            │
+    │ · CPU (sandbox)       │   │ project: soe-hpccenter · us-west4       │
+    │ · GPU T4 (1 device)   │   │ accelerator: tpu-v5-lite-podslice       │
+    │ image: af-bench:*     │   │ topology: 2×4  →  8 chips (TPU_0…7)     │
+    └───────────┬───────────┘   │ queue: student-queue (Kueue)            │
+                │               │ worker: Kubernetes Job af-spike-<TEAM>  │
+                │               │ mount: ConfigMap → /mnt/script          │
+                │               │ workdir: /alphafold (DeepMind clone)    │
+                │               └──────────┬───────────────────────────────┘
+                │                          │
+                └────────────┬─────────────┘
+                             ▼
+              results/result_<tag>.json
+              results/trace_<tag>/   (JAX/XLA profiler)
+```
 
 ```mermaid
 flowchart TD
-    A["spike_tpu_forward_pass.py<br/>one script, all backends"] --> B["CPU<br/>local / sandbox"]
+    A["spike_tpu_forward_pass.py<br/>one script, all backends"] --> B["CPU<br/>local / Colab"]
     A --> C["GPU<br/>Colab T4"]
-    A --> D["TPU<br/>Stanford v5e-8"]
-    B --> E["results/result_cpu.json"]
+    A --> D["TPU worker<br/>GKE Job · v5e-8 · 2×4"]
+    B --> E["results/result_cpu*.json"]
     C --> F["results/result_gpu-t4.json"]
     D --> G["results/result_tpu-v5e-podslice.json"]
     D --> H["results/trace_&lt;tag&gt;/<br/>JAX/XLA profiler"]
+    D --> I["ConfigMap /mnt/script<br/>workdir /alphafold"]
 ```
 
-We deliberately avoid two heavy dependencies that aren't needed to answer
-the systems question:
+| Item | Value |
+|---|---|
+| GCP project | `soe-hpccenter` |
+| GKE cluster | `class-tpu-cluster-west4` |
+| Region | `us-west4` |
+| TPU accelerator | `tpu-v5-lite-podslice`, topology `2×4` (8 chips) |
+| Orchestration | Kubernetes Job, admitted via Kueue (`student-queue`) |
+| Script inject path | ConfigMap → `/mnt/script` → copied into `/alphafold` |
+| Artifact paths | `results/result_*.json`, `results/trace_<tag>/`, `results/sweep/` |
 
-1. **MSA search** (jackhmmer/hhblits): replaced with a trivial single-sequence
-   MSA built via AlphaFold's own `pipeline.make_msa_features` helper.
-   Swappable for a real ColabFold-fetched MSA later without changing any of
-   the timing/profiling code.
-2. **Trained parameters** (~350MB/model download): `RunModel` randomly
-   initializes params via Haiku's own init, exercising the exact same
-   JIT-compiled graph shapes and accelerator ops as a real forward pass.
+We deliberately avoid two heavy dependencies that are not needed for the systems question:
+
+1. **MSA search** (jackhmmer/hhblits) — replaced with a trivial single-sequence MSA via AlphaFold’s `pipeline.make_msa_features`.
+2. **Trained parameters** (~350MB/model) — `RunModel` uses Haiku random init, exercising the same JIT graph shapes and accelerator ops as a real forward pass.
+
+---
+
+## Performance Delta Analysis
+
+Identical workload: `model_3`, 0 recycles, 118-residue sequence, Haiku random-init params. Only the backend changes. Full per-run JSON lives under `results/`; narrative in [`results/comparison.md`](results/comparison.md).
+
+### CPU / GPU / TPU baseline
+
+| Backend | Devices | init_params (s) | 1st predict (compile+run) | Steady-state (s) | vs CPU |
+|---|---|---|---|---|---|
+| CPU (Colab) | 1 | 41.99 | 271.98 | 212.113 | 1× |
+| GPU (T4, Colab) | 1 | 109.16 | 97.62 | 13.086 | **16.2×** |
+| **TPU (v5e-podslice, Stanford)** | **8 chips** | **36.6** | **27.78** | **0.47** | **451×** |
+
+| Metric | CPU | GPU T4 | TPU v5e |
+|---|---|---|---|
+| Cold / warm ratio | 1.28× | 7.46× | **59.1×** |
+| Steady-state vs GPU | — | 1× | **27.8×** |
+| Cost / 1k predictions | $11.19 | $1.27 | $1.25 |
+
+### Scale configurations (TPU sweep)
+
+Eleven further experiments on the class TPU slice (`results/sweep/`):
+
+| Configuration | Key delta |
+|---|---|
+| Sequence length 60 → 500 | Super-linear: **8.3×** length → **14.6×** steady-state time |
+| Recycle depth 0 → 3 | Steady-state **~0.46s per extra recycle** (linear); compile jumps once then flat |
+| Chip visibility 1 vs 8 | **No** single-query speedup — default path uses 1 chip |
+| Precision float32 → bfloat16 | Steady-state HBM **−40%**; wall-clock ≈ unchanged at this size |
+| `jax.vmap` batch 1/2/4/8 | Throughput **worse** as batch grew (single-chip only) |
+| Compilation cache (warm restart) | **6.8×** faster `init_params`, **1.9×** faster first predict |
+| `jax.pmap` 8 proteins / 8 chips | **6.92×** throughput (2.13 → 14.72 proteins/s) |
+| Scaling law (16-point grid) | `throughput ≈ 4527.77 · chips^0.963 · length^−1.572` (R² **0.981**) |
+
+![Sequence length and recycle depth scaling](figures/scaling_charts.png)
+
+![Multi-query batching throughput](figures/batching_chart.png)
+
+![Empirical scaling law: throughput vs chips and length](figures/scaling_law_chart.png)
+
+---
+
+## The Infrastructure Bottleneck Diagnosis
+
+**Primary operational bottleneck (cold TPU path): host-side XLA compilation**, not device FLOPs.
+
+Evidence from the captured profiler trace ([`profiling/trace_analysis.md`](profiling/trace_analysis.md)):
+
+- First TPU `predict` ≈ **16.56s**; JAX `pjit.py` **`cache_miss`** alone ≈ **12.55s (~76%)**.
+- Device track (`/device:TPU:0`) is nearly idle during that interval — cost is host JIT, not MXU saturation.
+- Cold/warm ratio on TPU is **59.1×** (27.78s → 0.47s). CPU is only **1.28×** (compute-bound; little compile graph to amortize).
+
+**Secondary bottleneck (baseline multi-chip utilization): 1-of-8 chip occupancy.**
+
+- HBM activity stays on `TPU_0`; chips 1–7 ≈ 0 MB → ~**87%** of the paid pod idle for a single query.
+- `jax.vmap` does **not** fix this — it vectorizes inside one chip and *reduced* proteins/sec as batch grew.
+- List-price TPU vs T4 cost per 1k predictions therefore lands almost equal ($1.25 vs $1.27) despite a 28× wall-clock gap ([`results/cost_analysis.md`](results/cost_analysis.md)).
+
+**Bottleneck shifts by backend:**
+
+| Backend | Dominant cost | Signature |
+|---|---|---|
+| CPU | Tensor compute | Cold ≈ warm |
+| GPU T4 | Mixed compute + compile | Cold/warm ~7× |
+| TPU v5e | XLA compile (cold); under-utilized slice (multi-query) | Cold/warm ~59×; 1/8 chips used |
+
+---
+
+## Engineering Mitigations
+
+Architectural adjustments measured or recommended against the bottlenecks above:
+
+| Mitigation | What we did | Outcome |
+|---|---|---|
+| **Persistent XLA compile cache** | `--cache_dir` / `jax_compilation_cache_dir` across process restart | **6.8×** faster `init_params`, **1.9×** first predict — primary fix for cold-path compile |
+| **Multi-chip data parallel (`jax.pmap`)** | One independent protein per chip on the 8-chip slice | **6.92×** throughput — primary fix for 1-of-8 idle waste |
+| **bfloat16 precision** | `--precision bfloat16` vs float32 | HBM **−40%**; little speed gain at 118 residues (still useful for larger sequences / packing) |
+| **Batch size via `vmap`** | Batches 1/2/4/8 | **Negative** for this graph — do not treat as multi-chip scaling |
+| **Recycle / length policy** | Swept recycles and lengths | Recycles scale linearly at runtime; length is super-linear (attention) — size SLOs accordingly |
+| **GSPMD auto-mesh** | Course Tunix-style auto sharding of one protein | **Did not** shard tensors (full replica per chip) — needs explicit sharding annotations |
+| **Recommended ops practice** | Keep serving process warm; pad to shared shapes; choose chip count for latency/throughput SLO, not unit $/pred | Matches Lab 1/3 vLLM `VLLM_XLA_CACHE_PATH` lesson; cost/prediction ~flat in chip count after `pmap` |
+
+---
 
 ## Reproduction
 
@@ -58,14 +181,6 @@ docker run -v $(pwd)/results:/alphafold/results af-bench:cpu --run_tag=cpu
 docker build --build-arg JAX_VARIANT=cuda12 -t af-bench:gpu .
 docker run --gpus all -v $(pwd)/results:/alphafold/results af-bench:gpu --run_tag=gpu-t4
 ```
-Or, without Docker, directly in a Colab notebook (see `notebooks/`):
-```bash
-!pip install -U "jax[cuda12]"
-!pip install dm-haiku==0.0.12 ml_collections absl-py "tensorflow-cpu==2.16.1" biopython numpy
-!git clone --depth 1 https://github.com/google-deepmind/alphafold.git
-!cp src/spike_tpu_forward_pass.py alphafold/
-!cd alphafold && python3 spike_tpu_forward_pass.py --run_tag=gpu-t4
-```
 
 ### TPU (Stanford class cluster)
 ```bash
@@ -79,200 +194,49 @@ envsubst < configs/af_spike_job.yaml | kubectl apply -f -
 kubectl logs -f job/af-spike-${TEAM}
 ```
 
-### TPU (Google Colab, no cluster access needed)
+### Profiling / telemetry
+Each run wraps the first `predict()` in `jax.profiler.trace(...)`, isolating **XLA compilation** from **steady-state execution** (second uncompiled `predict()`). View with:
 
-If you don't have access to the Stanford GKE cluster, Colab also exposes a
-free TPU runtime and is the easiest way to reproduce a TPU number. The
-same single-accelerator-per-session rule applies here as for the GPU
-notebook above: Colab gives you one backend per session, so run this in
-its own notebook, separate from the CPU/GPU runs.
-
-1. In Colab, go to **Runtime > Change runtime type** and select **TPU**.
-2. Install JAX's TPU backend and AlphaFold's dependencies, then run the
-   benchmark script exactly as on the class cluster:
-
-```bash
-!pip install -U "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
-!pip install dm-haiku==0.0.12 ml_collections absl-py "tensorflow-cpu==2.16.1" biopython numpy
-!git clone --depth 1 https://github.com/google-deepmind/alphafold.git
-!cp src/spike_tpu_forward_pass.py alphafold/
-!cd alphafold && python3 spike_tpu_forward_pass.py --run_tag=tpu-colab
-```
-
-3. `jax.devices()` should report the Colab TPU (typically a `v2-8`, not
-   the `v5e-8` used for this project's headline numbers). Results from a
-   Colab TPU are a valid reproduction of the methodology but **not**
-   directly comparable to the `results/result_tpu-v5e-podslice.json`
-   numbers in this repo: different TPU generation, different topology,
-   and Colab's shared, variable infrastructure (the same caveat that
-   applies to its CPU/GPU runtimes).
-
-## TPU configuration
-
-| Item | Value |
-|---|---|
-| GCP project | `soe-hpccenter` |
-| GKE cluster | `class-tpu-cluster-west4` |
-| Region | `us-west4` |
-| TPU accelerator | `tpu-v5-lite-podslice`, topology `2x4` (8 chips) |
-| Orchestration | Kubernetes Job, admitted via Kueue (`student-queue`) |
-
-## Experiments
-
-Each baseline run varies only the **backend** (CPU / GPU / TPU); the model
-config, input sequence, and code path are identical across all three. On top
-of that baseline, `results/sweep/` runs eleven further scaling and mitigation
-experiments on the TPU, summarized below.
-
-## Profiling
-
-Each run wraps the first `predict()` call in a `jax.profiler.trace(...)`
-context, isolating **XLA compilation** from **steady-state execution**
-(measured separately via a second, uncompiled `predict()` call). Traces are
-written to `results/trace_<tag>/` and viewable with:
 ```bash
 pip install tensorboard-plugin-profile
 tensorboard --logdir=results/trace_<tag>
 ```
 
-## Results
-
-| Backend | Devices | Steady-state (s) | vs CPU |
-|---|---|---|---|
-| CPU (Colab) | 1 | 212.113 | 1x |
-| GPU (T4, Colab) | 1 | 13.086 | 16.2x |
-| **TPU (v5e-podslice, Stanford)** | **8 chips** | **0.47** | **451x** |
-
-Full breakdown, per-run JSON, and the profiling analysis (why the bottleneck
-differs by backend) are in `results/comparison.md`.
-
-## Bottleneck and scaling conclusion
-
-The bottleneck **shifts by backend**. CPU is compute-bound: little gap
-between the first and second call, since there is no accelerator graph to
-amortize compiling. TPU is compile-bound on a cold call (59x gap between
-first and steady-state call), but has by far the fastest steady-state
-compute once that one-time compile cost is paid. The practical mitigation
-is the same lesson the course's own Lab 1/3 vLLM setup already encodes:
-persist the compiled XLA cache across restarts, so that cost is paid once,
-not per request. See `results/comparison.md` for the full numbers and the
-reasoning behind each figure.
+---
 
 ## Real protein structure (beyond the systems benchmark)
 
-The CPU/GPU/TPU study above uses AlphaFold's real JAX code but random-init
-weights: valid for a compile/execution-time study, but not a real biological
-result. `structure/` contains a **real folded protein**.
+Systems timings use random-init weights (valid for compile/execution study). [`structure/`](structure/) holds a **real** fold for exhibition:
 
-- **Protein:** human ubiquitin (76 residues), one of the most
-  well-characterized proteins in structural biology.
-- **Model:** ESMFold (Meta AI), real trained weights, no MSA search needed.
-- **Result:** mean confidence (pLDDT) **90.5/100**, "very high" by standard
-  convention. Confidence stays above 90 across the structured body of the
-  protein and drops off sharply only in the last ~6 residues, which is the
-  correct, expected result: that C-terminal tail is a known biologically
-  flexible/disordered region (it's the part that conjugates to other
-  proteins), so lower model confidence there reflects real biology, not a
-  modeling error.
-- Reproduce with `notebooks/real_protein_fold_visualization.ipynb` (runs on
-  CPU, Apple Silicon MPS, or CUDA, auto-detected).
+- **Protein:** human ubiquitin (76 residues)
+- **Model:** ESMFold (Meta AI), trained weights
+- **Confidence:** mean pLDDT **90.5/100**
+- Notebook: `notebooks/real_protein_fold_visualization.ipynb`
 
 ![Ubiquitin per-residue confidence](figures/ubiquitin_confidence.png)
 
-| File | What it is |
-|---|---|
-| `structure/ubiquitin_predicted.pdb` | Real predicted 3D structure |
-| `figures/ubiquitin_structure.png` | Cartoon rendering of the predicted backbone (py3Dmol) |
-| `figures/ubiquitin_confidence.png` | Per-residue confidence plot |
-
-## Scale-bounds study (sequence length, recycle depth, chip count)
-
-Beyond the fixed-size CPU/GPU/TPU comparison, `results/sweep/` contains eleven
-scaling and mitigation experiments on the TPU, all on the real AlphaFold
-forward pass:
-
-1. **Sequence length** (60 to 500 residues): scaling is **super-linear**
-   (8.3x longer sequence gives 14.6x more time), the expected signature of
-   AlphaFold's triangular attention, not a hardware artifact.
-2. **Recycle depth** (0 to 3 iterations): steady-state execution scales
-   **linearly** per extra recycle, but compile time does **not** grow the
-   same way; it jumps once recycling is present at all, then stays flat.
-
-   ![Sequence length and recycle depth scaling](figures/scaling_charts.png)
-
-3. **Chip visibility** (1 vs 8 chips): **no measurable difference**, direct
-   confirmation that AlphaFold's base inference path runs a single query on
-   exactly one chip regardless of how many are visible. We also attempted
-   2/4-chip subsets via undocumented internal libtpu flags; both failed
-   (one crashed the node's libtpu controller) and are documented rather
-   than hidden. See `results/sweep/chip_visibility.md`.
-4. **Precision** (float32 vs bfloat16): steady-state HBM usage dropped
-   **~40%**, but speed barely changed at this problem size, and peak memory
-   briefly *increased* during the cast itself before settling lower, a more
-   nuanced finding than the naive "bfloat16 is faster" story.
-5. **Multi-query batching** (`jax.vmap`, batch 1/2/4/8): throughput got
-   **worse**, not better, as batch size grew. Memory data confirms only 1
-   of 8 chips is ever used regardless of batch size. `vmap` vectorizes
-   within a single chip; real multi-chip parallelism needs explicit
-   sharding (`pmap`/`pjit`).
-
-   ![Multi-query batching throughput](figures/batching_chart.png)
-
-6. **Compilation cache** (the actual mitigation): persisting JAX's
-   compilation cache across a real process restart gave a measured **6.8x
-   speedup on `init_params`** and **1.9x on first `predict`**, the concrete
-   fix for the compile-time bottleneck every other experiment found.
-7. **Model comparison**: model_5 is ~15% faster at steady-state than
-   model_3/model_4.
-8. **Statistical rigor**: 3 repeated runs confirming under 1% noise across
-   every measurement in this project.
-9. **Profiler trace analysis**: opened the actual XLA trace and found the
-   named culprit, JAX's own `cache_miss` function (inside `pjit.py`),
-   accounting for 12.55 of the first call's 16.56 seconds (~76%). See
-   `profiling/trace_analysis.md`.
-10. **Real multi-chip parallelism**: `jax.pmap` achieves a genuine **6.92x
-    throughput speedup** running 8 independent proteins across 8 physical
-    chips simultaneously (14.72 vs 2.13 proteins/sec), the direct fix for
-    the "only 1 chip used" finding above. A separate, honestly reported
-    attempt at automatic tensor sharding of a single protein's own
-    computation (GSPMD auto-mesh) did **not** achieve real sharding,
-    reproduced twice.
-11. **Empirical scaling law**: fitted
-    `throughput(chips, length) = 4527.77 * chips^0.963 * length^-1.572`
-    (R² = 0.981) from a 16-point real-measurement grid spanning chip counts
-    {1, 2, 4, 8} and lengths {100, 250, 500, 1000}. The near-1.0 chip
-    exponent confirms `pmap`'s speedup generalizes across sequence lengths;
-    combined with cost pricing, shows cost per prediction is roughly
-    chip-count-invariant, so chip count should be chosen for throughput
-    needs, not cost.
-
-    ![Empirical scaling law: throughput vs chips and length](figures/scaling_law_chart.png)
-
-Full tables, reasoning, and a scaling chart: `results/sweep/README.md`.
-The economics behind these findings: `results/cost_analysis.md`.
+---
 
 ## Project website
 
-Vite + React site in [`website/`](website/). Deploy on Vercel from the repo root
-(root `vercel.json` builds `website/` → `website/dist`), or set the Vercel
-**Root Directory** to `website`.
+Vite + React site in [`website/`](website/).
 
 ```bash
 cd website && npm install && npm run dev
-cd website && npm run audit:layout   # multi-viewport Playwright check
 ```
+
+---
 
 ## Repository layout
 
 ```
-configs/        Kubernetes Job manifests (single run + length/recycle/chip sweeps)
-src/            The benchmark script (single source of truth, all backends)
-notebooks/      Colab/Jupyter notebooks (GPU run, CPU run, real protein fold)
-figures/        Every generated chart/plot image, in one place
-structure/      Real predicted protein structure (PDB file)
-profiling/      Notes from XLA profiler traces
-results/        Per-backend JSON results, comparison.md, cost_analysis.md, and sweep/ (scaling study)
-scripts/        Helper shell scripts (cluster connect, job launch)
-website/        Project showcase site (Vite + React; Vercel-ready)
-presentation/   Slide deck source
+configs/        Kubernetes Job manifests (baseline + sweeps)
+src/            Benchmark scripts (single source of truth)
+notebooks/      Colab/Jupyter (GPU, CPU, real protein fold)
+figures/        Charts and structure renders
+structure/      Predicted PDB (ubiquitin)
+profiling/      XLA profiler trace analysis
+results/        Per-backend JSON, comparison.md, cost_analysis.md, sweep/
+scripts/        Cluster connect / job helpers
+website/        Showcase site (Vite + React; Vercel-ready)
 ```

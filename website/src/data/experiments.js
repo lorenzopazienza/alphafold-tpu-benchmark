@@ -11,7 +11,7 @@ export const PHASES = [
     label: 'Scaling',
     figure: '/figures/scaling_charts.png',
     figureCaption:
-      'Left: sequence length. Right: recycle depth. Same TPU v5e-8 runs.',
+      'TPU v5e-8: left = latency vs sequence length, right = vs recycle depth. Orange = first call (compile+run), blue = steady-state.',
   },
   { id: 'bottleneck', label: 'Bottleneck & fix' },
   { id: 'multichip', label: 'Multi-chip' },
@@ -94,7 +94,8 @@ export const EXPERIMENTS = [
     statLabel: 'proteins/sec vs batch=1',
     tone: 'negative',
     chart: '/figures/batching_chart.png',
-    chartCaption: 'Wall-clock scales ~linearly; per-protein cost rises with batch size.',
+    chartCaption:
+      'Batching with jax.vmap: wall-clock rises with batch size; per-protein cost worsens vs batch=1 (negative result).',
     body: 'At batch sizes 1, 2, 4, and 8, throughput never beat batch=1 and per-protein cost rose. Memory stayed on one chip. vmap stacks work inside a single compiled program; it does not place work on the other seven chips.',
   },
   {
@@ -129,7 +130,8 @@ export const EXPERIMENTS = [
     statLabel: '16-point TPU grid',
     tone: 'default',
     chart: '/figures/scaling_law_chart.png',
-    chartCaption: 'Throughput vs chips and sequence length on the measured grid.',
+    chartCaption:
+      '16-run TPU grid: throughput vs chips and sequence length (power-law fit R² 0.981).',
     body: 'throughput ≈ 4527.77 · chips^0.963 · length^−1.572. The chip exponent near 1.0 says pmap’s scaling holds across the lengths we tested. Combined with list prices, cost per prediction stays nearly flat in chip count.',
   },
   {

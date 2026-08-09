@@ -1,14 +1,14 @@
-const REPO = 'https://github.com/lorenzopazienza/alphafold-tpu'
+const REPO = 'https://github.com/lorenzopazienza/alphafold-tpu-benchmark'
 
 export default function Footer() {
   return (
     <footer className="border-t border-line">
-      <div className="shell flex flex-col gap-6 py-12 md:flex-row md:items-end md:justify-between">
+      <div className="shell flex flex-col gap-6 py-8 md:flex-row md:items-end md:justify-between md:py-10">
         <div>
           <p className="font-display text-lg font-semibold tracking-tight text-ink">
             AlphaFold on TPU
           </p>
-          <p className="mt-2 text-[13px] leading-relaxed text-mute">
+          <p className="mt-2 text-sm leading-relaxed text-mute">
             Lorenzo Pazienza & Ihab El Bani
             <br />
             Stanford University · Summer Session 2026, IHP
@@ -18,14 +18,22 @@ export default function Footer() {
             Profs. Steve Jones & Mourad Bouache
           </p>
         </div>
-        <a
-          href={REPO}
-          target="_blank"
-          rel="noreferrer"
-          className="link-quiet inline-flex min-h-11 items-center text-[13px]"
-        >
-          GitHub
-        </a>
+        <div className="flex flex-col gap-2 sm:items-end">
+          <a
+            href={REPO}
+            target="_blank"
+            rel="noreferrer"
+            className="link-quiet inline-flex min-h-11 items-center text-sm"
+          >
+            GitHub
+          </a>
+          <a
+            href="/llms.txt"
+            className="link-quiet inline-flex min-h-11 items-center text-sm"
+          >
+            llms.txt
+          </a>
+        </div>
       </div>
     </footer>
   )

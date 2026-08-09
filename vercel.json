@@ -3,6 +3,12 @@
   "installCommand": "npm install --prefix website",
   "buildCommand": "npm run build --prefix website",
   "outputDirectory": "website/dist",
+  "rewrites": [
+    {
+      "source": "/((?!assets/|figures/|structure/|.*\\..*).*)",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",
