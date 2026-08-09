@@ -1,4 +1,4 @@
-# AlphaFold on TPU · Project Website
+# AlphaFold TPU Benchmark · Project Website
 
 Phase 4 showcase for the Stanford ME344 AlphaFold / TPU scaling study.
 

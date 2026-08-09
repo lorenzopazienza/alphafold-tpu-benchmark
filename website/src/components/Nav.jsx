@@ -70,7 +70,7 @@ export default function Nav() {
           onClick={() => go('')}
           className="inline-flex min-h-11 items-center font-display text-base font-semibold tracking-tight text-ink md:text-lg"
         >
-          AlphaFold on TPU
+          AlphaFold TPU Benchmark
         </a>
 
         <div className="hidden items-center gap-1 lg:flex">

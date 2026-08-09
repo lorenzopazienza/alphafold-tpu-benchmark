@@ -25,7 +25,7 @@ function PhaseFigure({ src, caption }) {
         src={src}
         alt={
           caption ||
-          'Experiment figure from the AlphaFold on TPU TPU scaling study'
+          'Experiment figure from the AlphaFold TPU Benchmark scaling study'
         }
         className="w-full border border-line bg-panel"
         loading="lazy"

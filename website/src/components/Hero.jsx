@@ -36,7 +36,7 @@ export default function Hero() {
             <h1 className="animate-rise delay-1 mt-4 font-display text-[clamp(2.85rem,6vw,4.35rem)] font-semibold leading-[0.96] tracking-[-0.035em] text-ink">
               AlphaFold
               <br />
-              on TPU
+              TPU Benchmark
             </h1>
             <p className="animate-rise delay-2 mt-5 text-[1.0625rem] leading-[1.55] text-slate md:text-[1.125rem]">
               We timed the same AlphaFold JAX forward pass on CPU, GPU (T4), and

@@ -1,4 +1,4 @@
-# AlphaFold on TPU: Executive Technical Report
+# AlphaFold TPU Benchmark: Executive Technical Report
 
 **Stanford University** · Summer Session 2026, IHP  
 **Course:** Introduction to High Performance Computing and AI Systems (ME344)  
@@ -23,49 +23,70 @@ Protein structure prediction (AlphaFold’s JAX/Haiku forward pass) is a deploye
 
 **Headline result:** steady-state TPU inference is **451×** faster than CPU and **27.8×** faster than a T4 GPU (0.47s vs 212s / 13s). Cold TPU calls are dominated by host-side XLA compilation (~76% in `pjit` `cache_miss`). Default single-query path uses **1 of 8 chips**; `jax.pmap` recovers **6.92×** multi-query throughput across the full slice.
 
-![Human ubiquitin, ESMFold prediction](figures/ubiquitin_structure.png)
+![Human ubiquitin · ESMFold · pLDDT coloring](figures/ubiquitin_structure.png)
 
 ---
 
 ## System Topology Diagram
 
-Cluster layout, storage paths, and compute workers used for this study:
+Cluster layout, storage paths, and compute workers used for this study.
 
-```text
-┌──────────────────────────────────────────────────────────────────────────┐
-│  Client / CI                                                             │
-│  spike_tpu_forward_pass.py  (one script, all backends)                   │
-└───────────────┬──────────────────────────┬───────────────────────────────┘
-                │                          │
-     Docker build (JAX_VARIANT)     kubectl apply (Kueue Job)
-                │                          │
-    ┌───────────▼───────────┐   ┌──────────▼──────────────────────────────┐
-    │ Local / Colab         │   │ GKE: class-tpu-cluster-west4            │
-    │ · CPU (sandbox)       │   │ project: soe-hpccenter · us-west4       │
-    │ · GPU T4 (1 device)   │   │ accelerator: tpu-v5-lite-podslice       │
-    │ image: af-bench:*     │   │ topology: 2×4  →  8 chips (TPU_0…7)     │
-    └───────────┬───────────┘   │ queue: student-queue (Kueue)            │
-                │               │ worker: Kubernetes Job af-spike-<TEAM>  │
-                │               │ mount: ConfigMap → /mnt/script          │
-                │               │ workdir: /alphafold (DeepMind clone)    │
-                │               └──────────┬───────────────────────────────┘
-                │                          │
-                └────────────┬─────────────┘
-                             ▼
-              results/result_<tag>.json
-              results/trace_<tag>/   (JAX/XLA profiler)
-```
+### 1. Cluster & storage layout
 
 ```mermaid
-flowchart TD
-    A["spike_tpu_forward_pass.py<br/>one script, all backends"] --> B["CPU<br/>local / Colab"]
-    A --> C["GPU<br/>Colab T4"]
-    A --> D["TPU worker<br/>GKE Job · v5e-8 · 2×4"]
-    B --> E["results/result_cpu*.json"]
-    C --> F["results/result_gpu-t4.json"]
-    D --> G["results/result_tpu-v5e-podslice.json"]
-    D --> H["results/trace_&lt;tag&gt;/<br/>JAX/XLA profiler"]
-    D --> I["ConfigMap /mnt/script<br/>workdir /alphafold"]
+flowchart LR
+  subgraph Client["Client"]
+    S["spike_tpu_forward_pass.py"]
+  end
+
+  subgraph Local["Local / Colab · Docker"]
+    direction TB
+    CPU["CPU sandbox"]
+    GPU["GPU T4 · 1 device"]
+  end
+
+  subgraph GKE["GKE · class-tpu-cluster-west4 · us-west4"]
+    direction TB
+    JOB["K8s Job · Kueue student-queue"]
+    TPU["TPU v5e · 2×4 · 8 chips"]
+    PATHS["ConfigMap → /mnt/script<br/>workdir → /alphafold"]
+    JOB --> TPU
+    JOB --> PATHS
+  end
+
+  subgraph Artifacts["Artifacts"]
+    direction TB
+    JSON["results/result_*.json"]
+    TRACE["results/trace_*/ · XLA profiler"]
+  end
+
+  S -->|"docker build JAX_VARIANT"| Local
+  S -->|"kubectl apply"| JOB
+  CPU --> JSON
+  GPU --> JSON
+  TPU --> JSON
+  TPU --> TRACE
+```
+
+### 2. One script → three backends
+
+```mermaid
+flowchart TB
+  A["spike_tpu_forward_pass.py<br/>identical model · shape · code path"]
+
+  A --> B["CPU · Colab / local"]
+  A --> C["GPU · Colab T4"]
+  A --> D["TPU · Stanford GKE v5e-8"]
+
+  B --> E["result_cpu*.json"]
+  C --> F["result_gpu-t4.json"]
+  D --> G["result_tpu-v5e-podslice.json"]
+  D --> H["trace_tag/ · JAX profiler"]
+
+  classDef backend fill:#e8f4f5,stroke:#0b6e7a,color:#0c1222
+  classDef out fill:#f7f8f9,stroke:#6a7585,color:#0c1222
+  class B,C,D backend
+  class E,F,G,H out
 ```
 
 | Item | Value |

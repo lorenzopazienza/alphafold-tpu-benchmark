@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AlphaFold on TPU · CPU vs GPU vs TPU Scaling Study · Stanford HPC</title>
+    <title>AlphaFold TPU Benchmark · CPU vs GPU vs TPU Scaling Study · Stanford HPC</title>
     <meta
       name="description"
       content="Stanford HPC study by Lorenzo Pazienza and Ihab El Bani: the same AlphaFold JAX/Haiku forward pass timed on CPU, GPU (T4), and TPU v5e-8. Steady-state TPU is 451× faster than CPU (0.47s vs 212s). Full page transcript for assistants: /llms.txt. Includes ubiquitin structure, eleven TPU experiments, charts, and cost analysis."
@@ -19,8 +19,8 @@
     <link rel="canonical" href="https://alphafold-tpu.vercel.app/" />
     <link rel="alternate" type="text/plain" href="https://alphafold-tpu.vercel.app/llms.txt" title="Full LLM page transcript" />
 
-    <meta property="og:site_name" content="AlphaFold on TPU" />
-    <meta property="og:title" content="AlphaFold on TPU · Stanford HPC Scaling Study" />
+    <meta property="og:site_name" content="AlphaFold TPU Benchmark" />
+    <meta property="og:title" content="AlphaFold TPU Benchmark · Stanford HPC Scaling Study" />
     <meta
       property="og:description"
       content="Same AlphaFold forward pass on CPU, GPU T4, and TPU v5e-8. Steady-state: TPU 0.47s (451× vs CPU), GPU 13.1s (16.2×). Eleven TPU follow-ups with charts, cost analysis, open code. Full text: /llms.txt"
@@ -34,7 +34,7 @@
     <meta property="og:image:alt" content="ESMFold cartoon of human ubiquitin colored by pLDDT confidence" />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="AlphaFold on TPU · Stanford HPC Scaling Study" />
+    <meta name="twitter:title" content="AlphaFold TPU Benchmark · Stanford HPC Scaling Study" />
     <meta
       name="twitter:description"
       content="CPU 212s · GPU T4 13.1s (16.2×) · TPU v5e-8 0.47s (451×). Section-by-section transcript at /llms.txt"
@@ -52,7 +52,7 @@
             "@type": "WebSite",
             "@id": "https://alphafold-tpu.vercel.app/#website",
             "url": "https://alphafold-tpu.vercel.app/",
-            "name": "AlphaFold on TPU",
+            "name": "AlphaFold TPU Benchmark",
             "description": "Stanford HPC project comparing AlphaFold forward-pass performance on CPU, GPU, and TPU. Full assistant transcript at /llms.txt.",
             "inLanguage": "en",
             "hasPart": {
@@ -65,7 +65,7 @@
             "@type": "ScholarlyArticle",
             "@id": "https://alphafold-tpu.vercel.app/#article",
             "url": "https://alphafold-tpu.vercel.app/",
-            "headline": "AlphaFold on TPU: A CPU/GPU/TPU Scaling Study",
+            "headline": "AlphaFold TPU Benchmark: A CPU/GPU/TPU Scaling Study",
             "datePublished": "2026-08-01",
             "dateModified": "2026-08-09",
             "inLanguage": "en",
@@ -204,7 +204,7 @@
         — it describes every section, chart, and image.
       </p>
 
-      <h1>AlphaFold on TPU: A CPU/GPU/TPU Scaling Study</h1>
+      <h1>AlphaFold TPU Benchmark: A CPU/GPU/TPU Scaling Study</h1>
       <p>
         Lorenzo Pazienza &amp; Ihab El Bani · Stanford University · Intro to HPC
         and AI Systems (Summer 2026) · Profs. Steve Jones &amp; Mourad Bouache
@@ -239,8 +239,8 @@
       <h2 id="top">Hero</h2>
       <p>
         Giant metric <strong>451×</strong> (steady-state TPU vs CPU). Subline:
-        TPU 0.47s · GPU 13.1s (16.2× vs CPU) · CPU 212s. Title “AlphaFold on
-        TPU”. Blurb: same AlphaFold JAX forward pass on CPU, GPU (T4), and TPU
+        TPU 0.47s · GPU 13.1s (16.2× vs CPU) · CPU 212s. Title “AlphaFold TPU
+        Benchmark”. Blurb: same AlphaFold JAX forward pass on CPU, GPU (T4), and TPU
         (v5e-8).
       </p>
 

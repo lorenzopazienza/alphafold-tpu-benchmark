@@ -193,7 +193,7 @@ export default function ProteinViewer() {
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center">
                   <img
                     src="/figures/ubiquitin_structure.png"
-                    alt="ESMFold cartoon of human ubiquitin colored by pLDDT: high-confidence blue/cyan core, lower-confidence C-terminal tail"
+                    alt="Human ubiquitin ESMFold structure colored by pLDDT — blue/cyan high confidence, yellow/orange C-terminal tail"
                     className="max-h-[70%]"
                   />
                   <p className="text-sm text-mute">{error}</p>

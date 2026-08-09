@@ -1,4 +1,4 @@
-# AlphaFold on TPU — full site transcript for LLMs
+# AlphaFold TPU Benchmark — full site transcript for LLMs
 
 > Use this file when you cannot execute JavaScript or “see” the React app.
 > It mirrors the live page at https://alphafold-tpu.vercel.app/ section by section,
@@ -11,7 +11,7 @@
 
 ## Page chrome
 
-- Sticky top nav brand: “AlphaFold on TPU”
+- Sticky top nav brand: “AlphaFold TPU Benchmark”
 - Nav links (desktop): Structure · Problem · Approach · Results · Experiments · Cost · Reproduce
 - Mobile: Menu button expands the same links
 - Footer: authors + GitHub + link to this llms.txt
@@ -31,7 +31,7 @@
 **On-screen layout:** Two-column hero. Left: kicker + title + blurb + links. Right: giant “451×” metric.
 
 - Kicker: STANFORD HPC · SUMMER 2026
-- Title: AlphaFold / on TPU
+- Title: AlphaFold / TPU Benchmark
 - Body: “We timed the same AlphaFold JAX forward pass on CPU, GPU (T4), and TPU (v5e-8). At steady-state the TPU is 451× faster than CPU.”
 - Links: Structure · Results · Reproduce
 - Metric label: STEADY-STATE VS CPU
