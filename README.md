@@ -25,78 +25,62 @@ Protein structure prediction (AlphaFold’s JAX/Haiku forward pass) is a deploye
 
 ![Human ubiquitin · ESMFold · pLDDT coloring](figures/ubiquitin_structure.png)
 
+**Base model.** Workload code builds on Google DeepMind’s [AlphaFold](https://github.com/google-deepmind/alphafold) (JAX/Haiku). We use their forward pass as the system under test; orchestration, profiling, and backend comparisons in this repo are ours.
+
 ---
 
 ## Repository layout
 
 ```text
 alphafold-tpu-benchmark/
-├── Dockerfile                 # Multi-backend image (JAX_VARIANT=cpu|cuda12|tpu)
-├── README.md                  # This executive report
-├── vercel.json                # Root Vercel build → website/
-│
-├── src/                       # Benchmark entrypoints (single source of truth)
-│   ├── spike_tpu_forward_pass.py      # Baseline: init / cold / steady-state
-│   ├── spike_batch_forward_pass.py    # jax.vmap multi-query batching
-│   ├── spike_pmap_forward_pass.py     # Multi-chip data parallel
-│   └── spike_meshshard_forward_pass.py # GSPMD auto-mesh attempt
-│
 ├── configs/                   # Kubernetes Jobs (GKE + Kueue)
+│   ├── af_spike_batch.yaml            # Batch-size sweep
+│   ├── af_spike_chipcount.yaml        # Chip visibility
+│   ├── af_spike_combined.yaml         # Models + repeats + cache
 │   ├── af_spike_job.yaml              # Baseline TPU run
 │   ├── af_spike_job_sweep.yaml        # Length / recycle sweeps + tpu-info
-│   ├── af_spike_batch.yaml            # Batch-size sweep
 │   ├── af_spike_precision.yaml        # float32 vs bfloat16
-│   ├── af_spike_chipcount.yaml        # Chip visibility
-│   ├── af_spike_sharding.yaml         # pmap / shard experiments
 │   ├── af_spike_scaling_grid.yaml     # Chips × length grid
-│   ├── af_spike_combined.yaml         # Models + repeats + cache
+│   ├── af_spike_sharding.yaml         # pmap / shard experiments
 │   └── af_spike_trace_capture.yaml    # Profiler trace export window
-│
-├── scripts/
-│   └── run_spike.sh           # gcloud creds · ConfigMap · kubectl apply
-│
+├── Dockerfile                 # Multi-backend image (JAX_VARIANT=cpu|cuda12|tpu)
+├── figures/                   # Charts + structure stills for README / site
+│   ├── batching_chart.png
+│   ├── scaling_charts.png
+│   ├── scaling_law_chart.png
+│   ├── ubiquitin_confidence.png
+│   └── ubiquitin_structure.png        # ESMFold pLDDT render (above)
 ├── notebooks/                 # Colab / Jupyter reproduction
-│   ├── … CPU / GPU runs
 │   └── real_protein_fold_visualization.ipynb
-│
-├── results/                   # Measured outputs
+├── profiling/
+│   └── trace_analysis.md      # XLA cache_miss diagnosis (~76% cold path)
+├── README.md                  # This executive report
+├── results/                   # Measured outputs cited in this report
+│   ├── comparison.md          # CPU / GPU / TPU table + analysis
+│   ├── cost_analysis.md       # $/prediction economics
 │   ├── result_cpu*.json
 │   ├── result_gpu-t4.json
 │   ├── result_tpu-v5e-podslice.json
-│   ├── comparison.md          # CPU / GPU / TPU table + analysis
-│   ├── cost_analysis.md       # $/prediction economics
-│   ├── trace_<tag>/           # jax.profiler / TensorBoard traces
-│   └── sweep/                 # Scale + mitigation study (11 experiments)
-│       ├── README.md
-│       ├── compilation_cache.md · precision.md · batching.md
-│       ├── chip_visibility.md · sharding.md · scaling_law.md
-│       └── *.json             # Per-sweep raw timings
-│
-├── profiling/
-│   └── trace_analysis.md      # XLA cache_miss diagnosis (~76% cold path)
-│
-├── figures/                   # Charts + structure stills for README / site
-│   ├── ubiquitin_structure.png        # ESMFold pLDDT render (above)
-│   ├── ubiquitin_confidence.png
-│   ├── scaling_charts.png · batching_chart.png · scaling_law_chart.png
-│
+│   ├── sweep/                 # Scale + mitigation study (11 experiments)
+│   │   ├── batching.md · chip_visibility.md · compilation_cache.md
+│   │   ├── precision.md · README.md · scaling_law.md · sharding.md
+│   │   └── *.json
+│   └── trace_<tag>/           # jax.profiler / TensorBoard traces
+├── scripts/
+│   └── run_spike.sh           # gcloud creds · ConfigMap · kubectl apply
+├── src/                       # Benchmark entrypoints (same path, all backends)
+│   ├── spike_batch_forward_pass.py    # jax.vmap multi-query batching
+│   ├── spike_meshshard_forward_pass.py # GSPMD auto-mesh attempt
+│   ├── spike_pmap_forward_pass.py     # Multi-chip data parallel
+│   └── spike_tpu_forward_pass.py      # Baseline: init / cold / steady-state
 ├── structure/
 │   └── ubiquitin_predicted.pdb        # Real fold for 3D exhibit
-│
-└── website/                   # Vite + React showcase (Vercel)
+├── vercel.json                # Root Vercel build → website/
+└── website/                   # Vite + React showcase → alphafold-tpu.vercel.app
     ├── public/figures/ · public/structure/
     ├── src/components/ · src/pages/
-    └── src/data/experiments.js        # Deep-dive copy for the site
+    └── src/data/experiments.js
 ```
-
-| Path | Role |
-|---|---|
-| `src/` | Same Python path on every backend; flags for cache, precision, tag |
-| `configs/` | Cluster Jobs only — no local Docker needed for TPU |
-| `results/` | Numbers cited in this report; do not re-run to read findings |
-| `results/sweep/` | Length, recycles, chips, bf16, vmap, pmap, cache, scaling law |
-| `profiling/` | Host-side compile bottleneck write-up from the XLA trace |
-| `website/` | Public narrative at [alphafold-tpu.vercel.app](https://alphafold-tpu.vercel.app) |
 
 ---
 
