@@ -27,6 +27,79 @@ Protein structure prediction (AlphaFold’s JAX/Haiku forward pass) is a deploye
 
 ---
 
+## Repository layout
+
+```text
+alphafold-tpu-benchmark/
+├── Dockerfile                 # Multi-backend image (JAX_VARIANT=cpu|cuda12|tpu)
+├── README.md                  # This executive report
+├── vercel.json                # Root Vercel build → website/
+│
+├── src/                       # Benchmark entrypoints (single source of truth)
+│   ├── spike_tpu_forward_pass.py      # Baseline: init / cold / steady-state
+│   ├── spike_batch_forward_pass.py    # jax.vmap multi-query batching
+│   ├── spike_pmap_forward_pass.py     # Multi-chip data parallel
+│   └── spike_meshshard_forward_pass.py # GSPMD auto-mesh attempt
+│
+├── configs/                   # Kubernetes Jobs (GKE + Kueue)
+│   ├── af_spike_job.yaml              # Baseline TPU run
+│   ├── af_spike_job_sweep.yaml        # Length / recycle sweeps + tpu-info
+│   ├── af_spike_batch.yaml            # Batch-size sweep
+│   ├── af_spike_precision.yaml        # float32 vs bfloat16
+│   ├── af_spike_chipcount.yaml        # Chip visibility
+│   ├── af_spike_sharding.yaml         # pmap / shard experiments
+│   ├── af_spike_scaling_grid.yaml     # Chips × length grid
+│   ├── af_spike_combined.yaml         # Models + repeats + cache
+│   └── af_spike_trace_capture.yaml    # Profiler trace export window
+│
+├── scripts/
+│   └── run_spike.sh           # gcloud creds · ConfigMap · kubectl apply
+│
+├── notebooks/                 # Colab / Jupyter reproduction
+│   ├── … CPU / GPU runs
+│   └── real_protein_fold_visualization.ipynb
+│
+├── results/                   # Measured outputs
+│   ├── result_cpu*.json
+│   ├── result_gpu-t4.json
+│   ├── result_tpu-v5e-podslice.json
+│   ├── comparison.md          # CPU / GPU / TPU table + analysis
+│   ├── cost_analysis.md       # $/prediction economics
+│   ├── trace_<tag>/           # jax.profiler / TensorBoard traces
+│   └── sweep/                 # Scale + mitigation study (11 experiments)
+│       ├── README.md
+│       ├── compilation_cache.md · precision.md · batching.md
+│       ├── chip_visibility.md · sharding.md · scaling_law.md
+│       └── *.json             # Per-sweep raw timings
+│
+├── profiling/
+│   └── trace_analysis.md      # XLA cache_miss diagnosis (~76% cold path)
+│
+├── figures/                   # Charts + structure stills for README / site
+│   ├── ubiquitin_structure.png        # ESMFold pLDDT render (above)
+│   ├── ubiquitin_confidence.png
+│   ├── scaling_charts.png · batching_chart.png · scaling_law_chart.png
+│
+├── structure/
+│   └── ubiquitin_predicted.pdb        # Real fold for 3D exhibit
+│
+└── website/                   # Vite + React showcase (Vercel)
+    ├── public/figures/ · public/structure/
+    ├── src/components/ · src/pages/
+    └── src/data/experiments.js        # Deep-dive copy for the site
+```
+
+| Path | Role |
+|---|---|
+| `src/` | Same Python path on every backend; flags for cache, precision, tag |
+| `configs/` | Cluster Jobs only — no local Docker needed for TPU |
+| `results/` | Numbers cited in this report; do not re-run to read findings |
+| `results/sweep/` | Length, recycles, chips, bf16, vmap, pmap, cache, scaling law |
+| `profiling/` | Host-side compile bottleneck write-up from the XLA trace |
+| `website/` | Public narrative at [alphafold-tpu.vercel.app](https://alphafold-tpu.vercel.app) |
+
+---
+
 ## System Topology Diagram
 
 Cluster layout, storage paths, and compute workers used for this study.
@@ -244,20 +317,4 @@ Vite + React site in [`website/`](website/).
 
 ```bash
 cd website && npm install && npm run dev
-```
-
----
-
-## Repository layout
-
-```
-configs/        Kubernetes Job manifests (baseline + sweeps)
-src/            Benchmark scripts (single source of truth)
-notebooks/      Colab/Jupyter (GPU, CPU, real protein fold)
-figures/        Charts and structure renders
-structure/      Predicted PDB (ubiquitin)
-profiling/      XLA profiler trace analysis
-results/        Per-backend JSON, comparison.md, cost_analysis.md, sweep/
-scripts/        Cluster connect / job helpers
-website/        Showcase site (Vite + React; Vercel-ready)
 ```
