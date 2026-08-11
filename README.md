@@ -23,7 +23,7 @@
 | **Compilation layer** | JAX/XLA (JIT, compile cache, `vmap` / `pmap`) |
 | **Telemetry** | `jax.profiler` traces · TensorBoard Profile · in-process HBM / `tpu-info` |
 
-**Headline result:** steady-state TPU inference is **451×** faster than CPU and **27.8×** faster than a T4 GPU (0.47s vs 212s / 13s). Cold TPU calls are dominated by host-side XLA compilation (~76% in `pjit` `cache_miss`). Default single-query path uses **1 of 8 chips**; `jax.pmap` recovers **6.92×** multi-query throughput across the full slice.
+**Headline result:** steady-state TPU inference is **451×** faster than CPU and **27.8×** faster than a T4 GPU (0.47s vs 212s / 13s). Cold TPU calls are dominated by host-side XLA compilation (~76% in `pjit` `cache_miss`). Default single-query path uses **1 of 8 chips**; multi-query `jax.pmap` recovers **6.92×** throughput; ensemble `pmap`+`pmean` fills **8/8 chips** for one query’s averaging (GSPMD auto-mesh only replicated).
 
 ![Human ubiquitin · ESMFold · pLDDT coloring](figures/ubiquitin_structure.png)
 
@@ -37,12 +37,12 @@ alphafold-tpu-benchmark/
 │   ├── af_spike_batch.yaml            # Batch-size sweep
 │   ├── af_spike_chipcount.yaml        # Chip visibility
 │   ├── af_spike_combined.yaml         # Models + repeats + cache
+│   ├── af_spike_ensemble_shard.yaml   # Real single-query sharding (pmap + pmean)
 │   ├── af_spike_job.yaml              # Baseline TPU run
 │   ├── af_spike_job_sweep.yaml        # Length / recycle sweeps + tpu-info
 │   ├── af_spike_precision.yaml        # float32 vs bfloat16
 │   ├── af_spike_scaling_grid.yaml     # Chips × length grid
 │   ├── af_spike_sharding.yaml         # pmap / shard experiments
-│   ├── af_spike_ensemble_shard.yaml   # Real single-query sharding (pmap + pmean)
 │   └── af_spike_trace_capture.yaml    # Profiler trace export window
 ├── Dockerfile                 # Multi-backend image (JAX_VARIANT=cpu|cuda12|tpu)
 ├── figures/                   # Charts + structure stills for README / site
@@ -64,17 +64,17 @@ alphafold-tpu-benchmark/
 │   ├── result_tpu-v5e-podslice.json
 │   ├── sweep/                 # Scale + mitigation study (12 experiments)
 │   │   ├── batching.md · chip_visibility.md · compilation_cache.md
-│   │   ├── precision.md · README.md · scaling_law.md · sharding.md
-│   │   └── *.json
+│   │   ├── ensemble_shard.md · precision.md · README.md
+│   │   ├── scaling_law.md · sharding.md · *.json
 │   └── trace_<tag>/           # jax.profiler / TensorBoard traces
 ├── scripts/
 │   └── run_spike.sh           # gcloud creds · ConfigMap · kubectl apply
 ├── src/                       # Benchmark entrypoints (same path, all backends)
-│   ├── spike_batch_forward_pass.py    # jax.vmap multi-query batching
-│   ├── spike_meshshard_forward_pass.py # GSPMD auto-mesh attempt
-│   ├── spike_pmap_forward_pass.py     # Multi-chip data parallel
+│   ├── spike_batch_forward_pass.py          # jax.vmap multi-query batching
 │   ├── spike_ensemble_shard_forward_pass.py # Real single-query sharding (pmap + pmean)
-│   └── spike_tpu_forward_pass.py      # Baseline: init / cold / steady-state
+│   ├── spike_meshshard_forward_pass.py      # GSPMD auto-mesh attempt
+│   ├── spike_pmap_forward_pass.py           # Multi-chip data parallel
+│   └── spike_tpu_forward_pass.py            # Baseline: init / cold / steady-state
 ├── structure/
 │   └── ubiquitin_predicted.pdb        # Real fold for 3D exhibit
 ├── vercel.json                # Root Vercel build → website/

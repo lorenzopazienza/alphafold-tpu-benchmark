@@ -261,7 +261,7 @@ export default function DeepDive() {
           <div className="max-w-xl">
             <p className="kicker">Experiments</p>
             <h2 className="mt-3 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-semibold tracking-[-0.03em] text-ink">
-              Eleven TPU follow-ups
+              Twelve TPU follow-ups
             </h2>
           </div>
           <p className="max-w-sm text-sm leading-relaxed text-mute md:text-right">

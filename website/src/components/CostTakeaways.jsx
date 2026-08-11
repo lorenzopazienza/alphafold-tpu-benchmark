@@ -35,7 +35,8 @@ export default function CostTakeaways() {
           <p className="text-[1.15rem] leading-relaxed md:text-[1.25rem]">
             On the baseline path only 1 of 8 chips was active (~87% idle), so
             list-price TPU and GPU land almost together: $1.25 vs $1.27 per 1k
-            predictions. After pmap uses the full slice, cost per prediction
+            predictions. Multi-query pmap and single-query ensemble sharding
+            (pmap + pmean) both fill the slice; after that, cost per prediction
             stays roughly constant as chip count grows.
           </p>
         </div>

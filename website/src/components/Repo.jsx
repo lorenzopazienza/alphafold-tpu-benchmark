@@ -1,11 +1,11 @@
 const TREE = [
-  ['configs/', 'Kubernetes job manifests'],
-  ['src/', 'Benchmark script used on all backends'],
-  ['notebooks/', 'Colab CPU, GPU, and ESMFold fold'],
+  ['configs/', 'Kubernetes Jobs (incl. ensemble shard)'],
   ['figures/', 'Charts referenced on this page'],
-  ['structure/', 'Ubiquitin PDB'],
+  ['notebooks/', 'Colab CPU, GPU, and ESMFold fold'],
   ['profiling/', 'XLA trace notes'],
-  ['results/', 'Per-run JSON, comparison, sweep/'],
+  ['results/', 'Per-run JSON, comparison, sweep/ (12 expts)'],
+  ['src/', 'Benchmark scripts used on all backends'],
+  ['structure/', 'Ubiquitin PDB'],
   ['website/', 'This site'],
 ]
 

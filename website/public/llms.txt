@@ -120,7 +120,7 @@
 ## Section 6 — Experiments (`#experiments`)
 
 - Kicker: Experiments
-- Headline: “Eleven TPU follow-ups”
+- Headline: “Twelve TPU follow-ups”
 - UX note on page: Click + on a row for method notes. Shared figures sit under each phase. Amber rail = negative result.
 
 ### Phase: Scaling
@@ -173,11 +173,15 @@
 
 #### 09 Auto-sharding (GSPMD) — **0×** (tensor split) · NEGATIVE
 - Finding: GSPMD auto-mesh left a full ~463 MB copy on every chip (no split).
-- Notes: Reproduced twice; without sharding annotations AlphaFold replicated.
+- Notes: Root cause — AlphaFold ensembling is a sequential hk.while_loop; nothing for GSPMD to distribute. Reproduced twice.
+
+#### 10 Real single-query sharding — **8/8** (chips genuinely used)
+- Finding: Re-implemented AlphaFold’s ensemble average with pmap + cross-device pmean; verified correct on all 8 chips.
+- Notes: AlphaFold source untouched. Steady-state 0.54s. Per-chip HBM 427–624 MB (not flat 463 MB replication). Scope: distributed ensembling, not full Evoformer tensor sharding.
 
 ### Phase: Fit & rigor
 
-#### 10 Empirical scaling law — **R² 0.981** (16-point TPU grid)
+#### 11 Empirical scaling law — **R² 0.981** (16-point TPU grid)
 - Finding: Power law on 16 TPU runs (4 chip counts × 4 lengths) fits R² 0.981.
 - Equation: throughput ≈ 4527.77 · chips^0.963 · length^−1.572
 - Implication: chip exponent near 1 → pmap scaling holds; cost/prediction nearly flat in chips.
@@ -187,7 +191,7 @@
 - Caption: “Throughput vs chips and sequence length on the measured grid.”
 - **What it shows:** Visualization of the 16-run grid / fit: throughput rising with chip count and falling with sequence length, consistent with the fitted power law (R² 0.981).
 
-#### 11 Model pick & repeats — **<1%** (stdev on repeats)
+#### 12 Model pick & repeats — **<1%** (stdev on repeats)
 - Finding: model_5 ~15% faster at steady-state; three repeats stayed under 1% stdev.
 - Notes: model_5 beat model_3 and model_4 by ~15%; all tracked metrics <1% stdev across three repeats.
 
@@ -205,7 +209,7 @@
 - Grid: chips {1,2,4,8} × length {100,250,500,1000}
 
 **Dark callout band:**
-On the baseline path only 1 of 8 chips was active (~87% idle), so list-price TPU and GPU land almost together: $1.25 vs $1.27 per 1k predictions. After pmap uses the full slice, cost per prediction stays roughly constant as chip count grows.
+On the baseline path only 1 of 8 chips was active (~87% idle), so list-price TPU and GPU land almost together: $1.25 vs $1.27 per 1k predictions. Multi-query pmap and single-query ensemble sharding (pmap + pmean) both fill the slice; after that, cost per prediction stays roughly constant as chip count grows.
 
 **Cost per 1,000 predictions (centered trio):**
 | Backend     | Cost / 1k |
@@ -266,5 +270,5 @@ When an assistant can fetch images, prefer these URLs. When it cannot, use the �
 1. Read this file end-to-end; treat it as the page content.
 2. Separate **systems timing** (118-res, random init, CPU/GPU/TPU) from **ubiquitin ESMFold** (biology demo).
 3. Quote the tables for latency, compile ratios, costs, and experiment stats.
-4. Mention amber/negative results: batching (vmap) and GSPMD auto-shard.
+4. Mention amber/negative results: batching (vmap) and GSPMD auto-shard; then the ensemble-shard fix (8/8 chips).
 5. Link people to the live section anchors (#structure, #results, #experiments, #cost, #reproduce) or the GitHub repo for code.

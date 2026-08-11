@@ -7,7 +7,7 @@
     <title>AlphaFold TPU Benchmark · CPU vs GPU vs TPU Scaling Study · Stanford HPC</title>
     <meta
       name="description"
-      content="Stanford HPC study by Lorenzo Pazienza and Ihab El Bani: the same AlphaFold JAX/Haiku forward pass timed on CPU, GPU (T4), and TPU v5e-8. Steady-state TPU is 451× faster than CPU (0.47s vs 212s). Full page transcript for assistants: /llms.txt. Includes ubiquitin structure, eleven TPU experiments, charts, and cost analysis."
+      content="Stanford HPC study by Lorenzo Pazienza and Ihab El Bani: the same AlphaFold JAX/Haiku forward pass timed on CPU, GPU (T4), and TPU v5e-8. Steady-state TPU is 451× faster than CPU (0.47s vs 212s). Full page transcript for assistants: /llms.txt. Includes ubiquitin structure, twelve TPU experiments (incl. ensemble pmap+pmean sharding), charts, and cost analysis."
     />
     <meta
       name="keywords"
@@ -23,7 +23,7 @@
     <meta property="og:title" content="AlphaFold TPU Benchmark · Stanford HPC Scaling Study" />
     <meta
       property="og:description"
-      content="Same AlphaFold forward pass on CPU, GPU T4, and TPU v5e-8. Steady-state: TPU 0.47s (451× vs CPU), GPU 13.1s (16.2×). Eleven TPU follow-ups with charts, cost analysis, open code. Full text: /llms.txt"
+      content="Same AlphaFold forward pass on CPU, GPU T4, and TPU v5e-8. Steady-state: TPU 0.47s (451× vs CPU), GPU 13.1s (16.2×). Twelve TPU follow-ups with charts, cost analysis, open code. Full text: /llms.txt"
     />
     <meta property="og:type" content="article" />
     <meta property="og:url" content="https://alphafold-tpu.vercel.app/" />
@@ -96,7 +96,7 @@
               "pmap",
               "compilation cache"
             ],
-            "abstract": "AlphaFold predicts protein 3D structure from sequence. We timed that real JAX/Haiku forward pass on CPU, NVIDIA T4 GPU, and Google TPU v5e-8 to find where time and idle chips go. Steady-state: TPU 0.47s (451× vs CPU), GPU 13.1s (16.2× vs CPU), CPU 212s. Default TPU path used 1 of 8 chips; after pmap, throughput scales nearly linearly with chips while cost per prediction stays flat. Eleven follow-ups cover length, recycles, compile cache, bf16, batching, sharding, R² 0.981 scaling fit, and repeats. Full transcript: https://alphafold-tpu.vercel.app/llms.txt",
+            "abstract": "AlphaFold predicts protein 3D structure from sequence. We timed that real JAX/Haiku forward pass on CPU, NVIDIA T4 GPU, and Google TPU v5e-8 to find where time and idle chips go. Steady-state: TPU 0.47s (451× vs CPU), GPU 13.1s (16.2× vs CPU), CPU 212s. Default TPU path used 1 of 8 chips; multi-query pmap and ensemble pmap+pmean fill the slice. Twelve follow-ups cover length, recycles, compile cache, bf16, batching, GSPMD failure, ensemble sharding, R² 0.981 scaling fit, and repeats. Full transcript: https://alphafold-tpu.vercel.app/llms.txt",
             "citation": "https://github.com/lorenzopazienza/alphafold-tpu-benchmark",
             "mainEntityOfPage": "https://alphafold-tpu.vercel.app/"
           },
@@ -230,7 +230,7 @@
           <li><a href="#problem">Problem</a></li>
           <li><a href="#approach">Approach — one script, three backends</a></li>
           <li><a href="#results">Results — latency bars</a></li>
-          <li><a href="#experiments">Experiments — eleven TPU follow-ups</a></li>
+          <li><a href="#experiments">Experiments — twelve TPU follow-ups</a></li>
           <li><a href="#cost">Cost — scaling law + $/1k</a></li>
           <li><a href="#reproduce">Reproduce — repo + docker</a></li>
         </ol>
@@ -319,7 +319,7 @@
       </table>
       <p>First/steady-state: CPU 1.28× · GPU 7.46× · TPU 59.1×.</p>
 
-      <h2 id="experiments">Experiments — Eleven TPU follow-ups</h2>
+      <h2 id="experiments">Experiments — Twelve TPU follow-ups</h2>
       <p>Amber rail = negative result. Click + for method notes on the live UI.</p>
 
       <h3>Scaling</h3>
@@ -389,12 +389,18 @@
         </li>
         <li>
           <strong>Auto-sharding GSPMD — 0×</strong> tensor split (negative);
-          ~463 MB copy on every chip.
+          ~463 MB copy on every chip (AlphaFold ensemble is a sequential
+          <code>hk.while_loop</code>).
+        </li>
+        <li>
+          <strong>Ensemble shard — 8/8 chips</strong> via
+          <code>pmap</code> + <code>pmean</code> on one query’s ensemble
+          average; reduction verified; HBM 427–624 MB/chip.
         </li>
       </ol>
 
       <h3>Fit &amp; rigor</h3>
-      <ol start="10">
+      <ol start="11">
         <li>
           <strong>Empirical scaling law — R² 0.981</strong> on 16 runs:
           throughput ≈ 4527.77 · chips<sup>0.963</sup> · length<sup>−1.572</sup>.
@@ -411,7 +417,7 @@
           Throughput vs chips and sequence length on the measured grid.
         </figcaption>
       </figure>
-      <ol start="11">
+      <ol start="12">
         <li>
           <strong>Model pick &amp; repeats — &lt;1%</strong> stdev; model_5 ~15%
           faster steady-state than model_3/4.

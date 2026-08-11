@@ -118,18 +118,18 @@ export const EXPERIMENTS = [
     stat: '0×',
     statLabel: 'tensor split',
     tone: 'negative',
-    body: 'We reused the auto-mesh pattern from the course Tunix lab on a single protein. Reproduced twice. Without sharding annotations in AlphaFold, the partitioner replicated instead of splitting.',
+    body: 'We reused the auto-mesh pattern from the course Tunix lab on a single protein. Reproduced twice. Root cause: AlphaFold’s own ensembling is a sequential hk.while_loop — nothing independent for GSPMD to distribute — so the partitioner replicated a full ~463 MB copy on every chip.',
   },
   {
     id: 'ensemble-shard',
     phase: 'multichip',
     title: 'Real single-query sharding',
     finding:
-      'Re-implemented AlphaFold\u2019s ensemble average with pmap and a real cross-device pmean; verified correct on all 8 chips.',
+      'Re-implemented AlphaFold’s ensemble average with pmap + cross-device pmean; 8/8 chips used, reduction verified.',
     stat: '8/8',
     statLabel: 'chips genuinely used',
     tone: 'default',
-    body: 'AlphaFold\u2019s own ensembling runs sequentially (hk.while_loop) \u2014 nothing for GSPMD to split, which is why auto-mesh only replicated. We left AlphaFold\u2019s code untouched and instead distributed 8 independent ensemble members across 8 chips via pmap, averaging with a real pmean collective. Per-chip memory varied (427\u2013624 MB, not a flat copy), and the reduction checked out identical across devices.',
+    body: 'Left AlphaFold’s source untouched. Built 8 ensemble members externally (own random seeds), one per chip via pmap, averaged with a real jax.lax.pmean on raw predicted_lddt logits. Steady-state 0.54s. Per-chip HBM varied 427–624 MB (not the flat 463 MB replication signature). Honest scope: distributed ensembling for one query — not full Evoformer tensor sharding.',
   },
   {
     id: 'scaling-law',
