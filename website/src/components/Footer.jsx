@@ -11,7 +11,7 @@ export default function Footer() {
           <p className="mt-2 text-sm leading-relaxed text-mute">
             Lorenzo Pazienza & Ihab El Bani
             <br />
-            Stanford University · Summer Session 2026, IHP
+            Stanford University · Summer Session 2026
             <br />
             Intro to High Performance Computing and AI Systems
             <br />

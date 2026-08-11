@@ -39,8 +39,10 @@ export default function Hero() {
               TPU Benchmark
             </h1>
             <p className="animate-rise delay-2 mt-5 text-[1.0625rem] leading-[1.55] text-slate md:text-[1.125rem]">
-              We timed the same AlphaFold JAX forward pass on CPU, GPU (T4), and
-              TPU (v5e-8). At steady-state the TPU is 451× faster than CPU.
+              AlphaFold predicts protein structure from sequence. We timed that
+              real JAX forward pass on CPU, GPU (T4), and TPU (v5e-8) — and
+              found where the time and idle chips go. Steady-state TPU is 451×
+              faster than CPU.
             </p>
             <p className="animate-rise delay-3 mt-7">
               <a href="#structure" className="link-quiet text-base font-medium">

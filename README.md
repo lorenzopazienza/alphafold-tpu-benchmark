@@ -12,7 +12,9 @@
 
 ## Executive Summary
 
-Protein structure prediction (AlphaFold’s JAX/Haiku forward pass) is a deployed scientific ML workload. We ran the **same model, same script, and same input shape** across three accelerator backends—CPU, NVIDIA GPU (T4), and Google Cloud TPU v5e—to answer a systems question: **where does this workload spend time, and how does that change per backend?**
+**The problem.** Biology often needs a protein’s 3D shape; that structure drives function, disease, and drug discovery. Google DeepMind’s [AlphaFold](https://github.com/google-deepmind/alphafold) predicts it from the amino-acid sequence with a large JAX/Haiku network (attention-heavy Evoformer). Running that inference at useful scale is expensive and opaque across hardware: cold XLA compiles, underused multi-chip TPU pods, and unclear CPU vs GPU vs TPU cost/latency trade-offs.
+
+**What we did.** We treated AlphaFold’s real forward pass as the system under test — **same model, same script, same input shape** on Colab CPU, NVIDIA T4 GPU, and Stanford GKE TPU v5e-8 — then measured, profiled, and mitigated the bottlenecks. Systems question: **where does this workload spend time, and how does that change per backend?** Orchestration, telemetry, and comparisons in this repo are ours; the model itself is DeepMind’s.
 
 | Tooling matrix (course requirement: ≥3 stack elements) | Choice |
 |---|---|
@@ -24,8 +26,6 @@ Protein structure prediction (AlphaFold’s JAX/Haiku forward pass) is a deploye
 **Headline result:** steady-state TPU inference is **451×** faster than CPU and **27.8×** faster than a T4 GPU (0.47s vs 212s / 13s). Cold TPU calls are dominated by host-side XLA compilation (~76% in `pjit` `cache_miss`). Default single-query path uses **1 of 8 chips**; `jax.pmap` recovers **6.92×** multi-query throughput across the full slice.
 
 ![Human ubiquitin · ESMFold · pLDDT coloring](figures/ubiquitin_structure.png)
-
-**Base model.** Workload code builds on Google DeepMind’s [AlphaFold](https://github.com/google-deepmind/alphafold) (JAX/Haiku). We use their forward pass as the system under test; orchestration, profiling, and backend comparisons in this repo are ours.
 
 ---
 

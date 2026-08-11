@@ -11,15 +11,17 @@ export default function Problem() {
 
         <div className="flex flex-col justify-center gap-6">
           <p className="max-w-xl text-[1.05rem] leading-[1.65] text-slate md:text-[1.125rem]">
-            Protein structure prediction is a real JAX/Haiku workload. Same
-            model config, script, and input shape (118 residues, model_3, 0
-            recycles) on CPU, GPU, and TPU — then measure init, cold predict
-            (compile + run), and steady-state.
+            AlphaFold (DeepMind) predicts a protein’s 3D structure from its
+            amino-acid sequence — a large JAX/Haiku network used in real
+            biology. Running it is expensive and opaque across hardware. We
+            took that forward pass as the system under test: same config,
+            script, and shape (118 residues, model_3, 0 recycles) on CPU, GPU,
+            and TPU, then timed init, cold predict, and steady-state.
           </p>
           <p className="max-w-xl text-[15px] leading-relaxed text-mute">
-            Resource challenge: cold XLA compile vs warm device time, and an
-            8-chip TPU pod that often only busy one chip. Baselines on Colab
-            CPU/T4; TPU numbers on Stanford GKE v5e-8 (2×4).
+            Resource challenge we solved for: cold XLA compile vs warm device
+            time, and an 8-chip TPU pod that often only busy one chip.
+            Baselines on Colab CPU/T4; TPU numbers on Stanford GKE v5e-8 (2×4).
           </p>
         </div>
       </div>

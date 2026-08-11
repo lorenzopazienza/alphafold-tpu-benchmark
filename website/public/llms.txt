@@ -20,7 +20,7 @@
 ## Authors & course
 
 - Lorenzo Pazienza & Ihab El Bani
-- Stanford University · Summer Session 2026, IHP
+- Stanford University · Summer Session 2026
 - Course: Introduction to High Performance Computing and AI Systems
 - Professors: Steve Jones & Mourad Bouache
 
@@ -32,7 +32,7 @@
 
 - Kicker: STANFORD HPC · SUMMER 2026
 - Title: AlphaFold / TPU Benchmark
-- Body: “We timed the same AlphaFold JAX forward pass on CPU, GPU (T4), and TPU (v5e-8). At steady-state the TPU is 451× faster than CPU.”
+- Body: “AlphaFold predicts protein structure from sequence. We timed that real JAX forward pass on CPU, GPU (T4), and TPU (v5e-8) — and found where the time and idle chips go. Steady-state TPU is 451× faster than CPU.”
 - Links: Structure · Results · Reproduce
 - Metric label: STEADY-STATE VS CPU
 - Metric: **451×** (teal ×)
@@ -73,8 +73,8 @@
 
 - Kicker: Problem
 - Headline: “Where does AlphaFold spend time on CPU, GPU, and TPU?”
-- Body: Protein structure prediction is a real JAX/Haiku workload. Same model config, same script, same input shape on three backends; measure init, first predict (compile + run), and steady-state predict.
-- Hardware note: Colab CPU and T4 for baselines; Stanford class cluster TPU v5e-8 (2×4) for TPU numbers and scaling sweeps.
+- Body: AlphaFold (DeepMind) predicts a protein’s 3D structure from its amino-acid sequence — a large JAX/Haiku network used in real biology. Running it is expensive and opaque across hardware. We took that forward pass as the system under test: same config, script, and shape (118 residues, model_3, 0 recycles) on CPU, GPU, and TPU; timed init, cold predict, and steady-state.
+- Hardware note: Resource challenge — cold XLA compile vs warm device time, and an 8-chip TPU pod that often only busy one chip. Colab CPU/T4 baselines; Stanford GKE TPU v5e-8 (2×4).
 
 ---
 

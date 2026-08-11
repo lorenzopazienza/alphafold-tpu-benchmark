@@ -96,7 +96,7 @@
               "pmap",
               "compilation cache"
             ],
-            "abstract": "We timed the same AlphaFold JAX/Haiku forward pass on CPU, NVIDIA T4 GPU, and Google TPU v5e-8. Steady-state: TPU 0.47s (451× vs CPU), GPU 13.1s (16.2× vs CPU), CPU 212s. Default TPU path used 1 of 8 chips; after pmap, throughput scales nearly linearly with chips while cost per prediction stays flat. Eleven follow-ups cover length, recycles, compile cache, bf16, batching, sharding, R² 0.981 scaling fit, and repeats. Interactive ubiquitin ESMFold exhibit is separate from systems clocks. Full section/image transcript: https://alphafold-tpu.vercel.app/llms.txt",
+            "abstract": "AlphaFold predicts protein 3D structure from sequence. We timed that real JAX/Haiku forward pass on CPU, NVIDIA T4 GPU, and Google TPU v5e-8 to find where time and idle chips go. Steady-state: TPU 0.47s (451× vs CPU), GPU 13.1s (16.2× vs CPU), CPU 212s. Default TPU path used 1 of 8 chips; after pmap, throughput scales nearly linearly with chips while cost per prediction stays flat. Eleven follow-ups cover length, recycles, compile cache, bf16, batching, sharding, R² 0.981 scaling fit, and repeats. Full transcript: https://alphafold-tpu.vercel.app/llms.txt",
             "citation": "https://github.com/lorenzopazienza/alphafold-tpu-benchmark",
             "mainEntityOfPage": "https://alphafold-tpu.vercel.app/"
           },
