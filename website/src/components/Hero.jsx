@@ -34,15 +34,16 @@ export default function Hero() {
           <div className="min-w-0 max-w-md">
             <p className="animate-rise kicker">Stanford HPC · Summer 2026</p>
             <h1 className="animate-rise delay-1 mt-4 font-display text-[clamp(2.85rem,6vw,4.35rem)] font-semibold leading-[0.96] tracking-[-0.035em] text-ink">
-              AlphaFold
+              AlphaFold 2
               <br />
-              TPU Benchmark
+              on TPU
             </h1>
             <p className="animate-rise delay-2 mt-5 text-[1.0625rem] leading-[1.55] text-slate md:text-[1.125rem]">
-              AlphaFold predicts protein structure from sequence. We timed that
-              real JAX forward pass on CPU, GPU (T4), and TPU (v5e-8) — and
-              found where the time and idle chips go. Steady-state TPU is 451×
-              faster than CPU.
+              DeepMind’s AlphaFold 2 predicts a protein’s 3D structure from its
+              sequence — the leap after AlphaFold 1. Running that JAX/Haiku
+              forward pass is expensive and opaque. We timed the same real
+              workload on CPU, GPU (T4), and TPU (v5e-8) to find where time and
+              idle chips go. Steady-state TPU is 451× faster than CPU.
             </p>
             <p className="animate-rise delay-3 mt-7">
               <a href="#structure" className="link-quiet text-base font-medium">

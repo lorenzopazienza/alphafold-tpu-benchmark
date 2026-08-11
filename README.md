@@ -12,9 +12,9 @@
 
 ## Executive Summary
 
-**The problem.** Biology often needs a protein’s 3D shape; that structure drives function, disease, and drug discovery. Google DeepMind’s [AlphaFold](https://github.com/google-deepmind/alphafold) predicts it from the amino-acid sequence with a large JAX/Haiku network (attention-heavy Evoformer). Running that inference at useful scale is expensive and opaque across hardware: cold XLA compiles, underused multi-chip TPU pods, and unclear CPU vs GPU vs TPU cost/latency trade-offs.
+**The problem.** Biology often needs a protein’s 3D shape; that structure drives function, disease, and drug discovery. AlphaFold 1 showed deep learning could help; Google DeepMind’s [AlphaFold 2](https://github.com/google-deepmind/alphafold) made high-accuracy prediction practical with a large JAX/Haiku network (attention-heavy Evoformer). Running that inference at useful scale is expensive and opaque across hardware: cold XLA compiles, underused multi-chip TPU pods, and unclear CPU vs GPU vs TPU cost/latency trade-offs.
 
-**What we did.** We treated AlphaFold’s real forward pass as the system under test — **same model, same script, same input shape** on Colab CPU, NVIDIA T4 GPU, and Stanford GKE TPU v5e-8 — then measured, profiled, and mitigated the bottlenecks. Systems question: **where does this workload spend time, and how does that change per backend?** Orchestration, telemetry, and comparisons in this repo are ours; the model itself is DeepMind’s.
+**What we did.** We treated AlphaFold 2’s real forward pass as the system under test — **same model, same script, same input shape** on Colab CPU, NVIDIA T4 GPU, and Stanford GKE TPU v5e-8 — then measured, profiled, and mitigated the bottlenecks. Systems question: **where does this workload spend time, and how does that change per backend?** Orchestration, telemetry, and comparisons in this repo are ours; the model itself is DeepMind’s.
 
 | Tooling matrix (course requirement: ≥3 stack elements) | Choice |
 |---|---|

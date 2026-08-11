@@ -11,7 +11,7 @@
 
 ## Page chrome
 
-- Sticky top nav brand: “AlphaFold TPU Benchmark”
+- Sticky top nav brand: “AlphaFold 2 · TPU”
 - Nav links (desktop): Structure · Problem · Approach · Results · Experiments · Cost · Reproduce
 - Mobile: Menu button expands the same links
 - Footer: authors + GitHub + link to this llms.txt
@@ -31,8 +31,8 @@
 **On-screen layout:** Two-column hero. Left: kicker + title + blurb + links. Right: giant “451×” metric.
 
 - Kicker: STANFORD HPC · SUMMER 2026
-- Title: AlphaFold / TPU Benchmark
-- Body: “AlphaFold predicts protein structure from sequence. We timed that real JAX forward pass on CPU, GPU (T4), and TPU (v5e-8) — and found where the time and idle chips go. Steady-state TPU is 451× faster than CPU.”
+- Title: AlphaFold 2 / on TPU
+- Body: “DeepMind’s AlphaFold 2 predicts a protein’s 3D structure from its sequence — the leap after AlphaFold 1. Running that JAX/Haiku forward pass is expensive and opaque. We timed the same real workload on CPU, GPU (T4), and TPU (v5e-8) to find where time and idle chips go. Steady-state TPU is 451× faster than CPU.”
 - Links: Structure · Results · Reproduce
 - Metric label: STEADY-STATE VS CPU
 - Metric: **451×** (teal ×)
@@ -72,9 +72,8 @@
 ## Section 3 — Problem (`#problem`)
 
 - Kicker: Problem
-- Headline: “Where does AlphaFold spend time on CPU, GPU, and TPU?”
-- Body: AlphaFold (DeepMind) predicts a protein’s 3D structure from its amino-acid sequence — a large JAX/Haiku network used in real biology. Running it is expensive and opaque across hardware. We took that forward pass as the system under test: same config, script, and shape (118 residues, model_3, 0 recycles) on CPU, GPU, and TPU; timed init, cold predict, and steady-state.
-- Hardware note: Resource challenge — cold XLA compile vs warm device time, and an 8-chip TPU pod that often only busy one chip. Colab CPU/T4 baselines; Stanford GKE TPU v5e-8 (2×4).
+- Headline: “Where does AlphaFold 2 spend time on CPU, GPU, and TPU?”
+- Body: The problem — AlphaFold 1 showed deep learning could help; AlphaFold 2 (DeepMind) made high-accuracy structure prediction practical with a large JAX/Haiku Evoformer, but inference is still costly/opaque across accelerators. What we did — same AF2 forward pass (118 residues, model_3, 0 recycles) on Colab CPU, T4, Stanford GKE TPU v5e-8; timed init, cold predict, steady-state; fixed bottlenecks.
 
 ---
 
