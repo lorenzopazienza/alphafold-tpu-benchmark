@@ -1,6 +1,6 @@
 # Scale-Bounds Study (TPU v5e-podslice, 8 chips)
 
-Eleven experiments, all on the real AlphaFold JAX/Haiku forward pass, same
+Twelve experiments, all on the real AlphaFold JAX/Haiku forward pass, same
 methodology as the CPU/GPU/TPU comparison (`../comparison.md`).
 
 ```mermaid
