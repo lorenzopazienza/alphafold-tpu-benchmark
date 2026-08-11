@@ -1,0 +1,20 @@
+{
+  "run_tag": "tpu-v5e-podslice",
+  "num_devices": 8,
+  "num_residues": 118,
+  "num_ensemble": 8,
+  "first_compile_and_run_seconds": 16.61,
+  "second_steady_state_seconds": 0.5381,
+  "num_chips_with_nonzero_memory": 8,
+  "pmean_reduction_consistent_across_chips": true,
+  "memory_stats_per_device_mb": [
+    {"device": "TPU_0", "bytes_in_use_mb": 624, "peak_mb": 731},
+    {"device": "TPU_1", "bytes_in_use_mb": 427, "peak_mb": 450},
+    {"device": "TPU_2", "bytes_in_use_mb": 427, "peak_mb": 450},
+    {"device": "TPU_3", "bytes_in_use_mb": 427, "peak_mb": 450},
+    {"device": "TPU_4", "bytes_in_use_mb": 427, "peak_mb": 450},
+    {"device": "TPU_5", "bytes_in_use_mb": 427, "peak_mb": 450},
+    {"device": "TPU_6", "bytes_in_use_mb": 450, "peak_mb": 450},
+    {"device": "TPU_7", "bytes_in_use_mb": 450, "peak_mb": 450}
+  ]
+}

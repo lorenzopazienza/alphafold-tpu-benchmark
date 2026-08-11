@@ -1,6 +1,6 @@
 # Scale-Bounds Study (TPU v5e-podslice, 8 chips)
 
-Ten experiments, all on the real AlphaFold JAX/Haiku forward pass, same
+Eleven experiments, all on the real AlphaFold JAX/Haiku forward pass, same
 methodology as the CPU/GPU/TPU comparison (`../comparison.md`).
 
 ```mermaid
@@ -21,7 +21,8 @@ flowchart LR
     subgraph MC["Multi-chip parallelism"]
         BA["5. Batching (vmap)\nnegative result"]
         SH["10. pmap vs GSPMD\npositive + negative"]
-        SCL["11. Scaling law"]
+        ES["11. Ensemble shard\nreal fix, verified"]
+        SCL["12. Scaling law"]
     end
 
     MOD["7. Model comparison"]
@@ -30,7 +31,7 @@ flowchart LR
 
     CMP --> SL & RD & CV & PR & CC & MOD & REP
     TR --> CC
-    CV --> BA --> SH --> SCL
+    CV --> BA --> SH --> ES --> SCL
 ```
 
 ## 1. Sequence-length sweep (recycle=0)
@@ -149,7 +150,21 @@ reproduced twice, every chip held an identical full-size 463MB copy
 rather than trusting the naive "nonzero memory" heuristic. See
 `sharding.md`.
 
-## 10. Empirical scaling law: throughput(chips, length)
+## 10. Real single-query sharding: ensemble averaging via pmap + pmean
+
+Direct follow-up to the auto-mesh failure above, found the exact
+source-level reason it failed (AlphaFold's own ensembling is a sequential
+`hk.while_loop`, nothing for GSPMD to distribute), then built a version
+that actually works: AlphaFold's source is completely untouched, but the
+ensemble average is re-implemented via `jax.pmap` + a real `jax.lax.pmean`
+collective reduction across chips. **8/8 chips used, verified-correct
+cross-device reduction, distinct per-chip memory** (427-624MB, not the
+flat 463MB-everywhere signature that gave away replication before).
+Honestly scoped: this is real distributed computation for one query's
+ensembling, not full internal tensor sharding of the Evoformer, that
+remains future work. See `ensemble_shard.md`.
+
+## 11. Empirical scaling law: throughput(chips, length)
 
 Fitted a power law to a 16-point grid (4 chip counts x 4 lengths, all real
 TPU measurements): **throughput ≈ 4527.77 * chips^0.963 * length^-1.572**

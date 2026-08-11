@@ -121,6 +121,17 @@ export const EXPERIMENTS = [
     body: 'We reused the auto-mesh pattern from the course Tunix lab on a single protein. Reproduced twice. Without sharding annotations in AlphaFold, the partitioner replicated instead of splitting.',
   },
   {
+    id: 'ensemble-shard',
+    phase: 'multichip',
+    title: 'Real single-query sharding',
+    finding:
+      'Re-implemented AlphaFold\u2019s ensemble average with pmap and a real cross-device pmean; verified correct on all 8 chips.',
+    stat: '8/8',
+    statLabel: 'chips genuinely used',
+    tone: 'default',
+    body: 'AlphaFold\u2019s own ensembling runs sequentially (hk.while_loop) \u2014 nothing for GSPMD to split, which is why auto-mesh only replicated. We left AlphaFold\u2019s code untouched and instead distributed 8 independent ensemble members across 8 chips via pmap, averaging with a real pmean collective. Per-chip memory varied (427\u2013624 MB, not a flat copy), and the reduction checked out identical across devices.',
+  },
+  {
     id: 'scaling-law',
     phase: 'fit',
     title: 'Empirical scaling law',

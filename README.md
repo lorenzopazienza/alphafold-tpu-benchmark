@@ -42,6 +42,7 @@ alphafold-tpu-benchmark/
 │   ├── af_spike_precision.yaml        # float32 vs bfloat16
 │   ├── af_spike_scaling_grid.yaml     # Chips × length grid
 │   ├── af_spike_sharding.yaml         # pmap / shard experiments
+│   ├── af_spike_ensemble_shard.yaml   # Real single-query sharding (pmap + pmean)
 │   └── af_spike_trace_capture.yaml    # Profiler trace export window
 ├── Dockerfile                 # Multi-backend image (JAX_VARIANT=cpu|cuda12|tpu)
 ├── figures/                   # Charts + structure stills for README / site
@@ -61,7 +62,7 @@ alphafold-tpu-benchmark/
 │   ├── result_cpu*.json
 │   ├── result_gpu-t4.json
 │   ├── result_tpu-v5e-podslice.json
-│   ├── sweep/                 # Scale + mitigation study (11 experiments)
+│   ├── sweep/                 # Scale + mitigation study (12 experiments)
 │   │   ├── batching.md · chip_visibility.md · compilation_cache.md
 │   │   ├── precision.md · README.md · scaling_law.md · sharding.md
 │   │   └── *.json
@@ -72,6 +73,7 @@ alphafold-tpu-benchmark/
 │   ├── spike_batch_forward_pass.py    # jax.vmap multi-query batching
 │   ├── spike_meshshard_forward_pass.py # GSPMD auto-mesh attempt
 │   ├── spike_pmap_forward_pass.py     # Multi-chip data parallel
+│   ├── spike_ensemble_shard_forward_pass.py # Real single-query sharding (pmap + pmean)
 │   └── spike_tpu_forward_pass.py      # Baseline: init / cold / steady-state
 ├── structure/
 │   └── ubiquitin_predicted.pdb        # Real fold for 3D exhibit
@@ -183,7 +185,7 @@ Identical workload: `model_3`, 0 recycles, 118-residue sequence, Haiku random-in
 
 ### Scale configurations (TPU sweep)
 
-Eleven further experiments on the class TPU slice (`results/sweep/`):
+Twelve further experiments on the class TPU slice (`results/sweep/`):
 
 | Configuration | Key delta |
 |---|---|
@@ -194,6 +196,8 @@ Eleven further experiments on the class TPU slice (`results/sweep/`):
 | `jax.vmap` batch 1/2/4/8 | Throughput **worse** as batch grew (single-chip only) |
 | Compilation cache (warm restart) | **6.8×** faster `init_params`, **1.9×** faster first predict |
 | `jax.pmap` 8 proteins / 8 chips | **6.92×** throughput (2.13 → 14.72 proteins/s) |
+| GSPMD auto-mesh (1 protein) | **Replicated**, not sharded — 463MB on every chip, reproduced twice |
+| Ensemble shard: `pmap` + `pmean` | Fixed the auto-mesh failure — **8/8 chips**, verified-correct cross-device reduction |
 | Scaling law (16-point grid) | `throughput ≈ 4527.77 · chips^0.963 · length^−1.572` (R² **0.981**) |
 
 ![Sequence length and recycle depth scaling](figures/scaling_charts.png)
@@ -241,7 +245,8 @@ Architectural adjustments measured or recommended against the bottlenecks above:
 | **bfloat16 precision** | `--precision bfloat16` vs float32 | HBM **−40%**; little speed gain at 118 residues (still useful for larger sequences / packing) |
 | **Batch size via `vmap`** | Batches 1/2/4/8 | **Negative** for this graph — do not treat as multi-chip scaling |
 | **Recycle / length policy** | Swept recycles and lengths | Recycles scale linearly at runtime; length is super-linear (attention) — size SLOs accordingly |
-| **GSPMD auto-mesh** | Course Tunix-style auto sharding of one protein | **Did not** shard tensors (full replica per chip) — needs explicit sharding annotations |
+| **GSPMD auto-mesh** | Course Tunix-style auto sharding of one protein | **Did not** shard tensors (full replica per chip) — root cause: AlphaFold's own ensembling is a sequential `hk.while_loop`, nothing for GSPMD to distribute |
+| **Ensemble shard (`pmap` + `pmean`)** | Re-implemented AlphaFold's own ensemble-average as a `pmap`+collective reduction instead, zero changes to AlphaFold's source | **Fixed it** — 8/8 chips genuinely used, cross-device reduction verified correct |
 | **Recommended ops practice** | Keep serving process warm; pad to shared shapes; choose chip count for latency/throughput SLO, not unit $/pred | Matches Lab 1/3 vLLM `VLLM_XLA_CACHE_PATH` lesson; cost/prediction ~flat in chip count after `pmap` |
 
 ---
