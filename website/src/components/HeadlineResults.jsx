@@ -50,16 +50,14 @@ export default function HeadlineResults() {
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="max-w-lg">
             <p className="kicker">AlphaFold 2 · performance delta</p>
-            <h2 className="mt-3 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-semibold tracking-[-0.03em] text-ink">
-              Steady-state predict latency
-            </h2>
+            <h2 className="section-title">Steady-state predict latency</h2>
           </div>
           <p className="eq font-display text-[clamp(3rem,8vw,4.5rem)] font-bold leading-none tracking-[-0.04em] text-teal">
             0.47s
           </p>
         </div>
 
-        <p className="mt-4 max-w-xl text-base text-mute">
+        <p className="section-note mt-4 max-w-xl">
           AlphaFold 2 · model_3, 0 recycles, 118-residue input, identical code
           path. Bar lengths are log-scaled.
         </p>
@@ -101,7 +99,7 @@ export default function HeadlineResults() {
 
         <div className="mt-6 md:mt-8">
           <p className="kicker">First predict / steady-state</p>
-          <p className="mt-3 max-w-2xl text-base leading-relaxed text-slate">
+          <p className="section-body mt-3 max-w-2xl">
             First predict includes XLA compile. The gap to the second predict
             shows how compile-bound each backend is.
           </p>
@@ -112,17 +110,17 @@ export default function HeadlineResults() {
               { k: 'TPU v5e', v: '59.1×', s: 'Cold path is compile' },
             ].map((row) => (
               <div key={row.k}>
-                <dt className="text-sm text-mute">{row.k}</dt>
+                <dt className="section-note">{row.k}</dt>
                 <dd className="eq mt-1 font-display text-2xl font-semibold tracking-tight text-ink">
                   {row.v}
                 </dd>
-                <p className="mt-1 text-sm leading-snug text-mute">{row.s}</p>
+                <p className="section-note mt-1 leading-snug">{row.s}</p>
               </div>
             ))}
           </dl>
         </div>
 
-        <p className="mt-10 text-sm text-mute md:mt-12">
+        <p className="section-note mt-10 md:mt-12">
           <a href="#af3" className="link-quiet font-medium text-ink">
             AlphaFold 3 side-investigation →
           </a>

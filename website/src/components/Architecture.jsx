@@ -25,10 +25,8 @@ export default function Architecture() {
       <div className="viewport-tight shell">
         <div className="max-w-2xl">
           <p className="kicker">System topology</p>
-          <h2 className="mt-3 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-semibold tracking-[-0.03em] text-ink">
-            One script, three backends
-          </h2>
-          <p className="mt-4 text-[1.05rem] leading-relaxed text-slate">
+          <h2 className="section-title">One script, three backends</h2>
+          <p className="section-lede">
             Docker for CPU/GPU images; Kubernetes Job + Kueue on GKE for the
             TPU worker. Every timing run calls{' '}
             <code className="font-mono text-[0.92em] text-ink">
@@ -40,9 +38,7 @@ export default function Architecture() {
 
         <div className="mt-8 grid gap-0 border-y border-line md:mt-10 md:grid-cols-[1.1fr_repeat(3,1fr)]">
           <div className="border-b border-line bg-ink px-5 py-6 text-paper md:border-b-0 md:border-r md:border-line/20">
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/50">
-              Script
-            </p>
+            <p className="label-mono text-white/50">Script</p>
             <p className="mt-2 break-all font-display text-lg font-semibold leading-snug tracking-tight sm:text-xl">
               spike_tpu_forward_pass.py
             </p>
@@ -60,13 +56,13 @@ export default function Architecture() {
               <p className="font-display text-2xl font-semibold tracking-tight text-ink">
                 {n.label}
               </p>
-              <p className="mt-1 text-sm text-slate">{n.detail}</p>
-              <p className="mt-6 font-mono text-[11px] text-mute">{n.out}</p>
+              <p className="section-note mt-1 !text-slate">{n.detail}</p>
+              <p className="mt-6 font-mono text-xs text-mute">{n.out}</p>
             </div>
           ))}
         </div>
 
-        <p className="mt-8 max-w-2xl text-[15px] leading-relaxed text-mute">
+        <p className="section-note mt-8 max-w-2xl">
           <span className="font-medium text-ink">Parameters.</span> AF2 systems
           timings use Haiku random init so we exercise the same compiled graph
           without downloading trained weights (~350MB). The ubiquitin structure

@@ -164,11 +164,9 @@ export default function ProteinViewer() {
         <div className="mb-6 flex flex-col gap-3 md:mb-8 md:flex-row md:items-end md:justify-between md:gap-8">
           <div className="max-w-lg">
             <p className="kicker">Structure</p>
-            <h2 className="mt-3 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-semibold tracking-[-0.03em] text-ink">
-              Human ubiquitin
-            </h2>
+            <h2 className="section-title">Human ubiquitin</h2>
           </div>
-          <p className="max-w-md text-base leading-relaxed text-slate md:text-right">
+          <p className="section-body max-w-md md:text-right">
             ESMFold prediction · 76 residues · mean pLDDT{' '}
             <span className="eq font-medium text-ink">{MEAN_PLDDT}</span>.
             Drag to rotate, scroll to zoom. Colors follow AlphaFold’s pLDDT
@@ -202,7 +200,7 @@ export default function ProteinViewer() {
             </div>
             <figcaption className="mt-4 flex flex-col gap-2 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
               <Legend />
-              <p className="text-sm leading-snug text-mute sm:max-w-[16rem] sm:text-right">
+              <p className="section-note sm:max-w-[16rem] sm:text-right">
                 Lower confidence at the C-terminus (residues ~71–76)
               </p>
             </figcaption>
@@ -217,16 +215,14 @@ export default function ProteinViewer() {
                 mean {MEAN_PLDDT}
               </p>
             </div>
-            <p className="mt-2 max-w-sm text-base leading-relaxed text-slate">
+            <p className="section-body mt-2 max-w-sm">
               Confidence stays high through the structured core and drops in the
               last residues, the flexible conjugating tail.
             </p>
             <div className="mt-5">
               <ConfidenceChart />
             </div>
-            <p className="mt-3 text-sm text-mute">
-              Shaded band: residues 70–76
-            </p>
+            <p className="section-note mt-3">Shaded band: residues 70–76</p>
           </figure>
         </div>
       </div>

@@ -18,10 +18,8 @@ export default function Repo() {
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="max-w-xl">
             <p className="kicker">Reproduce</p>
-            <h2 className="mt-3 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-semibold tracking-[-0.03em] text-ink">
-              Code and commands
-            </h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-slate">
+            <h2 className="section-title">Code and commands</h2>
+            <p className="section-lede !mt-3">
               AF2 Docker/K8s paths and AF3 Colab notebooks (
               <code className="font-mono text-[0.9em]">af3_cpu_colab</code> /{' '}
               <code className="font-mono text-[0.9em]">af3_gpu_colab</code>) live
@@ -36,7 +34,7 @@ export default function Repo() {
             href={REPO}
             target="_blank"
             rel="noreferrer"
-            className="link-quiet inline-flex min-h-11 items-center self-start text-[15px] font-medium"
+            className="link-quiet inline-flex min-h-11 items-center self-start text-sm font-medium"
           >
             <span className="sm:hidden">Open on GitHub</span>
             <span className="hidden break-all sm:inline">
@@ -45,10 +43,10 @@ export default function Repo() {
           </a>
         </div>
 
-        <div className="mt-8 grid min-w-0 gap-10 lg:grid-cols-2 lg:mt-10 lg:gap-12">
+        <div className="mt-8 grid min-w-0 gap-10 lg:mt-10 lg:grid-cols-2 lg:gap-12">
           <div className="min-w-0">
             <p className="kicker">Layout</p>
-            <ul className="mt-5 space-y-0 font-mono text-[13px]">
+            <ul className="mt-5 space-y-0 font-mono text-sm">
               {TREE.map(([path, desc]) => (
                 <li
                   key={path}
@@ -63,13 +61,13 @@ export default function Repo() {
 
           <div className="min-w-0">
             <p className="kicker">CPU example</p>
-            <pre className="mt-5 max-w-full overflow-x-auto bg-ink p-4 font-mono text-[11.5px] leading-relaxed break-words whitespace-pre-wrap text-white/90 sm:p-5 sm:text-[12.5px] md:p-6 md:text-[13px] md:whitespace-pre md:break-normal">
+            <pre className="mt-5 max-w-full overflow-x-auto bg-ink p-4 font-mono text-[0.75rem] leading-relaxed break-words whitespace-pre-wrap text-white/90 sm:p-5 sm:text-[0.8125rem] md:p-6 md:text-sm md:whitespace-pre md:break-normal">
 {`docker build --build-arg JAX_VARIANT=cpu \\
   -t af-bench:cpu .
 docker run -v $(pwd)/results:/alphafold/results \\
   af-bench:cpu --run_tag=cpu`}
             </pre>
-            <p className="mt-4 text-[13px] leading-relaxed text-mute">
+            <p className="section-note mt-4">
               GPU and TPU variants for AF2 are in the README. AF3 TPU Job is
               kept as documentation of the unsupported CLI — not a working path.
             </p>

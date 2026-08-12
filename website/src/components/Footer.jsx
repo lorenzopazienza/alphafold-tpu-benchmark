@@ -8,7 +8,7 @@ export default function Footer() {
           <p className="font-display text-lg font-semibold tracking-tight text-ink">
             AlphaFold TPU Benchmark
           </p>
-          <p className="mt-2 text-sm leading-relaxed text-mute">
+          <p className="section-note mt-2">
             Lorenzo Pazienza & Ihab El Bani
             <br />
             Stanford University · Summer Session 2026

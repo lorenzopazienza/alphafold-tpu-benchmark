@@ -41,10 +41,8 @@ export default function AlphaFold3() {
       <div className="shell section-y">
         <div className="max-w-2xl">
           <p className="kicker">Side investigation</p>
-          <h2 className="mt-3 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-semibold tracking-[-0.03em] text-ink">
-            AlphaFold 3 on the same backends
-          </h2>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-slate">
+          <h2 className="section-title">AlphaFold 3 on the same backends</h2>
+          <p className="section-lede">
             Separate DeepMind codebase — Pairformer + diffusion, not an AlphaFold
             2 version bump. Same 118-residue toy input and seed=1. Trained
             weights (~1.15 GB). Five diffusion samples per call.
@@ -59,14 +57,14 @@ export default function AlphaFold3() {
               className="mx-auto block h-auto w-full max-w-md object-contain lg:max-w-none"
               loading="lazy"
             />
-            <figcaption className="mt-3 text-sm leading-snug text-mute">
+            <figcaption className="section-caption">
               AF3 toy-test structure · trained weights · seed=1
             </figcaption>
           </figure>
 
           <div ref={ref} className="min-w-0">
             <p className="kicker">Same-hardware · per sample</p>
-            <p className="mt-2 text-sm leading-relaxed text-mute">
+            <p className="section-note mt-2">
               Identical Colab CPU and T4 runs. AF3 is slower; it also gains more
               from the GPU (21.5× CPU→GPU vs AF2’s 16.2×).
             </p>
@@ -84,9 +82,7 @@ export default function AlphaFold3() {
                   </div>
                   <div className="mt-3 space-y-2.5">
                     <div className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3">
-                      <span className="font-mono text-[11px] uppercase tracking-wide text-mute">
-                        AF2
-                      </span>
+                      <span className="label-mono">AF2</span>
                       <div className="bar-track min-w-0">
                         <div
                           className="bar-fill"
@@ -104,9 +100,7 @@ export default function AlphaFold3() {
                       </span>
                     </div>
                     <div className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3">
-                      <span className="font-mono text-[11px] uppercase tracking-wide text-mute">
-                        AF3
-                      </span>
+                      <span className="label-mono">AF3</span>
                       <div className="bar-track min-w-0">
                         <div
                           className="bar-fill"
@@ -138,11 +132,11 @@ export default function AlphaFold3() {
       >
         <div className="shell py-10 md:py-12">
           <p className="kicker text-amber">Negative result · TPU</p>
-          <h3 className="mt-3 max-w-2xl font-display text-[clamp(1.35rem,3vw,1.85rem)] font-semibold tracking-[-0.02em] text-ink">
+          <h3 className="section-subhead max-w-2xl">
             Every infrastructure step worked. The CLI has no{' '}
             <span className="eq font-mono text-amber">tpu</span>.
           </h3>
-          <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-slate">
+          <p className="section-body mt-4 max-w-2xl">
             Native C++ build, Chemical Component Dictionary, weights, and{' '}
             <code className="font-mono text-[0.92em] text-ink">jax[tpu]</code>{' '}
             all succeeded on Stanford’s v5e-8 Job. Inference died at flag
@@ -152,7 +146,7 @@ export default function AlphaFold3() {
             Matches DeepMind’s docs (NVIDIA GPU ≥7.0 or CPU). Not an infra miss
             on our side.
           </p>
-          <pre className="mt-6 max-w-3xl overflow-x-auto bg-ink px-4 py-3 font-mono text-[11.5px] leading-relaxed text-white/85 sm:text-[12.5px]">
+          <pre className="mt-6 max-w-3xl overflow-x-auto bg-ink px-4 py-3 font-mono text-[0.75rem] leading-relaxed text-white/85 sm:text-[0.8125rem]">
             {`FATAL Flags parsing error: flag --jax_backend=tpu:
 value should be one of <cpu|gpu|mps>`}
           </pre>

@@ -38,7 +38,7 @@ export default function Hero() {
               <br />
               TPU Benchmark
             </h1>
-            <p className="animate-rise delay-2 mt-5 text-[1.0625rem] leading-[1.55] text-slate md:text-[1.125rem]">
+            <p className="animate-rise delay-2 section-lede !mt-5">
               We timed AlphaFold 2’s real JAX forward pass on CPU, GPU (T4), and
               TPU (v5e-8) — where time and idle chips go. As a follow-up we also
               ran AlphaFold 3 on the same Colab CPU/GPU; its public release has
@@ -65,7 +65,7 @@ export default function Hero() {
               {n}
               <span className="text-teal">×</span>
             </p>
-            <p className="mt-3 text-sm text-mute lg:ml-auto lg:max-w-[16rem]">
+            <p className="section-note mt-3 lg:ml-auto lg:max-w-[16rem]">
               TPU 0.47s · GPU 13.1s (16.2×) · CPU 212s
             </p>
           </div>
@@ -74,7 +74,7 @@ export default function Hero() {
 
       <div className="shell shrink-0 pt-8">
         <hr className="rule" />
-        <p className="pt-4 text-[13px] leading-relaxed text-mute">
+        <p className="section-note pt-4">
           Lorenzo Pazienza & Ihab El Bani · Intro to HPC and AI Systems · Profs.
           Steve Jones & Mourad Bouache
         </p>

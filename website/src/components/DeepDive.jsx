@@ -31,9 +31,7 @@ function PhaseFigure({ src, caption }) {
         loading="lazy"
       />
       {caption && (
-        <figcaption className="mt-2 text-[12px] leading-snug text-mute">
-          {caption}
-        </figcaption>
+        <figcaption className="section-caption !mt-2">{caption}</figcaption>
       )}
     </figure>
   )
@@ -57,24 +55,22 @@ function MobileRow({ exp, index, open, onToggle }) {
         aria-label={`${open ? 'Close' : 'More about'} ${exp.title}`}
         className="group flex w-full cursor-pointer items-center gap-3 px-3.5 py-3.5 text-left active:bg-paper/80"
       >
-        <span className="eq w-6 shrink-0 font-mono text-[11px] text-mute">
-          {n}
-        </span>
+        <span className="eq w-6 shrink-0 font-mono text-xs text-mute">{n}</span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="truncate font-display text-[15px] font-semibold tracking-tight text-ink">
+            <h3 className="truncate font-display text-base font-semibold tracking-tight text-ink">
               {exp.title}
             </h3>
             {negative && (
-              <span className="shrink-0 font-mono text-[9px] font-medium uppercase tracking-[0.1em] text-amber">
-                Neg
-              </span>
+              <span className="label-mono shrink-0 text-amber">Neg</span>
             )}
           </div>
-          <p className="mt-0.5 truncate text-[12px] text-mute">{exp.statLabel}</p>
+          <p className="section-note mt-0.5 truncate !leading-snug">
+            {exp.statLabel}
+          </p>
         </div>
         <span
-          className={`eq shrink-0 font-display text-[1.05rem] font-bold tracking-tight ${
+          className={`eq shrink-0 font-display text-lg font-bold tracking-tight ${
             negative ? 'text-amber' : 'text-ink'
           }`}
         >
@@ -90,8 +86,8 @@ function MobileRow({ exp, index, open, onToggle }) {
       >
         <div className="overflow-hidden">
           <div className="space-y-3 px-3.5 pb-4 pl-[2.65rem]">
-            <p className="text-[14px] leading-relaxed text-slate">{exp.finding}</p>
-            <p className="text-[13px] leading-relaxed text-mute">{exp.body}</p>
+            <p className="section-body text-[0.9375rem]">{exp.finding}</p>
+            <p className="section-note">{exp.body}</p>
             {exp.chart && (
               <figure>
                 <img
@@ -101,7 +97,7 @@ function MobileRow({ exp, index, open, onToggle }) {
                   loading="lazy"
                 />
                 {exp.chartCaption && (
-                  <figcaption className="mt-1.5 text-[11px] text-mute">
+                  <figcaption className="section-caption !mt-1.5">
                     {exp.chartCaption}
                   </figcaption>
                 )}
@@ -140,14 +136,10 @@ function DesktopRow({ exp, open, onToggle }) {
                 {exp.title}
               </h3>
               {negative && (
-                <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-amber">
-                  Negative
-                </span>
+                <span className="label-mono text-amber">Negative</span>
               )}
             </div>
-            <p className="mt-2 text-base leading-relaxed text-slate">
-              {exp.finding}
-            </p>
+            <p className="section-body mt-2">{exp.finding}</p>
           </div>
 
           <div className="shrink-0 text-right">
@@ -158,7 +150,7 @@ function DesktopRow({ exp, open, onToggle }) {
             >
               {exp.stat}
             </p>
-            <p className="mt-1.5 max-w-[9rem] text-sm leading-snug text-mute lg:max-w-[10.5rem]">
+            <p className="section-note mt-1.5 max-w-[9rem] leading-snug lg:max-w-[10.5rem]">
               {exp.statLabel}
             </p>
           </div>
@@ -173,9 +165,7 @@ function DesktopRow({ exp, open, onToggle }) {
         >
           <div className="overflow-hidden">
             <div className="border-t border-line/70 px-8 pb-6 pt-4 lg:px-10">
-              <p className="max-w-3xl text-[15px] leading-relaxed text-slate">
-                {exp.body}
-              </p>
+              <p className="section-body max-w-3xl">{exp.body}</p>
               {exp.chart && (
                 <figure className="mt-4">
                   <img
@@ -185,7 +175,7 @@ function DesktopRow({ exp, open, onToggle }) {
                     loading="lazy"
                   />
                   {exp.chartCaption && (
-                    <figcaption className="mt-2 text-[12px] text-mute">
+                    <figcaption className="section-caption">
                       {exp.chartCaption}
                     </figcaption>
                   )}
@@ -204,9 +194,7 @@ function PhaseBlock({ phase, openIds, onToggle }) {
 
   return (
     <div>
-      <p className="mb-2 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-mute md:mb-3">
-        {phase.label}
-      </p>
+      <p className="kicker mb-2 md:mb-3">{phase.label}</p>
 
       {/* Mobile list */}
       <div className="overflow-hidden rounded-lg border border-line bg-panel md:hidden">
@@ -260,11 +248,9 @@ export default function DeepDive() {
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-6">
           <div className="max-w-xl">
             <p className="kicker">AlphaFold 2 · experiments</p>
-            <h2 className="mt-3 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-semibold tracking-[-0.03em] text-ink">
-              Twelve TPU follow-ups
-            </h2>
+            <h2 className="section-title">Twelve TPU follow-ups</h2>
           </div>
-          <p className="max-w-sm text-sm leading-relaxed text-mute md:text-right">
+          <p className="section-note max-w-sm md:text-right">
             Click <span className="font-medium text-ink">+</span> on a row for
             method notes. Shared figures sit under each phase. Amber rail =
             negative result.
