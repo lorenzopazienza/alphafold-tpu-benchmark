@@ -11,8 +11,8 @@
 
 ## Page chrome
 
-- Sticky top nav brand: “AlphaFold 2 · TPU”
-- Nav links (desktop): Structure · Problem · Approach · Results · Experiments · Cost · Reproduce
+- Sticky top nav brand: “AlphaFold TPU Benchmark”
+- Nav links (desktop): Structure · Problem · Approach · Results · Experiments · AF3 · Cost · Reproduce
 - Mobile: Menu button expands the same links
 - Footer: authors + GitHub + link to this llms.txt
 - Visual design: light lab-paper background (#f7f8f9), navy ink, teal accent (#0b6e7a); fonts Bricolage Grotesque / IBM Plex / Newsreader
@@ -31,10 +31,10 @@
 **On-screen layout:** Two-column hero. Left: kicker + title + blurb + links. Right: giant “451×” metric.
 
 - Kicker: STANFORD HPC · SUMMER 2026
-- Title: AlphaFold 2 / on TPU
-- Body: “DeepMind’s AlphaFold 2 predicts a protein’s 3D structure from its sequence — the leap after AlphaFold 1. Running that JAX/Haiku forward pass is expensive and opaque. We timed the same real workload on CPU, GPU (T4), and TPU (v5e-8) to find where time and idle chips go. Steady-state TPU is 451× faster than CPU.”
-- Links: Structure · Results · Reproduce
-- Metric label: STEADY-STATE VS CPU
+- Title: AlphaFold / TPU Benchmark
+- Body: “We timed AlphaFold 2’s real JAX forward pass on CPU, GPU (T4), and TPU (v5e-8). As a follow-up we also ran AlphaFold 3 on the same Colab CPU/GPU; its public release has no TPU. Steady-state AF2 on TPU is 451× faster than CPU.”
+- Links: AF2 results · AF3 · Reproduce
+- Metric label: AF2 STEADY-STATE VS CPU
 - Metric: **451×** (teal ×)
 - Subline: TPU 0.47s · GPU 13.1s (16.2×) · CPU 212s
 - Footer credit line under a hairline rule: Lorenzo Pazienza & Ihab El Bani · Intro to HPC and AI Systems · Profs. Steve Jones & Mourad Bouache
@@ -195,6 +195,15 @@
 - Notes: model_5 beat model_3 and model_4 by ~15%; all tracked metrics <1% stdev across three repeats.
 
 ---
+
+## Section 6b — AlphaFold 3 (`#af3`)
+
+- Kicker: Side investigation
+- Headline: “AlphaFold 3 on the same backends”
+- Body: Separate DeepMind codebase (Pairformer + diffusion). Same 118-residue input, seed=1. Trained weights ~1.15 GB. Five samples/call.
+- Still: /figures/af3_toy_test_structure.jpg
+- Compare (per sample, identical Colab): CPU AF2 212.1s vs AF3 490.8s (2.3×); GPU T4 AF2 13.1s vs AF3 22.8s (1.74×). AF3 CPU→GPU 21.5× vs AF2 16.2×.
+- TPU wall (negative): every infra step worked; CLI `--jax_backend` only cpu|gpu|mps. FATAL flag error on Stanford v5e-8 Job.
 
 ## Section 7 — Cost (`#cost`)
 

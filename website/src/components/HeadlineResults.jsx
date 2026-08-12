@@ -49,7 +49,7 @@ export default function HeadlineResults() {
       <div className="viewport-tight shell">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="max-w-lg">
-            <p className="kicker">Performance delta</p>
+            <p className="kicker">AlphaFold 2 · performance delta</p>
             <h2 className="mt-3 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-semibold tracking-[-0.03em] text-ink">
               Steady-state predict latency
             </h2>
@@ -60,8 +60,8 @@ export default function HeadlineResults() {
         </div>
 
         <p className="mt-4 max-w-xl text-base text-mute">
-          model_3, 0 recycles, 118-residue input, identical code path. Bar
-          lengths are log-scaled.
+          AlphaFold 2 · model_3, 0 recycles, 118-residue input, identical code
+          path. Bar lengths are log-scaled.
         </p>
 
         <div ref={ref} className="mt-8 space-y-5 md:mt-10">
@@ -121,6 +121,12 @@ export default function HeadlineResults() {
             ))}
           </dl>
         </div>
+
+        <p className="mt-10 text-sm text-mute md:mt-12">
+          <a href="#af3" className="link-quiet font-medium text-ink">
+            AlphaFold 3 side-investigation →
+          </a>
+        </p>
       </div>
     </section>
   )

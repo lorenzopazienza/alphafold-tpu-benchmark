@@ -6,6 +6,7 @@ const LINKS = [
   { href: '#approach', label: 'Approach' },
   { href: '#results', label: 'Results' },
   { href: '#experiments', label: 'Experiments' },
+  { href: '#af3', label: 'AF3' },
   { href: '#cost', label: 'Cost' },
   { href: '#reproduce', label: 'Reproduce' },
 ]
@@ -70,7 +71,7 @@ export default function Nav() {
           onClick={() => go('')}
           className="inline-flex min-h-11 items-center font-display text-base font-semibold tracking-tight text-ink md:text-lg"
         >
-          AlphaFold 2 · TPU
+          AlphaFold TPU Benchmark
         </a>
 
         <div className="hidden items-center gap-1 lg:flex">

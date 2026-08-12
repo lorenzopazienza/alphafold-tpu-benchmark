@@ -67,11 +67,16 @@ export default function Architecture() {
         </div>
 
         <p className="mt-8 max-w-2xl text-[15px] leading-relaxed text-mute">
-          <span className="font-medium text-ink">Parameters.</span> Systems
+          <span className="font-medium text-ink">Parameters.</span> AF2 systems
           timings use Haiku random init so we exercise the same compiled graph
           without downloading trained weights (~350MB). The ubiquitin structure
           above is separate: ESMFold with trained weights, for biology, not for
-          the CPU/GPU/TPU clocks.
+          the CPU/GPU/TPU clocks. AlphaFold 3 uses its own notebooks and Jobs —
+          see{' '}
+          <a href="#af3" className="link-quiet font-medium text-ink">
+            AF3
+          </a>
+          .
         </p>
       </div>
     </section>

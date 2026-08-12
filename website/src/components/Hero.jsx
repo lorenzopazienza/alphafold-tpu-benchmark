@@ -34,24 +34,23 @@ export default function Hero() {
           <div className="min-w-0 max-w-md">
             <p className="animate-rise kicker">Stanford HPC · Summer 2026</p>
             <h1 className="animate-rise delay-1 mt-4 font-display text-[clamp(2.85rem,6vw,4.35rem)] font-semibold leading-[0.96] tracking-[-0.035em] text-ink">
-              AlphaFold 2
+              AlphaFold
               <br />
-              on TPU
+              TPU Benchmark
             </h1>
             <p className="animate-rise delay-2 mt-5 text-[1.0625rem] leading-[1.55] text-slate md:text-[1.125rem]">
-              DeepMind’s AlphaFold 2 predicts a protein’s 3D structure from its
-              sequence — the leap after AlphaFold 1. Running that JAX/Haiku
-              forward pass is expensive and opaque. We timed the same real
-              workload on CPU, GPU (T4), and TPU (v5e-8) to find where time and
-              idle chips go. Steady-state TPU is 451× faster than CPU.
+              We timed AlphaFold 2’s real JAX forward pass on CPU, GPU (T4), and
+              TPU (v5e-8) — where time and idle chips go. As a follow-up we also
+              ran AlphaFold 3 on the same Colab CPU/GPU; its public release has
+              no TPU. Steady-state AF2 on TPU is 451× faster than CPU.
             </p>
             <p className="animate-rise delay-3 mt-7">
-              <a href="#structure" className="link-quiet text-base font-medium">
-                Structure
+              <a href="#results" className="link-quiet text-base font-medium">
+                AF2 results
               </a>
               <span className="mx-3 text-line">/</span>
-              <a href="#results" className="link-quiet text-base font-medium">
-                Results
+              <a href="#af3" className="link-quiet text-base font-medium">
+                AF3
               </a>
               <span className="mx-3 text-line">/</span>
               <a href="#reproduce" className="link-quiet text-base font-medium">
@@ -61,7 +60,7 @@ export default function Hero() {
           </div>
 
           <div className="animate-rise delay-2 shrink-0 lg:text-right">
-            <p className="kicker">Steady-state vs CPU</p>
+            <p className="kicker">AF2 steady-state vs CPU</p>
             <p className="eq mt-1 font-display text-[clamp(5rem,14vw,8.5rem)] font-bold leading-[0.84] tracking-[-0.05em] text-ink">
               {n}
               <span className="text-teal">×</span>

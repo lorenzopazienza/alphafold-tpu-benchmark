@@ -12,11 +12,11 @@ export default function Problem() {
         <div className="flex flex-col justify-center gap-6">
           <p className="max-w-xl text-[1.05rem] leading-[1.65] text-slate md:text-[1.125rem]">
             <span className="font-medium text-ink">The problem.</span> Biology
-            needs a protein’s 3D shape. AlphaFold 1 showed deep learning could
-            help; AlphaFold 2 (DeepMind) made high-accuracy structure prediction
-            practical with a large JAX/Haiku Evoformer. That inference is still
-            costly and hard to reason about across accelerators — cold XLA
-            compiles, underused TPU pods, unclear CPU vs GPU vs TPU trade-offs.
+            needs a protein’s 3D shape. AlphaFold 2 (DeepMind) made
+            high-accuracy structure prediction practical with a large JAX/Haiku
+            Evoformer — but running that inference is expensive and opaque
+            across accelerators: cold XLA compiles, underused TPU pods, unclear
+            CPU vs GPU vs TPU trade-offs.
           </p>
           <p className="max-w-xl text-[1.05rem] leading-[1.65] text-slate md:text-[1.125rem]">
             <span className="font-medium text-ink">What we did.</span> Same
@@ -24,6 +24,14 @@ export default function Problem() {
             0 recycles) on Colab CPU, T4 GPU, and Stanford GKE TPU v5e-8 — then
             timed init, cold predict, and steady-state, and fixed the bottlenecks
             we found.
+          </p>
+          <p className="max-w-xl text-[15px] leading-relaxed text-mute">
+            Follow-up:{' '}
+            <a href="#af3" className="link-quiet font-medium text-ink">
+              AlphaFold 3
+            </a>{' '}
+            — a separate diffusion codebase — on the same Colab CPU/GPU, plus a
+            confirmed finding that its public release does not support TPU.
           </p>
         </div>
       </div>

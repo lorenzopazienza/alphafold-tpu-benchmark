@@ -259,7 +259,7 @@ export default function DeepDive() {
       <div className="shell section-y">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-6">
           <div className="max-w-xl">
-            <p className="kicker">Experiments</p>
+            <p className="kicker">AlphaFold 2 · experiments</p>
             <h2 className="mt-3 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-semibold tracking-[-0.03em] text-ink">
               Twelve TPU follow-ups
             </h2>

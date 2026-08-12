@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="shell flex flex-col gap-6 py-8 md:flex-row md:items-end md:justify-between md:py-10">
         <div>
           <p className="font-display text-lg font-semibold tracking-tight text-ink">
-            AlphaFold 2 · TPU Benchmark
+            AlphaFold TPU Benchmark
           </p>
           <p className="mt-2 text-sm leading-relaxed text-mute">
             Lorenzo Pazienza & Ihab El Bani

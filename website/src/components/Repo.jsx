@@ -1,11 +1,11 @@
 const TREE = [
-  ['configs/', 'Kubernetes Jobs (incl. ensemble shard)'],
-  ['figures/', 'Charts referenced on this page'],
-  ['notebooks/', 'Colab CPU, GPU, and ESMFold fold'],
+  ['configs/', 'K8s Jobs (AF2 sweeps + AF3 TPU attempt)'],
+  ['figures/', 'Charts + AF3 structure still'],
+  ['notebooks/', 'AF2 + AF3 Colab notebooks'],
   ['profiling/', 'XLA trace notes'],
-  ['results/', 'Per-run JSON, comparison, sweep/ (12 expts)'],
-  ['src/', 'Benchmark scripts used on all backends'],
-  ['structure/', 'Ubiquitin PDB'],
+  ['results/', 'AF2 clocks + sweep/ + af3_comparison.md'],
+  ['src/', 'AF2 spikes + make_af3_input.py'],
+  ['structure/', 'Ubiquitin PDB + AF3 CIF'],
   ['website/', 'This site'],
 ]
 
@@ -22,8 +22,14 @@ export default function Repo() {
               Code and commands
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-slate">
-              Docker builds for CPU/GPU and Kubernetes manifests for the class
-              TPU cluster are in the repo.
+              AF2 Docker/K8s paths and AF3 Colab notebooks (
+              <code className="font-mono text-[0.9em]">af3_cpu_colab</code> /{' '}
+              <code className="font-mono text-[0.9em]">af3_gpu_colab</code>) live
+              in the repo. Full AF3 write-up:{' '}
+              <code className="font-mono text-[0.9em]">
+                results/sweep/af3_comparison.md
+              </code>
+              .
             </p>
           </div>
           <a
@@ -64,8 +70,8 @@ docker run -v $(pwd)/results:/alphafold/results \\
   af-bench:cpu --run_tag=cpu`}
             </pre>
             <p className="mt-4 text-[13px] leading-relaxed text-mute">
-              GPU and TPU variants, plus Colab notebooks, are documented in the
-              README. Sweep jobs are under configs/.
+              GPU and TPU variants for AF2 are in the README. AF3 TPU Job is
+              kept as documentation of the unsupported CLI — not a working path.
             </p>
           </div>
         </div>

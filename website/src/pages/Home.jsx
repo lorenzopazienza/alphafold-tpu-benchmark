@@ -5,6 +5,7 @@ import Problem from '../components/Problem'
 import Architecture from '../components/Architecture'
 import HeadlineResults from '../components/HeadlineResults'
 import DeepDive from '../components/DeepDive'
+import AlphaFold3 from '../components/AlphaFold3'
 import CostTakeaways from '../components/CostTakeaways'
 import Repo from '../components/Repo'
 import Footer from '../components/Footer'
@@ -36,6 +37,7 @@ export default function Home() {
         <Architecture />
         <HeadlineResults />
         <DeepDive />
+        <AlphaFold3 />
         <CostTakeaways />
         <Repo />
       </main>
