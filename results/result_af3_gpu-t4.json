@@ -1,0 +1,13 @@
+{
+  "run_tag": "gpu-t4",
+  "backend": "gpu",
+  "model": "alphafold3",
+  "num_residues": 118,
+  "num_samples": 5,
+  "total_inference_seconds": 114.11956882476807,
+  "seconds_per_sample": 22.823913764953613,
+  "best_ranking_score": 0.33,
+  "ptm": 0.23,
+  "fraction_disordered": 0.21,
+  "has_clash": 0.0
+}

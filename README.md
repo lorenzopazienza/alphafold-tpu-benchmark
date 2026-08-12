@@ -12,9 +12,9 @@
 
 ## Executive Summary
 
-**The problem.** Biology often needs a protein’s 3D shape; that structure drives function, disease, and drug discovery. AlphaFold 1 showed deep learning could help; Google DeepMind’s [AlphaFold 2](https://github.com/google-deepmind/alphafold) made high-accuracy prediction practical with a large JAX/Haiku network (attention-heavy Evoformer). Running that inference at useful scale is expensive and opaque across hardware: cold XLA compiles, underused multi-chip TPU pods, and unclear CPU vs GPU vs TPU cost/latency trade-offs.
+**The problem.** Biology often needs a protein’s 3D shape; that structure drives function, disease, and drug discovery. Google DeepMind’s [AlphaFold 2](https://github.com/google-deepmind/alphafold) made high-accuracy prediction practical with a large JAX/Haiku network (attention-heavy Evoformer). Running that inference at useful scale is expensive and opaque across hardware: cold XLA compiles, underused multi-chip TPU pods, and unclear CPU vs GPU vs TPU cost/latency trade-offs.
 
-**What we did.** We treated AlphaFold 2’s real forward pass as the system under test — **same model, same script, same input shape** on Colab CPU, NVIDIA T4 GPU, and Stanford GKE TPU v5e-8 — then measured, profiled, and mitigated the bottlenecks. Systems question: **where does this workload spend time, and how does that change per backend?** Orchestration, telemetry, and comparisons in this repo are ours; the model itself is DeepMind’s.
+**What we did.** We treated AlphaFold 2’s real forward pass as the system under test — **same model, same script, same input shape** on Colab CPU, NVIDIA T4 GPU, and Stanford GKE TPU v5e-8 — then measured, profiled, and mitigated the bottlenecks. Systems question: **where does this workload spend time, and how does that change per backend?** As a follow-up (see [AlphaFold3 side-investigation](#alphafold3-side-investigation) below), we also brought up [AlphaFold 3](https://github.com/google-deepmind/alphafold3) — DeepMind's separate, newer, diffusion-based codebase, not a version of AlphaFold 2 — on the same CPU/GPU backends, with real measured performance and reproducibility results, plus a confirmed finding that AlphaFold 3's public release does not support TPU inference at all. Orchestration, telemetry, and comparisons in this repo are ours; the models themselves are DeepMind’s.
 
 | Tooling matrix (course requirement: ≥3 stack elements) | Choice |
 |---|---|
@@ -43,7 +43,8 @@ alphafold-tpu-benchmark/
 │   ├── af_spike_precision.yaml        # float32 vs bfloat16
 │   ├── af_spike_scaling_grid.yaml     # Chips × length grid
 │   ├── af_spike_sharding.yaml         # pmap / shard experiments
-│   └── af_spike_trace_capture.yaml    # Profiler trace export window
+│   ├── af_spike_trace_capture.yaml    # Profiler trace export window
+│   └── af_spike_af3_tpu.yaml          # AlphaFold3 TPU attempt -- confirmed unsupported, kept as documentation
 ├── Dockerfile                 # Multi-backend image (JAX_VARIANT=cpu|cuda12|tpu)
 ├── figures/                   # Charts + structure stills for README / site
 │   ├── batching_chart.png
@@ -52,7 +53,11 @@ alphafold-tpu-benchmark/
 │   ├── ubiquitin_confidence.png
 │   └── ubiquitin_structure.png        # ESMFold pLDDT render (above)
 ├── notebooks/                 # Colab / Jupyter reproduction
-│   └── real_protein_fold_visualization.ipynb
+│   ├── alphafold_cpu_benchmark.ipynb   # AF2 CPU (Colab) -- run_tag=cpu-colab
+│   ├── alphafold_gpu_benchmark.ipynb   # AF2 GPU T4 (Colab) -- run_tag=gpu-t4
+│   ├── real_protein_fold_visualization.ipynb
+│   ├── af3_cpu_colab.ipynb            # AF3 CPU (Colab) -- run_tag=cpu-colab
+│   └── af3_gpu_colab.ipynb            # AF3 GPU T4 (Colab) -- run_tag=gpu-t4
 ├── profiling/
 │   └── trace_analysis.md      # XLA cache_miss diagnosis (~76% cold path)
 ├── README.md                  # This executive report
@@ -62,21 +67,33 @@ alphafold-tpu-benchmark/
 │   ├── result_cpu*.json
 │   ├── result_gpu-t4.json
 │   ├── result_tpu-v5e-podslice.json
-│   ├── sweep/                 # Scale + mitigation study (12 experiments)
+│   ├── result_af3_cpu-colab.json      # AlphaFold3 CPU (Colab) -- real, measured
+│   ├── result_af3_gpu-t4.json         # AlphaFold3 GPU T4 (Colab) -- real, measured
+│   ├── sweep/                 # Scale + mitigation study (12 experiments) + AF3 side-investigation
 │   │   ├── batching.md · chip_visibility.md · compilation_cache.md
 │   │   ├── ensemble_shard.md · precision.md · README.md
 │   │   ├── scaling_law.md · sharding.md · *.json
+│   │   ├── af3_comparison.md          # AlphaFold2 vs AlphaFold3: full comparison, all 3 backends
+│   │   ├── af3_tpu_attempt.log        # TPU attempt log -- confirmed unsupported by AF3's public CLI
+│   │   ├── af3_toy_test_summary_confidences.json · af3_toy_test_ranking_scores.csv        # Stanford CPU
+│   │   ├── af3_toy_test_cpu-colab_summary_confidences.json · af3_toy_test_cpu-colab_ranking_scores.csv  # Colab CPU
+│   │   ├── af3_toy_test_gpu-t4_summary_confidences.json · af3_toy_test_gpu-t4_ranking_scores.csv        # Colab GPU
 │   └── trace_<tag>/           # jax.profiler / TensorBoard traces
 ├── scripts/
-│   └── run_spike.sh           # gcloud creds · ConfigMap · kubectl apply
+│   ├── run_spike.sh            # gcloud creds · ConfigMap · kubectl apply (AF2)
+│   └── run_af3_spike_tpu.sh    # Same, for AlphaFold3 on TPU (experimental)
 ├── src/                       # Benchmark entrypoints (same path, all backends)
 │   ├── spike_batch_forward_pass.py          # jax.vmap multi-query batching
 │   ├── spike_ensemble_shard_forward_pass.py # Real single-query sharding (pmap + pmean)
 │   ├── spike_meshshard_forward_pass.py      # GSPMD auto-mesh attempt
 │   ├── spike_pmap_forward_pass.py           # Multi-chip data parallel
-│   └── spike_tpu_forward_pass.py            # Baseline: init / cold / steady-state
+│   ├── spike_tpu_forward_pass.py            # Baseline: init / cold / steady-state
+│   └── make_af3_input.py                    # Shared AF3 input builder (Colab + TPU Job)
 ├── structure/
-│   └── ubiquitin_predicted.pdb        # Real fold for 3D exhibit
+│   ├── ubiquitin_predicted.pdb        # Real fold for 3D exhibit
+│   ├── af3_toy_test_model.cif                 # AF3, original Stanford CPU run
+│   ├── af3_toy_test_cpu-colab_model.cif       # AF3, Colab CPU run
+│   └── af3_toy_test_gpu-t4_model.cif          # AF3, Colab GPU T4 run (see af3_comparison.md Section 5b/6 for how this differs from the CPU one)
 ├── vercel.json                # Root Vercel build → website/
 └── website/                   # Vite + React showcase → alphafold-tpu.vercel.app
     ├── public/figures/ · public/structure/
@@ -277,7 +294,29 @@ envsubst < configs/af_spike_job.yaml | kubectl apply -f -
 kubectl logs -f job/af-spike-${TEAM}
 ```
 
-### Profiling / telemetry
+### AlphaFold3 (CPU / GPU on Colab)
+
+Reproduces the real, measured CPU and GPU results in
+`results/sweep/af3_comparison.md`:
+
+```bash
+# CPU: open notebooks/af3_cpu_colab.ipynb in Colab
+#      Runtime -> Change runtime type -> CPU, then Run all
+
+# GPU: open notebooks/af3_gpu_colab.ipynb in Colab
+#      Runtime -> Change runtime type -> T4 GPU, then Run all
+```
+
+TPU is **not reproducible** — confirmed unsupported by AlphaFold3's
+public CLI (`results/sweep/af3_comparison.md` Section 3).
+`configs/af_spike_af3_tpu.yaml` / `scripts/run_af3_spike_tpu.sh` are kept
+as documentation of that confirmed negative result, not as a working
+path; running them reproduces the same flag-validation failure logged in
+`results/sweep/af3_tpu_attempt.log`.
+
+All three use the identical input (`src/make_af3_input.py`: same
+118-residue toy sequence, empty MSA, seed=1) so the results drop straight
+into `af3_comparison.md`'s Performance Comparison table once run.
 Each run wraps the first `predict()` in `jax.profiler.trace(...)`, isolating **XLA compilation** from **steady-state execution** (second uncompiled `predict()`). View with:
 
 ```bash
@@ -297,6 +336,37 @@ Systems timings use random-init weights (valid for compile/execution study). [`s
 - Notebook: `notebooks/real_protein_fold_visualization.ipynb`
 
 ![Ubiquitin per-residue confidence](figures/ubiquitin_confidence.png)
+
+---
+
+## AlphaFold3 side-investigation
+
+DeepMind's newer, separate, diffusion-based
+[AlphaFold3](https://github.com/google-deepmind/alphafold3) codebase
+(distinct from AlphaFold2, the system under test everywhere else in this
+report) was run on the same 118-residue toy sequence across all three
+backends this project tests AF2 on: **CPU (Colab), GPU (T4, Colab), and
+TPU (Stanford)**.
+
+**CPU and GPU: real, measured results.** On identical Colab hardware, AF3
+is **2.3x slower than AF2 per prediction on CPU, narrowing to 1.74x on
+GPU** — AF3 gains proportionally more from the GPU (21.5x CPU→GPU
+speedup vs. AF2's 16.2x). A same-seed reproducibility check across three
+hardware/backend combinations found near-identical output across
+different machines on the *same* backend (Stanford vs. Colab CPU, <0.1%
+difference on 4/5 samples), but substantially different output *across*
+backends (CPU vs. GPU differs by up to 32% per sample) — plausibly
+explained by a numerical issue AlphaFold3's own issue tracker documents
+for GPUs below compute capability 8.0 (the Colab T4 is 7.5).
+
+**TPU: a confirmed, documented negative result.** Every infrastructure
+step succeeded (native C++ build, Chemical Component Dictionary,
+weights, `jax[tpu]` install) — the wall was AlphaFold3's own CLI:
+`--jax_backend`'s valid values are `cpu`/`gpu`/`mps` only, no `tpu`
+option exists. This matches AlphaFold3's official documentation, which
+requires an NVIDIA GPU (compute capability ≥7.0) or CPU. Full log and
+analysis in
+[`results/sweep/af3_comparison.md`](results/sweep/af3_comparison.md).
 
 ---
 

@@ -1,0 +1,48 @@
+AlphaFold3 on TPU (Stanford class-tpu-cluster-west4, v5e-8) -- attempt log
+============================================================================
+
+Everything up through building the input and installing dependencies
+succeeded on the first real attempt:
+
+  + apt-get install (build-essential, cmake, ninja-build, libcifpp deps) -- OK
+  + uv sync (AlphaFold3 + CPU/GPU-flavored jaxlib)                        -- OK
+  + uv pip install "jax[tpu]==0.10.2" -f libtpu_releases.html             -- OK
+  + uv run build_data
+      Parsing /alphafold3/.venv/lib/python3.12/site-packages/share/libcifpp/components.cif
+      Writing /alphafold3/src/alphafold3/constants/converters/ccd.pickle
+      Done
+      Loading /alphafold3/src/alphafold3/constants/converters/ccd.pickle
+      Finding ions and glycans
+      writing to /alphafold3/src/alphafold3/constants/converters/chemical_component_sets.pickle
+      Done                                                                -- OK
+  + weights download + zstd decompress (1146811260 bytes)                 -- OK
+  + uv run python3 make_af3_input.py --seed=1
+      Wrote /alphafold3/af3_toy_input.json (seed=1, 118 residues)         -- OK
+
+Then the actual inference call:
+
+  $ uv run python3 run_alphafold.py \
+      --json_path=/alphafold3/af3_toy_input.json \
+      --model_dir=/af3_weights \
+      --output_dir=/alphafold3/results/af3_tpu_output \
+      --norun_data_pipeline \
+      --flash_attention_implementation=xla \
+      --jax_backend=tpu
+
+  FATAL Flags parsing error: flag --jax_backend=tpu: value should be one of <cpu|gpu|mps>
+  Pass --helpshort or --helpfull to see help on flags.
+
+  real    0m5.588s
+  user    0m18.874s
+  sys     0m0.447s
+
+Conclusion: every infrastructure step this project's TPU workflow depends
+on (native C++ build, Chemical Component Dictionary, weights, input JSON,
+even the jax[tpu]/libtpu install) works correctly on this cluster. The
+wall this project hit is AlphaFold3's own public CLI: --jax_backend's
+enum is <cpu|gpu|mps> -- no 'tpu' value exists to select. This matches
+AlphaFold3's official installation docs (An NVIDIA GPU with compute
+capability 7.0 or higher is required) and every third-party HPC-center
+guide checked for this project, none of which list TPU as a supported
+target for the public AlphaFold3 release. See results/sweep/af3_comparison.md
+Section 3 for the full writeup.
