@@ -53,14 +53,12 @@ export default function AlphaFold3() {
 
         <div className="mt-10 grid items-start gap-10 lg:mt-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-14">
           <figure className="min-w-0">
-            <div className="overflow-hidden bg-panel">
-              <img
-                src="/figures/af3_toy_test_structure.jpg"
-                alt="AlphaFold 3 predicted structure for the 118-residue toy sequence"
-                className="block h-auto w-full"
-                loading="lazy"
-              />
-            </div>
+            <img
+              src="/figures/af3_toy_test_structure.png"
+              alt="AlphaFold 3 predicted structure for the 118-residue toy sequence"
+              className="mx-auto block h-auto w-full max-w-md object-contain lg:max-w-none"
+              loading="lazy"
+            />
             <figcaption className="mt-3 text-sm leading-snug text-mute">
               AF3 toy-test structure · trained weights · seed=1
             </figcaption>

@@ -201,7 +201,7 @@
 - Kicker: Side investigation
 - Headline: “AlphaFold 3 on the same backends”
 - Body: Separate DeepMind codebase (Pairformer + diffusion). Same 118-residue input, seed=1. Trained weights ~1.15 GB. Five samples/call.
-- Still: /figures/af3_toy_test_structure.jpg
+- Still: /figures/af3_toy_test_structure.png
 - Compare (per sample, identical Colab): CPU AF2 212.1s vs AF3 490.8s (2.3×); GPU T4 AF2 13.1s vs AF3 22.8s (1.74×). AF3 CPU→GPU 21.5× vs AF2 16.2×.
 - TPU wall (negative): every infra step worked; CLI `--jax_backend` only cpu|gpu|mps. FATAL flag error on Stanford v5e-8 Job.
 
