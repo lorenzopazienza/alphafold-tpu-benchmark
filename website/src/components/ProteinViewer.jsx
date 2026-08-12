@@ -10,21 +10,23 @@ import {
 } from 'recharts'
 import { CONFIDENCE, MEAN_PLDDT, plddtColor } from '../data/confidence'
 
-function ConfidenceChart() {
+function ConfidenceChart({ data, shadeRange = null, yDomain = [40, 100] }) {
   return (
     <div className="h-[min(32vh,260px)] w-full min-h-[220px]">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
-          data={CONFIDENCE}
+          data={data}
           margin={{ top: 8, right: 8, left: -8, bottom: 4 }}
         >
-          <ReferenceArea
-            x1={70}
-            x2={76}
-            fill="#ff7d45"
-            fillOpacity={0.1}
-            strokeOpacity={0}
-          />
+          {shadeRange && (
+            <ReferenceArea
+              x1={shadeRange[0]}
+              x2={shadeRange[1]}
+              fill="#ff7d45"
+              fillOpacity={0.1}
+              strokeOpacity={0}
+            />
+          )}
           <XAxis
             dataKey="res"
             tick={{ fill: '#6b7684', fontSize: 12 }}
@@ -32,7 +34,7 @@ function ConfidenceChart() {
             axisLine={{ stroke: '#e4e7eb' }}
           />
           <YAxis
-            domain={[40, 100]}
+            domain={yDomain}
             tick={{ fill: '#6b7684', fontSize: 12 }}
             tickLine={false}
             axisLine={false}
@@ -45,7 +47,7 @@ function ConfidenceChart() {
               fontSize: 13,
               boxShadow: 'none',
             }}
-            formatter={(v) => [`${v}`, 'pLDDT']}
+            formatter={(v) => [`${v}`, 'confidence']}
             labelFormatter={(r) => `Residue ${r}`}
           />
           <Line
@@ -85,7 +87,32 @@ function Legend() {
   )
 }
 
-export default function ProteinViewer() {
+function chartYDomain(data) {
+  if (!data?.length) return [40, 100]
+  const min = Math.min(...data.map((d) => d.plddt))
+  const lo = Math.max(0, Math.floor((min - 5) / 10) * 10)
+  return [Math.min(lo, 40), 100]
+}
+
+export default function ProteinViewer({
+  structureUrl = '/structure/ubiquitin_predicted.pdb',
+  format = 'pdb',
+  title = 'Human ubiquitin',
+  subtitle = 'ESMFold prediction · 76 residues',
+  meanConfidence = MEAN_PLDDT,
+  confidenceLabel = 'mean pLDDT',
+  confidenceData = CONFIDENCE,
+  fallbackImage = '/figures/ubiquitin_structure.png',
+  fallbackAlt = 'Human ubiquitin ESMFold structure colored by pLDDT — blue/cyan high confidence, yellow/orange C-terminal tail',
+  captionNote = 'Lower confidence at the C-terminus (residues ~71–76)',
+  chartBlurb = 'Confidence stays high through the structured core and drops in the last residues, the flexible conjugating tail.',
+  chartTitle = 'Per-residue pLDDT',
+  shadeRange = [70, 76],
+  bandNote = 'Shaded band: residues 70–76',
+  kicker = 'Structure',
+  sectionId = 'structure',
+  embedded = false,
+}) {
   const hostRef = useRef(null)
   const viewerRef = useRef(null)
   const [ready, setReady] = useState(false)
@@ -107,12 +134,13 @@ export default function ProteinViewer() {
         })
         viewerRef.current = viewer
 
-        const pdb = await fetch('/structure/ubiquitin_predicted.pdb').then((r) =>
-          r.text(),
-        )
+        const payload = await fetch(structureUrl).then((r) => {
+          if (!r.ok) throw new Error(`Failed to load ${structureUrl}`)
+          return r.text()
+        })
         if (cancelled) return
 
-        viewer.addModel(pdb, 'pdb')
+        viewer.addModel(payload, format)
         viewer.setStyle(
           {},
           {
@@ -144,6 +172,8 @@ export default function ProteinViewer() {
       }
     }
 
+    setReady(false)
+    setError(null)
     boot()
     return () => {
       cancelled = true
@@ -156,76 +186,87 @@ export default function ProteinViewer() {
         }
       }
     }
-  }, [])
+  }, [structureUrl, format])
+
+  const body = (
+    <div className={embedded ? 'shell' : 'viewport-tight shell'}>
+      <div className="mb-6 flex flex-col gap-3 md:mb-8 md:flex-row md:items-end md:justify-between md:gap-8">
+        <div className="max-w-lg">
+          <p className="kicker">{kicker}</p>
+          <h2 className="section-title">{title}</h2>
+        </div>
+        <p className="section-body max-w-md md:text-right">
+          {subtitle} · {confidenceLabel}{' '}
+          <span className="eq font-medium text-ink">{meanConfidence}</span>.
+          Drag to rotate, scroll to zoom. Colors follow AlphaFold’s pLDDT
+          scale.
+        </p>
+      </div>
+
+      <div className="grid items-stretch gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-10">
+        <figure className="relative min-w-0">
+          <div className="relative aspect-[5/4] w-full overflow-hidden bg-paper lg:aspect-square lg:max-h-[28rem]">
+            <div
+              ref={hostRef}
+              className="absolute inset-0 h-full w-full cursor-grab active:cursor-grabbing"
+              aria-label={`Interactive 3D structure: ${title}`}
+            />
+            {!ready && !error && (
+              <div className="absolute inset-0 flex items-center justify-center text-sm text-mute">
+                Loading structure…
+              </div>
+            )}
+            {error && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center">
+                <img
+                  src={fallbackImage}
+                  alt={fallbackAlt}
+                  className="max-h-[70%]"
+                />
+                <p className="text-sm text-mute">{error}</p>
+              </div>
+            )}
+          </div>
+          <figcaption className="mt-4 flex flex-col gap-2 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+            <Legend />
+            <p className="section-note sm:max-w-[16rem] sm:text-right">
+              {captionNote}
+            </p>
+          </figcaption>
+        </figure>
+
+        <figure className="flex min-w-0 flex-col justify-center border-t border-line pt-8 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
+          <div className="flex items-baseline justify-between gap-4">
+            <h3 className="font-display text-xl font-semibold tracking-tight text-ink">
+              {chartTitle}
+            </h3>
+            <p className="eq font-mono text-sm text-mute">
+              {confidenceLabel} {meanConfidence}
+            </p>
+          </div>
+          <p className="section-body mt-2 max-w-sm">{chartBlurb}</p>
+          <div className="mt-5">
+            <ConfidenceChart
+              data={confidenceData}
+              shadeRange={shadeRange}
+              yDomain={chartYDomain(confidenceData)}
+            />
+          </div>
+          {bandNote && <p className="section-note mt-3">{bandNote}</p>}
+        </figure>
+      </div>
+    </div>
+  )
+
+  if (embedded) {
+    return (
+      <div className="border-t border-line bg-panel py-10 md:py-12">{body}</div>
+    )
+  }
 
   return (
-    <section id="structure" className="border-t border-line bg-panel">
-      <div className="viewport-tight shell">
-        <div className="mb-6 flex flex-col gap-3 md:mb-8 md:flex-row md:items-end md:justify-between md:gap-8">
-          <div className="max-w-lg">
-            <p className="kicker">Structure</p>
-            <h2 className="section-title">Human ubiquitin</h2>
-          </div>
-          <p className="section-body max-w-md md:text-right">
-            ESMFold prediction · 76 residues · mean pLDDT{' '}
-            <span className="eq font-medium text-ink">{MEAN_PLDDT}</span>.
-            Drag to rotate, scroll to zoom. Colors follow AlphaFold’s pLDDT
-            scale.
-          </p>
-        </div>
-
-        <div className="grid items-stretch gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-10">
-          <figure className="relative min-w-0">
-            <div className="relative aspect-[5/4] w-full overflow-hidden bg-paper lg:aspect-square lg:max-h-[28rem]">
-              <div
-                ref={hostRef}
-                className="absolute inset-0 h-full w-full cursor-grab active:cursor-grabbing"
-                aria-label="Interactive 3D structure of human ubiquitin"
-              />
-              {!ready && !error && (
-                <div className="absolute inset-0 flex items-center justify-center text-sm text-mute">
-                  Loading PDB…
-                </div>
-              )}
-              {error && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center">
-                  <img
-                    src="/figures/ubiquitin_structure.png"
-                    alt="Human ubiquitin ESMFold structure colored by pLDDT — blue/cyan high confidence, yellow/orange C-terminal tail"
-                    className="max-h-[70%]"
-                  />
-                  <p className="text-sm text-mute">{error}</p>
-                </div>
-              )}
-            </div>
-            <figcaption className="mt-4 flex flex-col gap-2 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-              <Legend />
-              <p className="section-note sm:max-w-[16rem] sm:text-right">
-                Lower confidence at the C-terminus (residues ~71–76)
-              </p>
-            </figcaption>
-          </figure>
-
-          <figure className="flex min-w-0 flex-col justify-center border-t border-line pt-8 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
-            <div className="flex items-baseline justify-between gap-4">
-              <h3 className="font-display text-xl font-semibold tracking-tight text-ink">
-                Per-residue pLDDT
-              </h3>
-              <p className="eq font-mono text-sm text-mute">
-                mean {MEAN_PLDDT}
-              </p>
-            </div>
-            <p className="section-body mt-2 max-w-sm">
-              Confidence stays high through the structured core and drops in the
-              last residues, the flexible conjugating tail.
-            </p>
-            <div className="mt-5">
-              <ConfidenceChart />
-            </div>
-            <p className="section-note mt-3">Shaded band: residues 70–76</p>
-          </figure>
-        </div>
-      </div>
+    <section id={sectionId} className="border-t border-line bg-panel">
+      {body}
     </section>
   )
 }

@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import {
+  AF3_CONFIDENCE,
+  AF3_MEAN_CONFIDENCE,
+} from '../data/af3-confidence'
+
+const ProteinViewer = lazy(() => import('./ProteinViewer'))
 
 const ROWS = [
   {
@@ -38,7 +44,7 @@ export default function AlphaFold3() {
 
   return (
     <section id="af3" className="border-t border-line">
-      <div className="shell section-y">
+      <div className="shell section-y !pb-0">
         <div className="max-w-2xl">
           <p className="kicker">Side investigation</p>
           <h2 className="section-title">AlphaFold 3 on the same backends</h2>
@@ -49,81 +55,94 @@ export default function AlphaFold3() {
           </p>
         </div>
 
-        <div className="mt-10 grid items-start gap-10 lg:mt-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-14">
-          <figure className="min-w-0">
-            <img
-              src="/figures/af3_toy_test_structure.png"
-              alt="AlphaFold 3 predicted structure for the 118-residue toy sequence"
-              className="mx-auto block h-auto w-full max-w-md object-contain lg:max-w-none"
-              loading="lazy"
-            />
-            <figcaption className="section-caption">
-              AF3 toy-test structure · trained weights · seed=1
-            </figcaption>
-          </figure>
+        <div ref={ref} className="mt-10 max-w-2xl lg:mt-12">
+          <p className="kicker">Same-hardware · per sample</p>
+          <p className="section-note mt-2">
+            Identical Colab CPU and T4 runs. AF3 is slower; it also gains more
+            from the GPU (21.5× CPU→GPU vs AF2’s 16.2×).
+          </p>
 
-          <div ref={ref} className="min-w-0">
-            <p className="kicker">Same-hardware · per sample</p>
-            <p className="section-note mt-2">
-              Identical Colab CPU and T4 runs. AF3 is slower; it also gains more
-              from the GPU (21.5× CPU→GPU vs AF2’s 16.2×).
-            </p>
-
-            <div className="mt-8 space-y-8">
-              {ROWS.map((row) => (
-                <div key={row.backend}>
-                  <div className="flex items-baseline justify-between gap-4">
-                    <p className="font-display text-lg font-semibold text-ink">
-                      {row.backend}
-                    </p>
-                    <p className="eq font-mono text-sm text-mute">
-                      AF3 {row.ratio} AF2
-                    </p>
+          <div className="mt-8 space-y-8">
+            {ROWS.map((row) => (
+              <div key={row.backend}>
+                <div className="flex items-baseline justify-between gap-4">
+                  <p className="font-display text-lg font-semibold text-ink">
+                    {row.backend}
+                  </p>
+                  <p className="eq font-mono text-sm text-mute">
+                    AF3 {row.ratio} AF2
+                  </p>
+                </div>
+                <div className="mt-3 space-y-2.5">
+                  <div className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3">
+                    <span className="label-mono">AF2</span>
+                    <div className="bar-track min-w-0">
+                      <div
+                        className="bar-fill"
+                        style={{
+                          width: on ? `${row.af2Pct}%` : '0%',
+                          background: '#3d5f94',
+                          minWidth: on ? '3.5rem' : 0,
+                        }}
+                      >
+                        {row.af2}
+                      </div>
+                    </div>
+                    <span className="eq hidden text-sm text-mute sm:inline">
+                      /sample
+                    </span>
                   </div>
-                  <div className="mt-3 space-y-2.5">
-                    <div className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3">
-                      <span className="label-mono">AF2</span>
-                      <div className="bar-track min-w-0">
-                        <div
-                          className="bar-fill"
-                          style={{
-                            width: on ? `${row.af2Pct}%` : '0%',
-                            background: '#3d5f94',
-                            minWidth: on ? '3.5rem' : 0,
-                          }}
-                        >
-                          {row.af2}
-                        </div>
+                  <div className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3">
+                    <span className="label-mono">AF3</span>
+                    <div className="bar-track min-w-0">
+                      <div
+                        className="bar-fill"
+                        style={{
+                          width: on ? `${row.af3Pct}%` : '0%',
+                          background: '#0b6e7a',
+                          minWidth: on ? '3.5rem' : 0,
+                        }}
+                      >
+                        {row.af3}
                       </div>
-                      <span className="eq hidden text-sm text-mute sm:inline">
-                        /sample
-                      </span>
                     </div>
-                    <div className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3">
-                      <span className="label-mono">AF3</span>
-                      <div className="bar-track min-w-0">
-                        <div
-                          className="bar-fill"
-                          style={{
-                            width: on ? `${row.af3Pct}%` : '0%',
-                            background: '#0b6e7a',
-                            minWidth: on ? '3.5rem' : 0,
-                          }}
-                        >
-                          {row.af3}
-                        </div>
-                      </div>
-                      <span className="eq hidden text-sm text-mute sm:inline">
-                        /sample
-                      </span>
-                    </div>
+                    <span className="eq hidden text-sm text-mute sm:inline">
+                      /sample
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
+
+      <Suspense
+        fallback={
+          <div className="border-t border-line bg-panel py-16 text-center text-sm text-mute">
+            Loading AF3 structure…
+          </div>
+        }
+      >
+        <ProteinViewer
+          embedded
+          structureUrl="/structure/af3_toy_test_cpu-colab_model.cif"
+          format="cif"
+          kicker="AlphaFold 3 · structure"
+          title="AF3 toy structure"
+          subtitle="Diffusion sample, seed 1 · 118 residues, no MSA"
+          meanConfidence={(AF3_MEAN_CONFIDENCE / 100).toFixed(2)}
+          confidenceLabel="ptm"
+          confidenceData={AF3_CONFIDENCE}
+          fallbackImage="/figures/af3_toy_test_structure.png"
+          fallbackAlt="AlphaFold 3 toy-sequence structure"
+          captionNote="Low confidence throughout — expected for a no-MSA input, not a defect. Not comparable to the ubiquitin mean pLDDT above."
+          chartTitle="Per-residue confidence"
+          chartBlurb="CA B-factors stay in the orange/yellow band across the chain. That is the expected no-MSA regime, not a failed render."
+          shadeRange={null}
+          bandNote={null}
+        />
+      </Suspense>
 
       <div
         className={`border-y border-amber/25 bg-amber-soft transition-opacity duration-700 ${
