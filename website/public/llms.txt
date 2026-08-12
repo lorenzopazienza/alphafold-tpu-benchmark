@@ -14,7 +14,8 @@
 - Sticky top nav brand: “AlphaFold TPU Benchmark”
 - Nav links (desktop): Structure · Problem · Approach · Results · Experiments · AF3 · Cost · Reproduce
 - Mobile: Menu button expands the same links
-- Footer: authors + GitHub + link to this llms.txt
+- Footer: authors + Slides PDF download + GitHub + link to this llms.txt
+- Slides PDF: https://alphafold-tpu.vercel.app/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf (also in repo `presentation/`)
 - Visual design: light lab-paper background (#f7f8f9), navy ink, teal accent (#0b6e7a); fonts Bricolage Grotesque / IBM Plex / Newsreader
 
 ## Authors & course
@@ -33,7 +34,7 @@
 - Kicker: STANFORD HPC · SUMMER 2026
 - Title: AlphaFold / TPU Benchmark
 - Body: “We timed AlphaFold 2’s real JAX forward pass on CPU, GPU (T4), and TPU (v5e-8). As a follow-up we also ran AlphaFold 3 on the same Colab CPU/GPU; its public release has no TPU. Steady-state AF2 on TPU is 451× faster than CPU.”
-- Links: AF2 results · AF3 · Reproduce
+- Links: AF2 results · AF3 · Slides PDF · Reproduce
 - Metric label: AF2 STEADY-STATE VS CPU
 - Metric: **451×** (teal ×)
 - Subline: TPU 0.47s · GPU 13.1s (16.2×) · CPU 212s
@@ -264,6 +265,7 @@ On the baseline path only 1 of 8 chips was active (~87% idle), so list-price TPU
 | configs/ | K8s Jobs (AF2 sweeps + AF3 TPU attempt) |
 | figures/ | Charts + AF3 structure still |
 | notebooks/ | AF2 + AF3 Colab notebooks |
+| presentation/ | Course slides PDF |
 | profiling/ | XLA trace notes |
 | results/ | AF2 clocks + sweep/ + af3_comparison.md |
 | src/ | AF2 spikes + make_af3_input.py |

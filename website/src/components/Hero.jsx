@@ -53,6 +53,14 @@ export default function Hero() {
                 AF3
               </a>
               <span className="mx-3 text-line">/</span>
+              <a
+                href="/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf"
+                download
+                className="link-quiet text-base font-medium"
+              >
+                Slides PDF
+              </a>
+              <span className="mx-3 text-line">/</span>
               <a href="#reproduce" className="link-quiet text-base font-medium">
                 Reproduce
               </a>

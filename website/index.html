@@ -252,7 +252,7 @@
           <li><a href="#experiments">Experiments — twelve TPU follow-ups</a></li>
           <li><a href="#af3">AlphaFold 3 — Colab compare + interactive CIF + TPU wall</a></li>
           <li><a href="#cost">Cost — scaling law + $/1k</a></li>
-          <li><a href="#reproduce">Reproduce — repo + docker</a></li>
+          <li><a href="#reproduce">Reproduce — repo + docker + slides PDF</a></li>
         </ol>
       </nav>
 
@@ -262,6 +262,12 @@
         TPU 0.47s · GPU 13.1s (16.2× vs CPU) · CPU 212s. Title “AlphaFold TPU
         Benchmark”. Blurb: AF2 JAX forward pass on CPU, GPU (T4), and TPU
         (v5e-8); AF3 follow-up on the same Colab CPU/GPU (public AF3 has no TPU).
+        Course slides:
+        <a
+          href="/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf"
+          download
+          >Download slides PDF</a
+        >.
       </p>
 
       <h2 id="structure">Structure — Human ubiquitin</h2>
@@ -523,7 +529,12 @@ value should be one of &lt;cpu|gpu|mps&gt;
         Repo layout: configs/, figures/, notebooks/, profiling/, results/,
         src/, structure/ (ubiquitin PDB + AF3 CIF), website/. AF3 notebooks:
         <code>af3_cpu_colab</code> / <code>af3_gpu_colab</code>. Write-up:
-        <code>results/sweep/af3_comparison.md</code>. Example:
+        <code>results/sweep/af3_comparison.md</code>. Slides:
+        <a
+          href="/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf"
+          download
+          >presentation PDF</a
+        >. Example:
       </p>
       <pre>
 docker build --build-arg JAX_VARIANT=cpu -t af-bench:cpu .

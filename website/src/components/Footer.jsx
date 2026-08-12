@@ -20,6 +20,13 @@ export default function Footer() {
         </div>
         <div className="flex flex-col gap-2 sm:items-end">
           <a
+            href="/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf"
+            download
+            className="link-quiet inline-flex min-h-11 items-center text-sm"
+          >
+            Slides PDF
+          </a>
+          <a
             href={REPO}
             target="_blank"
             rel="noreferrer"

@@ -2,6 +2,7 @@ const TREE = [
   ['configs/', 'K8s Jobs (AF2 sweeps + AF3 TPU attempt)'],
   ['figures/', 'Charts + AF3 structure still'],
   ['notebooks/', 'AF2 + AF3 Colab notebooks'],
+  ['presentation/', 'Course slides PDF'],
   ['profiling/', 'XLA trace notes'],
   ['results/', 'AF2 clocks + sweep/ + af3_comparison.md'],
   ['src/', 'AF2 spikes + make_af3_input.py'],
@@ -10,6 +11,8 @@ const TREE = [
 ]
 
 const REPO = 'https://github.com/lorenzopazienza/alphafold-tpu-benchmark'
+const SLIDES =
+  '/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf'
 
 export default function Repo() {
   return (
@@ -27,20 +30,30 @@ export default function Repo() {
               <code className="font-mono text-[0.9em]">
                 results/sweep/af3_comparison.md
               </code>
-              .
+              . Course deck is in{' '}
+              <code className="font-mono text-[0.9em]">presentation/</code>.
             </p>
           </div>
-          <a
-            href={REPO}
-            target="_blank"
-            rel="noreferrer"
-            className="link-quiet inline-flex min-h-11 items-center self-start text-sm font-medium"
-          >
-            <span className="sm:hidden">Open on GitHub</span>
-            <span className="hidden break-all sm:inline">
-              github.com/lorenzopazienza/alphafold-tpu-benchmark
-            </span>
-          </a>
+          <div className="flex flex-col gap-3 self-start sm:items-end">
+            <a
+              href={SLIDES}
+              download
+              className="link-quiet inline-flex min-h-11 items-center text-sm font-medium"
+            >
+              Download slides PDF
+            </a>
+            <a
+              href={REPO}
+              target="_blank"
+              rel="noreferrer"
+              className="link-quiet inline-flex min-h-11 items-center text-sm font-medium"
+            >
+              <span className="sm:hidden">Open on GitHub</span>
+              <span className="hidden break-all sm:inline">
+                github.com/lorenzopazienza/alphafold-tpu-benchmark
+              </span>
+            </a>
+          </div>
         </div>
 
         <div className="mt-8 grid min-w-0 gap-10 lg:mt-10 lg:grid-cols-2 lg:gap-12">
@@ -50,7 +63,7 @@ export default function Repo() {
               {TREE.map(([path, desc]) => (
                 <li
                   key={path}
-                  className="grid grid-cols-1 gap-0.5 border-t border-line py-2.5 last:border-b sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-3"
+                  className="grid grid-cols-1 gap-0.5 border-t border-line py-2.5 last:border-b sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-3"
                 >
                   <span className="text-ink">{path}</span>
                   <span className="min-w-0 text-mute">{desc}</span>

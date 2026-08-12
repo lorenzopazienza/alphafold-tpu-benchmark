@@ -6,7 +6,7 @@
 **Students:** Lorenzo Pazienza & Ihab El Bani  
 **Professors:** Steve Jones, Mourad Bouache
 
-**Live site:** [alphafold-tpu.vercel.app](https://alphafold-tpu.vercel.app) · **Repo:** [lorenzopazienza/alphafold-tpu-benchmark](https://github.com/lorenzopazienza/alphafold-tpu-benchmark)
+**Live site:** [alphafold-tpu.vercel.app](https://alphafold-tpu.vercel.app) · **Repo:** [lorenzopazienza/alphafold-tpu-benchmark](https://github.com/lorenzopazienza/alphafold-tpu-benchmark) · **Slides:** [presentation PDF](presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf) (also [download from the site](https://alphafold-tpu.vercel.app/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf))
 
 ---
 
@@ -58,6 +58,8 @@ alphafold-tpu-benchmark/
 │   ├── real_protein_fold_visualization.ipynb
 │   ├── af3_cpu_colab.ipynb            # AF3 CPU (Colab) -- run_tag=cpu-colab
 │   └── af3_gpu_colab.ipynb            # AF3 GPU T4 (Colab) -- run_tag=gpu-t4
+├── presentation/
+│   └── AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf  # Course deck (mirrored on the site)
 ├── profiling/
 │   └── trace_analysis.md      # XLA cache_miss diagnosis (~76% cold path)
 ├── README.md                  # This executive report
@@ -96,7 +98,7 @@ alphafold-tpu-benchmark/
 │   └── af3_toy_test_gpu-t4_model.cif          # AF3, Colab GPU T4 run (see af3_comparison.md Section 5b/6 for how this differs from the CPU one)
 ├── vercel.json                # Root Vercel build → website/
 └── website/                   # Vite + React showcase → alphafold-tpu.vercel.app
-    ├── public/figures/ · public/structure/
+    ├── public/figures/ · public/structure/ · public/presentation/
     ├── src/components/ · src/pages/
     └── src/data/experiments.js
 ```
