@@ -10,6 +10,22 @@ recycles, random-init params). Only the backend changes.
 | GPU (T4, Colab) | 1 | 109.16 | 97.62 | 13.086 |
 | **TPU (v5e-podslice, Stanford)** | **8 chips** | **36.6** | **27.78** | **0.47** |
 
+**Hardware specifications:**
+
+| | CPU (Colab) | GPU (Colab) | TPU (Stanford, not Colab) |
+|---|---|---|---|
+| Device | Intel Xeon (2 vCPU) | NVIDIA Tesla T4 | Google TPU v5e (`tpu-v5-lite-podslice`) |
+| Memory | 13.6 GB RAM | 15 GB VRAM | 8 chips, topology 2x4, HBM per chip |
+| Backend | `cpu` | `gpu` | `tpu` |
+| Where it ran | Free-tier Colab runtime | Free-tier Colab runtime (T4) | Stanford GKE cluster (`class-tpu-cluster-west4`), via Kubernetes Job + Kueue, **not** Colab's own TPU offering |
+
+The CPU and GPU specs above are Colab's standard free-tier allocation for
+those runtime types. The TPU row is deliberately **not** Colab's TPU
+runtime (which offers a single v5e-1 device) — every TPU result in this
+project comes from the real 8-chip `v5e-lite-podslice` on Stanford's
+class cluster, reached via `gcloud`/`kubectl`, not from selecting "TPU"
+in Colab's runtime menu.
+
 ## Headline numbers
 
 **Steady-state speedup vs CPU:**

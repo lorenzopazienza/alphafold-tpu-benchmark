@@ -1,0 +1,117 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: af3-spike-tpu-${TEAM}
+  labels:
+    kueue.x-k8s.io/queue-name: student-queue   # admits the Job through the class TPU quota
+# RESULT: confirmed to fail. AlphaFold3's public run_alphafold.py
+# accepts --jax_backend values <cpu|gpu|mps> only -- 'tpu' does not
+# exist as an option. Every step up through this flag check succeeds
+# (C++ build, Chemical Component Dictionary, weights, jax[tpu]
+# install); the flag validation itself is the wall. See
+# results/sweep/af3_comparison.md Section 3 and
+# results/sweep/af3_tpu_attempt.log for the full log. Kept in this
+# repo as documentation of a real, confirmed attempt, not as a
+# working reproduction path.
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+        cloud.google.com/gke-tpu-topology: 2x4
+      containers:
+      - name: af3-spike-tpu
+        image: python:3.12-slim
+        command: ["bash", "-c"]
+        args:
+          - |
+            set -euxo pipefail
+
+            # AF3 needs a real C++ toolchain to build libcifpp/pybind11 at
+            # install time -- this is exactly why this run happens inside a
+            # Kubernetes Job (root in the container) rather than on the
+            # no-sudo login node. Same dependency set that fixed the
+            # missing-ZLIB failure hit the first time we built AF3.
+            apt-get update && apt-get install -y --no-install-recommends \
+              git curl build-essential cmake ninja-build zlib1g-dev \
+              libeigen3-dev libpcre2-dev libboost-all-dev libbz2-dev zstd \
+              && rm -rf /var/lib/apt/lists/*
+
+            pip install --no-cache-dir -q uv
+
+            # No git clone restriction inside the container (root), but stay
+            # consistent with the tarball approach used for the CPU run.
+            curl -fsSL -o /tmp/af3.tar.gz \
+              https://github.com/google-deepmind/alphafold3/archive/refs/heads/main.tar.gz
+            mkdir -p /alphafold3 && tar -xzf /tmp/af3.tar.gz -C /alphafold3 --strip-components=1
+            cd /alphafold3
+            uv sync
+
+            # uv sync only installs the CPU/GPU-flavored jaxlib (confirmed:
+            # the Colab CPU/GPU runs pulled in jax-cuda12-pjrt/-plugin, no
+            # TPU package at all) -- AF3's own dependency lockfile has no
+            # TPU extra, so libtpu has to be added explicitly, same as AF2's
+            # config in this repo (af_spike_job.yaml) does.
+            uv pip install "jax[tpu]==0.10.2" \
+              -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+
+            # Build the Chemical Component Dictionary pickle that
+            # run_alphafold.py expects at startup -- documented in AF3's own
+            # docker/Dockerfile as a separate step after `uv sync`. Skipping
+            # this produces `FileNotFoundError:
+            # .../chemical_component_sets.pickle` a few seconds into the run
+            # (hit and fixed during the Colab CPU/GPU attempts, before this
+            # Job was ever run).
+            uv run build_data
+
+            # Weights: too large for a ConfigMap (1.15GB decompressed vs the
+            # 1MB ConfigMap limit) -- the Job downloads them directly from
+            # the public URL itself, same as the CPU run.
+            mkdir -p /af3_weights
+            curl -fsSL -o /af3_weights/af3.bin.zst \
+              https://storage.googleapis.com/alphafold3/af3.bin.zst
+            zstd -d /af3_weights/af3.bin.zst -o /af3_weights/af3.bin
+
+            # Same input JSON generator used by the Colab CPU/GPU notebook --
+            # byte-identical toy sequence, empty MSA, seed=1 -- so all three
+            # backend runs are directly comparable. Also run via `uv run`:
+            # it imports `absl`, which only exists inside the venv `uv sync`
+            # just built, not in the system Python.
+            cp /mnt/script/make_af3_input.py /alphafold3/make_af3_input.py
+            uv run python3 make_af3_input.py --output_path=/alphafold3/af3_toy_input.json --seed=1
+
+            mkdir -p /alphafold3/results
+            # CONFIRMED: this call fails in ~6s with
+            # "FATAL Flags parsing error: flag --jax_backend=tpu: value
+            # should be one of <cpu|gpu|mps>" -- AlphaFold3's public CLI
+            # has no 'tpu' option. Every step above this line succeeds.
+            # See results/sweep/af3_comparison.md Section 3 and
+            # results/sweep/af3_tpu_attempt.log for the full log.
+            time uv run python3 run_alphafold.py \
+              --json_path=/alphafold3/af3_toy_input.json \
+              --model_dir=/af3_weights \
+              --output_dir=/alphafold3/results/af3_tpu_output \
+              --norun_data_pipeline \
+              --flash_attention_implementation=xla \
+              --jax_backend=tpu \
+              2>&1 | tee /alphafold3/results/af3_tpu_run.log
+
+            cp -r /alphafold3/results /mnt/output/results
+        resources:
+          requests:
+            google.com/tpu: "8"
+            memory: 32Gi
+          limits:
+            google.com/tpu: "8"
+            memory: 64Gi
+        volumeMounts:
+          - { name: script, mountPath: /mnt/script }
+          - { name: output, mountPath: /mnt/output }
+      volumes:
+        - name: script
+          configMap:
+            name: af3-spike-script-${TEAM}
+        - name: output
+          emptyDir: {}

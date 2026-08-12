@@ -1,0 +1,13 @@
+{
+  "run_tag": "cpu-colab",
+  "backend": "cpu",
+  "model": "alphafold3",
+  "num_residues": 118,
+  "num_samples": 5,
+  "total_inference_seconds": 2453.9879653453827,
+  "seconds_per_sample": 490.7975930690765,
+  "best_ranking_score": 0.41,
+  "ptm": 0.23,
+  "fraction_disordered": 0.37,
+  "has_clash": 0.0
+}
