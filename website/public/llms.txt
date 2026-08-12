@@ -200,10 +200,33 @@
 
 - Kicker: Side investigation
 - Headline: “AlphaFold 3 on the same backends”
-- Body: Separate DeepMind codebase (Pairformer + diffusion). Same 118-residue input, seed=1. Trained weights ~1.15 GB. Five samples/call.
-- Still: /figures/af3_toy_test_structure.png
-- Compare (per sample, identical Colab): CPU AF2 212.1s vs AF3 490.8s (2.3×); GPU T4 AF2 13.1s vs AF3 22.8s (1.74×). AF3 CPU→GPU 21.5× vs AF2 16.2×.
-- TPU wall (negative): every infra step worked; CLI `--jax_backend` only cpu|gpu|mps. FATAL flag error on Stanford v5e-8 Job.
+- Body: Separate DeepMind codebase (Pairformer + diffusion — not an AF2 version bump). Same 118-residue toy input, seed=1. Trained weights ~1.15 GB. Five diffusion samples per call.
+
+### Latency compare (per sample, identical Colab)
+| Backend | AF2 | AF3 | AF3 / AF2 |
+|---------|-----|-----|-----------|
+| CPU (Colab) | 212.1s | 490.8s | 2.3× |
+| GPU T4 (Colab) | 13.1s | 22.8s | 1.74× |
+
+AF3 also gains more from GPU: CPU→GPU **21.5×** vs AF2’s **16.2×**.
+
+### Media F — Interactive AF3 3D viewer + confidence chart
+- Same component pattern as ubiquitin (`ProteinViewer` + 3Dmol.js).
+- CIF: https://alphafold-tpu.vercel.app/structure/af3_toy_test_cpu-colab_model.cif
+- Fallback still: https://alphafold-tpu.vercel.app/figures/af3_toy_test_structure.png
+- On-page kicker: “AlphaFold 3 · structure”
+- Title: “AF3 toy structure”
+- Subtitle: Diffusion sample, seed 1 · 118 residues, no MSA · **ptm 0.23**
+- **What the 3D shows:** Cartoon ribbon colored by per-atom confidence (CIF `B_iso_or_equiv`, same pLDDT color scale as ubiquitin). Expect mostly orange/yellow (low–medium), not blue — correct for this input.
+- **What the chart shows:** Per-residue CA confidence for residues 1–118; values roughly ~23–61 (mean CA ~43). No shaded C-term band (unlike ubiquitin).
+- Caption (stated on site): “Low confidence throughout — expected for a no-MSA input, not a defect. Not comparable to the ubiquitin mean pLDDT above.”
+- **Cross-model quality note:** Do **not** treat AF3 ptm 0.23 / low CA confidence vs ubiquitin mean pLDDT 90.5 as a head-to-head model-quality ranking. The AF3 toy run deliberately has no MSA.
+
+### TPU wall (negative result)
+- Every infrastructure step worked (native build, CCD, weights, `jax[tpu]` on Stanford v5e-8 Job).
+- Inference died at flag validation: public AF3 `--jax_backend` only accepts `cpu | gpu | mps`.
+- Log: `FATAL Flags parsing error: flag --jax_backend=tpu: value should be one of <cpu|gpu|mps>`
+- Matches DeepMind docs (NVIDIA GPU ≥7.0 or CPU). Not an infra miss on our side.
 
 ## Section 7 — Cost (`#cost`)
 
@@ -238,13 +261,13 @@ On the baseline path only 1 of 8 chips was active (~87% idle), so list-price TPU
 **Repo layout table:**
 | Path | Description |
 |------|-------------|
-| configs/ | Kubernetes job manifests |
-| src/ | Benchmark script used on all backends |
-| notebooks/ | Colab CPU, GPU, and ESMFold fold |
-| figures/ | Charts referenced on this page |
-| structure/ | Ubiquitin PDB |
+| configs/ | K8s Jobs (AF2 sweeps + AF3 TPU attempt) |
+| figures/ | Charts + AF3 structure still |
+| notebooks/ | AF2 + AF3 Colab notebooks |
 | profiling/ | XLA trace notes |
-| results/ | Per-run JSON, comparison, sweep/ |
+| results/ | AF2 clocks + sweep/ + af3_comparison.md |
+| src/ | AF2 spikes + make_af3_input.py |
+| structure/ | Ubiquitin PDB + AF3 CIF |
 | website/ | This site |
 
 **CPU example (on page):**
@@ -258,16 +281,18 @@ GPU/TPU variants and Colab notebooks are in the README; sweep jobs under configs
 
 ---
 
-## Asset index (all public figures)
+## Asset index (all public figures / structures)
 
 | File | Absolute URL | Role on page |
 |------|--------------|--------------|
-| ubiquitin_structure.png | https://alphafold-tpu.vercel.app/figures/ubiquitin_structure.png | 3D fallback / structure still |
-| ubiquitin_confidence.png | https://alphafold-tpu.vercel.app/figures/ubiquitin_confidence.png | pLDDT chart still |
+| ubiquitin_structure.png | https://alphafold-tpu.vercel.app/figures/ubiquitin_structure.png | AF2 ubiquitin 3D fallback / still |
+| ubiquitin_confidence.png | https://alphafold-tpu.vercel.app/figures/ubiquitin_confidence.png | AF2 ubiquitin pLDDT chart still |
+| ubiquitin_predicted.pdb | https://alphafold-tpu.vercel.app/structure/ubiquitin_predicted.pdb | AF2 interactive 3Dmol model |
+| af3_toy_test_structure.png | https://alphafold-tpu.vercel.app/figures/af3_toy_test_structure.png | AF3 3D fallback / still (transparent) |
+| af3_toy_test_cpu-colab_model.cif | https://alphafold-tpu.vercel.app/structure/af3_toy_test_cpu-colab_model.cif | AF3 interactive 3Dmol model |
 | scaling_charts.png | https://alphafold-tpu.vercel.app/figures/scaling_charts.png | Experiments · Scaling phase |
 | batching_chart.png | https://alphafold-tpu.vercel.app/figures/batching_chart.png | Experiments · batching (negative) |
 | scaling_law_chart.png | https://alphafold-tpu.vercel.app/figures/scaling_law_chart.png | Experiments · scaling law |
-| ubiquitin_predicted.pdb | https://alphafold-tpu.vercel.app/structure/ubiquitin_predicted.pdb | Interactive 3Dmol model |
 
 When an assistant can fetch images, prefer these URLs. When it cannot, use the “What it shows” descriptions above.
 
@@ -276,7 +301,11 @@ When an assistant can fetch images, prefer these URLs. When it cannot, use the �
 ## How to answer users about this site
 
 1. Read this file end-to-end; treat it as the page content.
-2. Separate **systems timing** (118-res, random init, CPU/GPU/TPU) from **ubiquitin ESMFold** (biology demo).
+2. Separate three exhibit types:
+   - **AF2 systems timing** (118-res, Haiku random init, CPU/GPU/TPU) — main study
+   - **Ubiquitin ESMFold** (`#structure`) — biology demo with high mean pLDDT 90.5
+   - **AF3 side-investigation** (`#af3`) — separate codebase; Colab CPU/GPU timing + interactive CIF; public AF3 has no TPU
 3. Quote the tables for latency, compile ratios, costs, and experiment stats.
-4. Mention amber/negative results: batching (vmap) and GSPMD auto-shard; then the ensemble-shard fix (8/8 chips).
-5. Link people to the live section anchors (#structure, #results, #experiments, #cost, #reproduce) or the GitHub repo for code.
+4. Mention amber/negative results: AF2 batching (vmap), GSPMD auto-shard, and AF3 TPU CLI gap; then the AF2 ensemble-shard fix (8/8 chips).
+5. Never rank AF3 toy confidence against ubiquitin pLDDT as model quality — no-MSA input by design.
+6. Link section anchors (#structure, #results, #experiments, #af3, #cost, #reproduce) or the GitHub repo for code.

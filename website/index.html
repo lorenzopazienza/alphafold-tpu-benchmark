@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AlphaFold TPU Benchmark · CPU vs GPU vs TPU Scaling Study · Stanford HPC</title>
+    <title>AlphaFold TPU Benchmark · AF2 CPU/GPU/TPU + AF3 Side Study · Stanford HPC</title>
     <meta
       name="description"
-      content="Stanford HPC study: AlphaFold 2 on CPU/GPU/TPU (451×) plus AlphaFold 3 side-investigation — slower on same Colab hardware; public AF3 has no TPU. Transcript: /llms.txt."
+      content="Stanford HPC: AlphaFold 2 on CPU/GPU/TPU — steady-state TPU 0.47s (451× vs CPU). AlphaFold 3 on the same Colab backends (2.3×/1.74× slower; interactive CIF viewer; public AF3 has no TPU). Transcript: /llms.txt."
     />
     <meta
       name="keywords"
-      content="AlphaFold, TPU, GPU, CPU, JAX, XLA, Stanford, HPC, protein structure, ESMFold, ubiquitin, scaling, pmap, compilation cache, v5e"
+      content="AlphaFold, AlphaFold 2, AlphaFold 3, AF3, TPU, GPU, CPU, JAX, XLA, Stanford, HPC, protein structure, ESMFold, ubiquitin, scaling, pmap, compilation cache, v5e, diffusion, Pairformer"
     />
     <meta name="author" content="Lorenzo Pazienza, Ihab El Bani" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -20,10 +20,10 @@
     <link rel="alternate" type="text/plain" href="https://alphafold-tpu.vercel.app/llms.txt" title="Full LLM page transcript" />
 
     <meta property="og:site_name" content="AlphaFold TPU Benchmark" />
-    <meta property="og:title" content="AlphaFold TPU Benchmark · Stanford HPC Scaling Study" />
+    <meta property="og:title" content="AlphaFold TPU Benchmark · AF2 + AF3 · Stanford HPC" />
     <meta
       property="og:description"
-      content="Same AlphaFold forward pass on CPU, GPU T4, and TPU v5e-8. Steady-state: TPU 0.47s (451× vs CPU), GPU 13.1s (16.2×). Twelve TPU follow-ups with charts, cost analysis, open code. Full text: /llms.txt"
+      content="AF2: TPU 0.47s (451× vs CPU), GPU 13.1s (16.2×). Twelve TPU follow-ups. AF3: same Colab CPU/GPU compare + interactive 3D CIF; public release has no TPU. Full text: /llms.txt"
     />
     <meta property="og:type" content="article" />
     <meta property="og:url" content="https://alphafold-tpu.vercel.app/" />
@@ -34,10 +34,10 @@
     <meta property="og:image:alt" content="ESMFold cartoon of human ubiquitin colored by pLDDT confidence" />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="AlphaFold TPU Benchmark · Stanford HPC Scaling Study" />
+    <meta name="twitter:title" content="AlphaFold TPU Benchmark · AF2 + AF3 · Stanford HPC" />
     <meta
       name="twitter:description"
-      content="CPU 212s · GPU T4 13.1s (16.2×) · TPU v5e-8 0.47s (451×). Section-by-section transcript at /llms.txt"
+      content="AF2: CPU 212s · GPU T4 13.1s (16.2×) · TPU v5e-8 0.47s (451×). AF3 side study + interactive CIF. Transcript: /llms.txt"
     />
     <meta
       name="twitter:image"
@@ -53,7 +53,7 @@
             "@id": "https://alphafold-tpu.vercel.app/#website",
             "url": "https://alphafold-tpu.vercel.app/",
             "name": "AlphaFold TPU Benchmark",
-            "description": "Stanford HPC project comparing AlphaFold forward-pass performance on CPU, GPU, and TPU. Full assistant transcript at /llms.txt.",
+            "description": "Stanford HPC project: AlphaFold 2 CPU/GPU/TPU scaling plus AlphaFold 3 Colab side-investigation with interactive CIF viewer. Full assistant transcript at /llms.txt.",
             "inLanguage": "en",
             "hasPart": {
               "@type": "WebPage",
@@ -67,11 +67,12 @@
             "url": "https://alphafold-tpu.vercel.app/",
             "headline": "AlphaFold TPU Benchmark: A CPU/GPU/TPU Scaling Study",
             "datePublished": "2026-08-01",
-            "dateModified": "2026-08-09",
+            "dateModified": "2026-08-12",
             "inLanguage": "en",
             "isAccessibleForFree": true,
             "image": [
               "https://alphafold-tpu.vercel.app/figures/ubiquitin_structure.png",
+              "https://alphafold-tpu.vercel.app/figures/af3_toy_test_structure.png",
               "https://alphafold-tpu.vercel.app/figures/scaling_charts.png",
               "https://alphafold-tpu.vercel.app/figures/batching_chart.png",
               "https://alphafold-tpu.vercel.app/figures/scaling_law_chart.png",
@@ -88,15 +89,18 @@
             "publisher": { "@type": "Organization", "name": "Stanford University" },
             "keywords": [
               "AlphaFold",
+              "AlphaFold 2",
+              "AlphaFold 3",
               "TPU v5e",
               "GPU T4",
               "JAX",
               "XLA",
               "protein structure prediction",
               "pmap",
-              "compilation cache"
+              "compilation cache",
+              "diffusion"
             ],
-            "abstract": "AlphaFold TPU Benchmark: we timed AlphaFold 2’s JAX/Haiku forward pass on CPU, NVIDIA T4, and Google TPU v5e-8. Steady-state TPU 0.47s (451× vs CPU). Twelve AF2 follow-ups (compile cache, pmap, ensemble shard). AlphaFold 3 side-investigation on the same Colab CPU/GPU — 2.3×/1.74× slower per sample; public AF3 CLI has no TPU backend. Full transcript: https://alphafold-tpu.vercel.app/llms.txt",
+            "abstract": "AlphaFold TPU Benchmark: we timed AlphaFold 2’s JAX/Haiku forward pass on CPU, NVIDIA T4, and Google TPU v5e-8. Steady-state TPU 0.47s (451× vs CPU). Twelve AF2 follow-ups (compile cache, pmap, ensemble shard). AlphaFold 3 side-investigation on the same Colab CPU/GPU — 2.3×/1.74× slower per sample; interactive 3D CIF + confidence chart; public AF3 CLI has no TPU backend. Full transcript: https://alphafold-tpu.vercel.app/llms.txt",
             "citation": "https://github.com/lorenzopazienza/alphafold-tpu-benchmark",
             "mainEntityOfPage": "https://alphafold-tpu.vercel.app/"
           },
@@ -105,6 +109,21 @@
             "contentUrl": "https://alphafold-tpu.vercel.app/figures/ubiquitin_structure.png",
             "name": "Human ubiquitin ESMFold structure",
             "description": "Cartoon ribbon of 76-residue human ubiquitin colored by pLDDT. High-confidence blue/cyan core; lower confidence (warmer colors) at the flexible C-terminal tail residues ~71–76. Mean pLDDT 90.5."
+          },
+          {
+            "@type": "ImageObject",
+            "contentUrl": "https://alphafold-tpu.vercel.app/figures/af3_toy_test_structure.png",
+            "name": "AlphaFold 3 toy-test structure",
+            "description": "Fallback still for the interactive AF3 CIF viewer. 118-residue no-MSA toy input, seed=1, trained weights. Low/medium confidence coloring expected; ptm 0.23 — not comparable to ubiquitin mean pLDDT."
+          },
+          {
+            "@type": "Dataset",
+            "@id": "https://alphafold-tpu.vercel.app/#af3-structure",
+            "name": "AlphaFold 3 toy-test CIF (CPU/Colab)",
+            "description": "Predicted structure for the 118-residue AF3 toy sequence (CPU/Colab run, seed=1). Used by the site’s interactive 3Dmol viewer.",
+            "url": "https://alphafold-tpu.vercel.app/structure/af3_toy_test_cpu-colab_model.cif",
+            "encodingFormat": "chemical/x-cif",
+            "license": "https://github.com/google-deepmind/alphafold3/blob/main/OUTPUT_TERMS_OF_USE.md"
           },
           {
             "@type": "ImageObject",
@@ -229,8 +248,9 @@
           <li><a href="#structure">Structure — ubiquitin 3D + pLDDT</a></li>
           <li><a href="#problem">Problem</a></li>
           <li><a href="#approach">Approach — one script, three backends</a></li>
-          <li><a href="#results">Results — latency bars</a></li>
+          <li><a href="#results">Results — AF2 latency bars</a></li>
           <li><a href="#experiments">Experiments — twelve TPU follow-ups</a></li>
+          <li><a href="#af3">AlphaFold 3 — Colab compare + interactive CIF + TPU wall</a></li>
           <li><a href="#cost">Cost — scaling law + $/1k</a></li>
           <li><a href="#reproduce">Reproduce — repo + docker</a></li>
         </ol>
@@ -238,10 +258,10 @@
 
       <h2 id="top">Hero</h2>
       <p>
-        Giant metric <strong>451×</strong> (steady-state TPU vs CPU). Subline:
+        Giant metric <strong>451×</strong> (AF2 steady-state TPU vs CPU). Subline:
         TPU 0.47s · GPU 13.1s (16.2× vs CPU) · CPU 212s. Title “AlphaFold TPU
-        Benchmark”. Blurb: same AlphaFold JAX forward pass on CPU, GPU (T4), and TPU
-        (v5e-8).
+        Benchmark”. Blurb: AF2 JAX forward pass on CPU, GPU (T4), and TPU
+        (v5e-8); AF3 follow-up on the same Colab CPU/GPU (public AF3 has no TPU).
       </p>
 
       <h2 id="structure">Structure — Human ubiquitin</h2>
@@ -276,10 +296,11 @@
 
       <h2 id="problem">Problem</h2>
       <p>
-        <strong>Where does AlphaFold spend time on CPU, GPU, and TPU?</strong>
+        <strong>Where does AlphaFold 2 spend time on CPU, GPU, and TPU?</strong>
         Same model config, script, and input shape; measure init, first predict
         (compile + run), steady-state. Hardware: Colab CPU/T4; Stanford TPU
-        v5e-8 (2×4).
+        v5e-8 (2×4). Follow-up: AlphaFold 3 on the same Colab CPU/GPU — see
+        <a href="#af3">#af3</a>.
       </p>
 
       <h2 id="approach">Approach</h2>
@@ -424,6 +445,72 @@
         </li>
       </ol>
 
+      <h2 id="af3">AlphaFold 3 — side investigation</h2>
+      <p>
+        Separate DeepMind codebase (Pairformer + diffusion), not an AF2 version
+        bump. Same 118-residue toy input, seed=1, trained weights (~1.15 GB),
+        five diffusion samples per call.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Backend</th>
+            <th>AF2 / sample</th>
+            <th>AF3 / sample</th>
+            <th>AF3 / AF2</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CPU (Colab)</td>
+            <td>212.1s</td>
+            <td>490.8s</td>
+            <td>2.3×</td>
+          </tr>
+          <tr>
+            <td>GPU T4 (Colab)</td>
+            <td>13.1s</td>
+            <td>22.8s</td>
+            <td>1.74×</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        AF3 CPU→GPU speedup is <strong>21.5×</strong> (vs AF2’s 16.2×). Interactive
+        3D viewer loads
+        <a href="/structure/af3_toy_test_cpu-colab_model.cif"
+          >/structure/af3_toy_test_cpu-colab_model.cif</a
+        >
+        via 3Dmol.js (same pattern as ubiquitin) plus a per-residue confidence
+        chart. Global <strong>ptm 0.23</strong>; CA confidences roughly 23–61.
+        Low confidence is expected for a no-MSA input — not comparable to
+        ubiquitin mean pLDDT 90.5.
+      </p>
+      <figure>
+        <img
+          src="/figures/af3_toy_test_structure.png"
+          alt="AlphaFold 3 toy-sequence predicted structure (fallback still for the interactive CIF viewer), seed=1, 118 residues"
+          width="1200"
+          height="900"
+        />
+        <figcaption>
+          AF3 structure fallback still. Interactive model:
+          <a href="/structure/af3_toy_test_cpu-colab_model.cif"
+            >/structure/af3_toy_test_cpu-colab_model.cif</a
+          >
+        </figcaption>
+      </figure>
+      <p>
+        <strong>TPU negative result:</strong> Stanford v5e-8 Job built native
+        AF3 + CCD + weights + <code>jax[tpu]</code>, then failed flag validation:
+        public <code>--jax_backend</code> only accepts
+        <code>cpu | gpu | mps</code>. Not an infra miss.
+      </p>
+      <pre>
+FATAL Flags parsing error: flag --jax_backend=tpu:
+value should be one of &lt;cpu|gpu|mps&gt;
+      </pre>
+
       <h2 id="cost">Cost</h2>
       <p>
         Headline: cost per prediction is nearly flat in chip count. Baseline path
@@ -433,8 +520,10 @@
 
       <h2 id="reproduce">Reproduce</h2>
       <p>
-        Repo layout: configs/, src/, notebooks/, figures/, structure/,
-        profiling/, results/, website/. Example:
+        Repo layout: configs/, figures/, notebooks/, profiling/, results/,
+        src/, structure/ (ubiquitin PDB + AF3 CIF), website/. AF3 notebooks:
+        <code>af3_cpu_colab</code> / <code>af3_gpu_colab</code>. Write-up:
+        <code>results/sweep/af3_comparison.md</code>. Example:
       </p>
       <pre>
 docker build --build-arg JAX_VARIANT=cpu -t af-bench:cpu .
