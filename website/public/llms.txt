@@ -38,13 +38,13 @@ this AlphaFold TPU Benchmark work.
 
 **On-screen layout:** Two-column hero. Left: kicker + title + blurb + links. Right: giant “451×” metric.
 
-- Kicker: STANFORD UNIVERSITY · SUMMER SESSION 2026 · HIGH PERFORMANCE COMPUTING
+- Kicker: STANFORD UNIVERSITY · SUMMER SESSION 2026 · INTRODUCTION TO HIGH PERFORMANCE COMPUTING AND AI SYSTEMS (ME344)
 - Title: AlphaFold / TPU Benchmark
-- Body: “We timed AlphaFold 2’s real JAX forward pass on Google Colab Intel Xeon CPU (2 vCPU), Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (2×4 lite podslice). As a follow-up we also ran AlphaFold 3 on the same Google Colab CPU/GPU; its public release has no TPU. Steady-state AF2 on TPU is 451× faster than CPU.”
+- Body: “We timed AlphaFold 2’s real JAX forward pass on Google Colab Intel Xeon CPU (2 vCPU), Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (2×4 lite podslice). As a follow-up we also ran AlphaFold 3 on the same Google Colab Intel Xeon CPU (2 vCPU) and Google Colab NVIDIA Tesla T4; its public release has no TPU. Steady-state AF2 on Stanford GKE TPU v5e-8 is 451× faster than Google Colab Intel Xeon CPU (0.47s vs 212.1s).”
 - Links: AF2 results · AF3 · Slides PDF · Reproduce
-- Metric label: AF2 STEADY-STATE PREDICT VS CPU
+- Metric label: AF2 STEADY-STATE PREDICT VS GOOGLE COLAB INTEL XEON CPU (2 VCPU)
 - Metric: **451×** (teal ×)
-- Subline: 2nd predict · model_3 · 118 residues: CPU 212.1s · Google Colab NVIDIA Tesla T4 13.1s (16.2× vs CPU) · Stanford TPU v5e-8 0.47s (451× vs CPU)
+- Subline: 2nd predict · model_3 · 118 residues: Google Colab Intel Xeon CPU (2 vCPU) 212.1s · Google Colab NVIDIA Tesla T4 13.1s (16.2× vs Google Colab Intel Xeon CPU) · Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips) 0.47s (451× vs Google Colab Intel Xeon CPU)
 - Footer credit line under a hairline rule: Lorenzo Pazienza & Ihab El Bani · Stanford University · Summer Session 2026 · Introduction to High Performance Computing and AI Systems (ME344) · Profs. Steve Jones & Mourad Bouache
 
 **Important:** GPU speedup vs CPU is **16.2×**. TPU vs GPU is ~27.8×. Do not say GPU is 27.8× vs CPU.
@@ -313,7 +313,7 @@ When an assistant can fetch images, prefer these URLs. When it cannot, use the �
 2. Separate three exhibit types:
    - **AF2 systems timing** (118-res, Haiku random init, CPU/GPU/TPU) - main study
    - **Ubiquitin ESMFold** (`#structure`) - biology demo with high mean pLDDT 90.5
-   - **AF3 side-investigation** (`#af3`) - separate codebase; Google Colab CPU/GPU timing + interactive CIF; public AF3 has no TPU
+   - **AF3 side-investigation** (`#af3`) - separate codebase; Google Colab Intel Xeon CPU (2 vCPU) and Google Colab NVIDIA Tesla T4 timing + interactive CIF; public AF3 has no TPU
 3. Quote the tables for latency, compile ratios, costs, and experiment stats.
 4. Mention amber/negative results: AF2 batching (vmap), GSPMD auto-shard, and AF3 TPU CLI gap; then the AF2 ensemble-shard fix (8/8 chips).
 5. Never rank AF3 toy confidence against ubiquitin pLDDT as model quality - no-MSA input by design.
