@@ -1,6 +1,6 @@
 # AlphaFold TPU Benchmark: Executive Technical Report
 
-**Stanford University** · Summer Session 2026
+**Stanford University** · Summer Session 2026         
 **Course:** Introduction to High Performance Computing and AI Systems (ME344)  
 **Pathway:** Option 2 - Custom Scientific ML Workload  
 **Students:** Lorenzo Pazienza & Ihab El Bani  
