@@ -24,6 +24,30 @@ function useCountUp(target, duration = 1400) {
   return value
 }
 
+const METRIC_CONTEXT = '2nd predict · model_3 · 118 residues'
+
+const METRIC_ROWS = [
+  {
+    backend: 'Google Colab Intel Xeon CPU (2 vCPU)',
+    time: '212.1s',
+    speedup: '1× baseline',
+    color: '#7a8796',
+  },
+  {
+    backend: 'Google Colab NVIDIA Tesla T4',
+    time: '13.1s',
+    speedup: '16.2× vs CPU',
+    color: '#3d5f94',
+  },
+  {
+    backend: 'Stanford GKE TPU v5e-8',
+    detail: 'tpu-v5-lite-podslice · 2×4 · 8 chips',
+    time: '0.47s',
+    speedup: '451× vs CPU',
+    color: '#0b6e7a',
+  },
+]
+
 export default function Hero() {
   const n = useCountUp(451)
 
@@ -81,13 +105,31 @@ export default function Hero() {
               {n}
               <span className="text-teal">×</span>
             </p>
-            <p className="section-note mt-3 lg:ml-auto lg:max-w-md">
-              2nd predict · model_3 · 118 residues: Google Colab Intel Xeon CPU
-              (2 vCPU) 212.1s · Google Colab NVIDIA Tesla T4 13.1s (16.2× vs
-              Google Colab Intel Xeon CPU) · Stanford GKE TPU v5e-8
-              (tpu-v5-lite-podslice, 2×4, 8 chips) 0.47s (451× vs Google Colab
-              Intel Xeon CPU)
-            </p>
+
+            <div className="hero-metric-stack mt-4 lg:ml-auto">
+              <p className="label-mono">{METRIC_CONTEXT}</p>
+              <ul className="hero-metric-list">
+                {METRIC_ROWS.map((row) => (
+                  <li key={row.backend} className="hero-metric-row">
+                    <span
+                      className="hero-metric-dot"
+                      style={{ background: row.color }}
+                      aria-hidden
+                    />
+                    <div className="hero-metric-copy">
+                      <span className="hero-metric-backend">{row.backend}</span>
+                      {row.detail ? (
+                        <span className="hero-metric-detail">{row.detail}</span>
+                      ) : null}
+                    </div>
+                    <div className="hero-metric-stats">
+                      <span className="hero-metric-time eq">{row.time}</span>
+                      <span className="hero-metric-speedup eq">{row.speedup}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </div>

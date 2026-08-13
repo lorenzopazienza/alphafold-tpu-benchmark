@@ -352,8 +352,7 @@
 
       <h2 id="top">Hero</h2>
       <p>
-        Giant metric <strong>451×</strong> (AF2 steady-state TPU vs Google Colab Intel Xeon CPU). Subline:
-        2nd predict · model_3 · 118 residues: Google Colab Intel Xeon CPU (2 vCPU) 212.1s · Google Colab NVIDIA Tesla T4 13.1s (16.2× vs Google Colab Intel Xeon CPU) · Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips) 0.47s (451× vs Google Colab Intel Xeon CPU). Title “AlphaFold TPU
+        Giant metric <strong>451×</strong> (AF2 steady-state TPU vs Google Colab Intel Xeon CPU). Under it: a stacked list (one row per backend), not one dense line. Context: 2nd predict · model_3 · 118 residues. Rows: (1) Google Colab Intel Xeon CPU (2 vCPU) 212.1s 1× baseline; (2) Google Colab NVIDIA Tesla T4 13.1s 16.2× vs CPU; (3) Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice · 2×4 · 8 chips) 0.47s 451× vs CPU. Title “AlphaFold TPU
         Benchmark”. Blurb: AF2 JAX forward pass on Google Colab Intel Xeon CPU (2 vCPU),
         Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips);
         AF3 follow-up on the same Google Colab Intel Xeon CPU (2 vCPU) and Google Colab NVIDIA Tesla T4 (public AF3 has no TPU).

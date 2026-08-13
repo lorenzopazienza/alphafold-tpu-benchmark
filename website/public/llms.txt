@@ -44,7 +44,10 @@ this AlphaFold TPU Benchmark work.
 - Links: AF2 results · AF3 · Slides PDF · Reproduce
 - Metric label: AF2 STEADY-STATE PREDICT VS GOOGLE COLAB INTEL XEON CPU (2 VCPU)
 - Metric: **451×** (teal ×)
-- Subline: 2nd predict · model_3 · 118 residues: Google Colab Intel Xeon CPU (2 vCPU) 212.1s · Google Colab NVIDIA Tesla T4 13.1s (16.2× vs Google Colab Intel Xeon CPU) · Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips) 0.47s (451× vs Google Colab Intel Xeon CPU)
+- Subline: stacked list under 451× (not one paragraph). Context label: 2nd predict · model_3 · 118 residues. Three rows, one per backend:
+  1. Google Colab Intel Xeon CPU (2 vCPU) — 212.1s — 1× baseline (gray dot)
+  2. Google Colab NVIDIA Tesla T4 — 13.1s — 16.2× vs CPU (blue dot)
+  3. Stanford GKE TPU v5e-8 — tpu-v5-lite-podslice · 2×4 · 8 chips — 0.47s — 451× vs CPU (teal dot)
 - Footer credit line under a hairline rule: Lorenzo Pazienza & Ihab El Bani · Stanford University · Summer Session 2026 · Introduction to High Performance Computing and AI Systems (ME344) · Profs. Steve Jones & Mourad Bouache
 
 **Important:** GPU speedup vs CPU is **16.2×**. TPU vs GPU is ~27.8×. Do not say GPU is 27.8× vs CPU.
