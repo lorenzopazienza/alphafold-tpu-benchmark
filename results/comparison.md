@@ -6,34 +6,34 @@ recycles, random-init params). Only the backend changes.
 
 | Backend | Devices | init_params (s) | 1st predict: compile+run (s) | 2nd predict: steady-state (s) |
 |---|---|---|---|---|
-| CPU (Colab Intel Xeon, 2 vCPU) | 1 | 41.99 | 271.98 | 212.113 |
-| GPU (Colab NVIDIA Tesla T4) | 1 | 109.16 | 97.62 | 13.086 |
+| CPU (Google Colab Intel Xeon, 2 vCPU) | 1 | 41.99 | 271.98 | 212.113 |
+| GPU (Google Colab NVIDIA Tesla T4) | 1 | 109.16 | 97.62 | 13.086 |
 | **TPU (Stanford GKE v5e-8, 2×4 lite)** | **8 chips** | **36.6** | **27.78** | **0.47** |
 
 **Hardware specifications:**
 
-| | CPU (Colab Intel Xeon, 2 vCPU) | GPU (Colab NVIDIA Tesla T4) | TPU (Stanford GKE v5e-8, 2×4 lite, not Colab) |
+| | CPU (Google Colab Intel Xeon, 2 vCPU) | GPU (Google Colab NVIDIA Tesla T4) | TPU (Stanford GKE v5e-8, 2×4 lite, not Google Colab) |
 |---|---|---|---|
 | Device | Intel Xeon (2 vCPU) | NVIDIA Tesla T4 | Google TPU v5e (`tpu-v5-lite-podslice`) |
 | Memory | 13.6 GB RAM | 15 GB VRAM | 8 chips, topology 2x4, HBM per chip |
 | Backend | `cpu` | `gpu` | `tpu` |
-| Where it ran | Free-tier Colab runtime | Free-tier Colab runtime (NVIDIA Tesla T4) | Stanford GKE cluster (`class-tpu-cluster-west4`), via Kubernetes Job + Kueue, **not** Colab's own TPU offering (not used here) |
+| Where it ran | Free-tier Google Colab runtime | Free-tier Google Colab runtime (NVIDIA Tesla T4) | Stanford GKE cluster (`class-tpu-cluster-west4`), via Kubernetes Job + Kueue, **not** Google Colab's own TPU offering (not used here) |
 
-The CPU and GPU specs above are Colab's standard free-tier allocation for
-those runtime types. The TPU row is deliberately **not** Colab's TPU
+The CPU and GPU specs above are Google Colab's standard free-tier allocation for
+those runtime types. The TPU row is deliberately **not** Google Colab's TPU
 runtime (which offers a single v5e-1 device) - every TPU result in this
 project comes from the real 8-chip `v5e-lite-podslice` on Stanford's
 class cluster, reached via `gcloud`/`kubectl`, not from selecting "TPU"
-in Colab's runtime menu.
+in Google Colab's runtime menu.
 
 ## Headline numbers
 
 **Steady-state speedup vs CPU:**
-- GPU (Colab NVIDIA Tesla T4): **16.2x** faster than CPU
+- GPU (Google Colab NVIDIA Tesla T4): **16.2x** faster than CPU
 - TPU (Stanford GKE v5e-8, 2×4 lite): **451x** faster than CPU
 
 **Steady-state speedup vs GPU:**
-- TPU (Stanford GKE v5e-8, 2×4 lite): **27.8x** faster than a single Colab NVIDIA Tesla T4
+- TPU (Stanford GKE v5e-8, 2×4 lite): **27.8x** faster than a single Google Colab NVIDIA Tesla T4
 
 The TPU number is the strongest single result: identical 118-residue
 AlphaFold forward pass, same code, three backends, a >400x gap between the
@@ -44,7 +44,7 @@ slowest and fastest.
 | Backend | 1st predict / steady-state ratio | Interpretation |
 |---|---|---|
 | CPU | 1.28x | Compute-bound: most of the cost is the actual tensor math, not compilation |
-| GPU (Colab NVIDIA Tesla T4) | 7.46x | Mixed: compilation is a real but not dominant cost |
+| GPU (Google Colab NVIDIA Tesla T4) | 7.46x | Mixed: compilation is a real but not dominant cost |
 | TPU (Stanford GKE v5e-8, 2×4 lite) | 59.1x | Compile-bound: the first call is almost entirely XLA compilation overhead |
 
 This is the core profiling finding: **the bottleneck shifts backend to

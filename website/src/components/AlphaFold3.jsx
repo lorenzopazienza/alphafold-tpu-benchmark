@@ -8,7 +8,7 @@ const ProteinViewer = lazy(() => import('./ProteinViewer'))
 
 const ROWS = [
   {
-    backend: 'CPU Xeon (Colab, 2 vCPU)',
+    backend: 'CPU Xeon (Google Colab, 2 vCPU)',
     af2: '212.1s',
     af3: '490.8s',
     ratio: '2.3×',
@@ -16,7 +16,7 @@ const ROWS = [
     af3Pct: 100,
   },
   {
-    backend: 'GPU Tesla T4 (Colab)',
+    backend: 'GPU Tesla T4 (Google Colab)',
     af2: '13.1s',
     af3: '22.8s',
     ratio: '1.74×',
@@ -51,7 +51,8 @@ export default function AlphaFold3() {
           <p className="section-lede">
             Separate DeepMind codebase (Pairformer + diffusion), not an
             AlphaFold 2 version bump. Same 118-residue toy input and seed=1 on
-            Colab Intel Xeon CPU (2 vCPU) and Colab NVIDIA Tesla T4. Trained
+            Google Colab Intel Xeon CPU (2 vCPU) and Google Colab NVIDIA Tesla
+            T4. Trained
             weights (~1.15 GB). Five diffusion samples per call.
           </p>
         </div>
@@ -59,7 +60,8 @@ export default function AlphaFold3() {
         <div ref={ref} className="mt-10 max-w-2xl lg:mt-12">
           <p className="kicker">Same-hardware · per sample</p>
             <p className="section-note mt-2">
-              Identical Colab Xeon CPU and Tesla T4 runs. AF3 is slower; it also
+              Identical Google Colab Intel Xeon CPU and NVIDIA Tesla T4 runs. AF3
+              is slower; it also
               gains more from the GPU (21.5× CPU→GPU vs AF2’s 16.2×).
             </p>
 

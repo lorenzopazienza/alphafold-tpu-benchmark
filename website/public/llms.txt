@@ -38,14 +38,14 @@ this AlphaFold TPU Benchmark work.
 
 **On-screen layout:** Two-column hero. Left: kicker + title + blurb + links. Right: giant “451×” metric.
 
-- Kicker: STANFORD HPC · SUMMER 2026
+- Kicker: STANFORD UNIVERSITY · SUMMER SESSION 2026 · HIGH PERFORMANCE COMPUTING
 - Title: AlphaFold / TPU Benchmark
-- Body: “We timed AlphaFold 2’s real JAX forward pass on Colab Intel Xeon CPU (2 vCPU), Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (2×4 lite podslice). As a follow-up we also ran AlphaFold 3 on the same Colab CPU/GPU; its public release has no TPU. Steady-state AF2 on TPU is 451× faster than CPU.”
+- Body: “We timed AlphaFold 2’s real JAX forward pass on Google Colab Intel Xeon CPU (2 vCPU), Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (2×4 lite podslice). As a follow-up we also ran AlphaFold 3 on the same Google Colab CPU/GPU; its public release has no TPU. Steady-state AF2 on TPU is 451× faster than CPU.”
 - Links: AF2 results · AF3 · Slides PDF · Reproduce
-- Metric label: AF2 STEADY-STATE VS CPU
+- Metric label: AF2 STEADY-STATE PREDICT VS CPU
 - Metric: **451×** (teal ×)
-- Subline: TPU v5e-8 0.47s · Tesla T4 13.1s (16.2×) · Xeon CPU 212s
-- Footer credit line under a hairline rule: Lorenzo Pazienza & Ihab El Bani · Intro to HPC and AI Systems · Profs. Steve Jones & Mourad Bouache
+- Subline: 2nd predict · model_3 · 118 residues: CPU 212.1s · Google Colab NVIDIA Tesla T4 13.1s (16.2× vs CPU) · Stanford TPU v5e-8 0.47s (451× vs CPU)
+- Footer credit line under a hairline rule: Lorenzo Pazienza & Ihab El Bani · Stanford University · Summer Session 2026 · Introduction to High Performance Computing and AI Systems (ME344) · Profs. Steve Jones & Mourad Bouache
 
 **Important:** GPU speedup vs CPU is **16.2×**. TPU vs GPU is ~27.8×. Do not say GPU is 27.8× vs CPU.
 
@@ -81,7 +81,7 @@ this AlphaFold TPU Benchmark work.
 
 - Kicker: Problem
 - Headline: “Where does AlphaFold 2 spend time on CPU, GPU, and TPU?”
-- Body: The problem - AlphaFold 1 showed deep learning could help; AlphaFold 2 (DeepMind) made high-accuracy structure prediction practical with a large JAX/Haiku Evoformer, but inference is still costly/opaque across accelerators. What we did - same AF2 forward pass (118 residues, model_3, 0 recycles, Haiku random-init) on Colab Intel Xeon (2 vCPU), Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips); timed init, cold predict, steady-state; fixed bottlenecks.
+- Body: The problem - AlphaFold 1 showed deep learning could help; AlphaFold 2 (DeepMind) made high-accuracy structure prediction practical with a large JAX/Haiku Evoformer, but inference is still costly/opaque across accelerators. What we did - same AF2 forward pass (118 residues, model_3, 0 recycles, Haiku random-init) on Google Colab Intel Xeon (2 vCPU), Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips); timed init, cold predict, steady-state; fixed bottlenecks.
 
 ---
 
@@ -93,8 +93,8 @@ this AlphaFold TPU Benchmark work.
 
 **Architecture strip (4 cells):**
 1. Script - `spike_tpu_forward_pass.py` (AF2 `model_3`, 0 recycles, 118 residues)
-2. CPU - Colab Intel Xeon · 2 vCPU → `result_cpu.json`
-3. GPU - Colab NVIDIA Tesla T4 → `result_gpu-t4.json`
+2. CPU - Google Colab Intel Xeon · 2 vCPU → `result_cpu.json`
+3. GPU - Google Colab NVIDIA Tesla T4 → `result_gpu-t4.json`
 4. TPU - Stanford GKE v5e-8 · 2×4 lite (`tpu-v5-lite-podslice`) → `result_tpu + traces`
 
 **Parameters note:** Systems timings use Haiku random init to exercise the same compiled graph without downloading trained weights (~350MB). Ubiquitin above is separate (ESMFold).
@@ -106,13 +106,13 @@ this AlphaFold TPU Benchmark work.
 - Kicker: Results
 - Headline: “Steady-state predict latency”
 - Big callout: **0.47s**
-- Subcopy: model_3, 0 recycles, 118-residue input, Haiku random-init. Backends: Colab Intel Xeon (2 vCPU), Colab NVIDIA Tesla T4, Stanford GKE TPU v5e-8 (2×4 lite). Identical code path; bar lengths are log-scaled.
+- Subcopy: model_3, 0 recycles, 118-residue input, Haiku random-init. Backends: Google Colab Intel Xeon (2 vCPU), Google Colab NVIDIA Tesla T4, Stanford GKE TPU v5e-8 (2×4 lite). Identical code path; bar lengths are log-scaled.
 
 **Latency bars (log-scaled widths on page):**
 | Backend | Display time | Speedup vs CPU | Bar color (approx) |
 |---------|--------------|----------------|--------------------|
-| CPU Xeon (Colab, 2 vCPU) | 212.1s | 1× | gray |
-| GPU Tesla T4 (Colab) | 13.1s | 16.2× | blue |
+| CPU Xeon (Google Colab, 2 vCPU) | 212.1s | 1× | gray |
+| GPU Tesla T4 (Google Colab) | 13.1s | 16.2× | blue |
 | TPU v5e-8 (Stanford GKE, 2×4) | 0.47s | 451× | teal |
 
 **First predict / steady-state (compile visibility):**
@@ -210,11 +210,11 @@ this AlphaFold TPU Benchmark work.
 - Headline: “AlphaFold 3 on the same backends”
 - Body: Separate DeepMind codebase (Pairformer + diffusion - not an AF2 version bump). Same 118-residue toy input, seed=1. Trained weights ~1.15 GB. Five diffusion samples per call.
 
-### Latency compare (per sample, identical Colab)
+### Latency compare (per sample, identical Google Colab)
 | Backend | AF2 | AF3 | AF3 / AF2 |
 |---------|-----|-----|-----------|
-| CPU (Colab) | 212.1s | 490.8s | 2.3× |
-| GPU T4 (Colab) | 13.1s | 22.8s | 1.74× |
+| CPU (Google Colab) | 212.1s | 490.8s | 2.3× |
+| GPU T4 (Google Colab) | 13.1s | 22.8s | 1.74× |
 
 AF3 also gains more from GPU: CPU→GPU **21.5×** vs AF2’s **16.2×**.
 
@@ -271,7 +271,7 @@ On the baseline path only 1 of 8 chips was active (~87% idle), so list-price TPU
 |------|-------------|
 | configs/ | K8s Jobs (AF2 sweeps + AF3 TPU attempt) |
 | figures/ | Charts + AF3 structure still |
-| notebooks/ | AF2 + AF3 Colab notebooks |
+| notebooks/ | AF2 + AF3 Google Colab notebooks |
 | presentation/ | Course slides PDF |
 | profiling/ | XLA trace notes |
 | results/ | AF2 clocks + sweep/ + af3_comparison.md |
@@ -286,7 +286,7 @@ docker build --build-arg JAX_VARIANT=cpu \
 docker run -v $(pwd)/results:/alphafold/results \
   af-bench:cpu --run_tag=cpu
 ```
-GPU/TPU variants and Colab notebooks are in the README; sweep jobs under configs/.
+GPU/TPU variants and Google Colab notebooks are in the README; sweep jobs under configs/.
 
 ---
 
@@ -313,7 +313,7 @@ When an assistant can fetch images, prefer these URLs. When it cannot, use the �
 2. Separate three exhibit types:
    - **AF2 systems timing** (118-res, Haiku random init, CPU/GPU/TPU) - main study
    - **Ubiquitin ESMFold** (`#structure`) - biology demo with high mean pLDDT 90.5
-   - **AF3 side-investigation** (`#af3`) - separate codebase; Colab CPU/GPU timing + interactive CIF; public AF3 has no TPU
+   - **AF3 side-investigation** (`#af3`) - separate codebase; Google Colab CPU/GPU timing + interactive CIF; public AF3 has no TPU
 3. Quote the tables for latency, compile ratios, costs, and experiment stats.
 4. Mention amber/negative results: AF2 batching (vmap), GSPMD auto-shard, and AF3 TPU CLI gap; then the AF2 ensemble-shard fix (8/8 chips).
 5. Never rank AF3 toy confidence against ubiquitin pLDDT as model quality - no-MSA input by design.

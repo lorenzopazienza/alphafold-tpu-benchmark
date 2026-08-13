@@ -8,7 +8,7 @@ follow-up, we brought up **AlphaFold3**
 (`github.com/google-deepmind/alphafold3`) - a separate, newer,
 diffusion-based codebase, not a version bump of AlphaFold2 - on the same
 118-residue toy sequence used throughout this project, across all three
-backends this project already tests AF2 on: **Colab Intel Xeon CPU (2 vCPU), Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips)**. CPU and GPU produced full, real,
+backends this project already tests AF2 on: **Google Colab Intel Xeon CPU (2 vCPU), Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips)**. CPU and GPU produced full, real,
 measured results. TPU did not - not because of an infrastructure failure
 on our side, but because **AlphaFold3's public release does not support
 TPU inference at all** (Section 3 below has the full evidence). All three
@@ -57,23 +57,23 @@ every backend:
 
 | Step | AlphaFold2 | AlphaFold3 |
 |---|---|---|
-| Getting the repo | `curl` tarball (no `git` on login node) | Same - `curl` tarball (Stanford) / `git clone` (Colab, has root) |
+| Getting the repo | `curl` tarball (no `git` on login node) | Same - `curl` tarball (Stanford) / `git clone` (Google Colab, has root) |
 | Getting weights | N/A (random init, no download) | Public direct download, `.zst` decompression via `pip install --user zstandard` (no sudo for system `zstd`) |
 | Compiler needed | No - pure Python | **Yes** - C++ toolchain for `libcifpp`/pybind11, unavailable on login node without root |
-| Where the build ran | Login node (`pip install --user`) | **Kubernetes Job** (Stanford) / Colab (has root) |
-| Package/venv manager | `pip install --user` | `uv sync` - builds an **isolated `.venv`**; calling `run_alphafold.py` with the system `python3` instead of `uv run` fails instantly with `ModuleNotFoundError` (hit on both the first Colab Intel Xeon CPU (2 vCPU) and GPU attempts, fixed by switching every invocation to `uv run`) |
+| Where the build ran | Login node (`pip install --user`) | **Kubernetes Job** (Stanford) / Google Colab (has root) |
+| Package/venv manager | `pip install --user` | `uv sync` - builds an **isolated `.venv`**; calling `run_alphafold.py` with the system `python3` instead of `uv run` fails instantly with `ModuleNotFoundError` (hit on both the first Google Colab Intel Xeon CPU (2 vCPU) and GPU attempts, fixed by switching every invocation to `uv run`) |
 | Post-install step | None | **`uv run build_data`** - a separate step (documented in AF3's own `docker/Dockerfile`, easy to miss) that builds the Chemical Component Dictionary pickle `run_alphafold.py` needs at startup. Skipping it produces `FileNotFoundError: chemical_component_sets.pickle` a few seconds into the run - hit on the first CPU attempt, fixed on all three backends afterward |
 | GPU-specific flags | None needed | T4 (compute capability 7.5, in the "7.x" bucket) needs `XLA_FLAGS=--xla_disable_hlo_passes=custom-kernel-fusion-rewriter`, documented in AF3's Dockerfile comments - omitting it raises a `ValueError` before any computation starts. Also needed the correct backend value (`--jax_backend=gpu`, not `cuda` - the pip package name and the flag's accepted value are different strings) |
 | TPU-specific flags | Just a Kueue `nodeSelector` | **No working configuration exists** - see Section 3 |
 
-**Hardware behind the CPU/GPU numbers in this document:** both AF3 Colab
-runs used Colab's standard free-tier allocation - Intel Xeon (2 vCPU),
-13.6 GB RAM for the CPU run; Colab NVIDIA Tesla T4 with 15 GB VRAM for the
+**Hardware behind the CPU/GPU numbers in this document:** both AF3 Google Colab
+runs used Google Colab's standard free-tier allocation - Intel Xeon (2 vCPU),
+13.6 GB RAM for the CPU run; Google Colab NVIDIA Tesla T4 with 15 GB VRAM for the
 GPU run. The Stanford CPU run (Section 1's original AF3 test) ran inside
 a Kubernetes Job on `hpcc-cluster-41`'s CPU allocation, a different,
 dedicated machine - see Section 5a for how much that hardware difference
 actually mattered (very little, for CPU-vs-CPU). No AF3 run in this
-document used a TPU of any kind, Colab's or Stanford's - see Section 3.
+document used a TPU of any kind, Google Colab's or Stanford's - see Section 3.
 
 **Finding:** AF2's engineering effort in this project went into
 *multi-chip parallelism* (getting one query to genuinely use all 8 TPU
@@ -144,24 +144,24 @@ byte-identical input JSON (`src/make_af3_input.py`) across every backend:**
 
 | | AlphaFold2 | AlphaFold3 |
 |---|---|---|
-| Setup step, CPU | `init_params`: 41.99s (Colab) | `featurising`: 6.66s (Stanford) |
-| Setup step, GPU | `init_params`: 109.16s (T4, Colab) | included in the 114.12s total below (not separately timed) |
+| Setup step, CPU | `init_params`: 41.99s (Google Colab) | `featurising`: 6.66s (Stanford) |
+| Setup step, GPU | `init_params`: 109.16s (T4, Google Colab) | included in the 114.12s total below (not separately timed) |
 | Setup step, TPU | `init_params`: 36.6s (Stanford) | **not applicable - TPU unsupported (Section 3)** |
-| Inference, CPU | steady-state: 212.113s (1 sample) | **490.80s/sample** (2453.99s / 5, Colab) |
-| Inference, GPU (Colab NVIDIA Tesla T4) | steady-state: 13.086s | **22.82s/sample** (114.12s / 5, Colab) |
+| Inference, CPU | steady-state: 212.113s (1 sample) | **490.80s/sample** (2453.99s / 5, Google Colab) |
+| Inference, GPU (Google Colab NVIDIA Tesla T4) | steady-state: 13.086s | **22.82s/sample** (114.12s / 5, Google Colab) |
 | Inference, TPU (Stanford GKE v5e-8, 2×4 lite) | steady-state: 0.47s | **not applicable - TPU unsupported (Section 3)** |
 
 **Real, measured findings from this table:**
 
-1. **On identical Colab Intel Xeon CPU (2 vCPU) hardware, AF3 is 2.3x slower than AF2 per
+1. **On identical Google Colab Intel Xeon CPU (2 vCPU) hardware, AF3 is 2.3x slower than AF2 per
    sample** (490.80s vs. 212.113s). This reverses an earlier draft finding
    of this document, which (incorrectly) compared AF3's Stanford-cluster
-   CPU number against AF2's Colab Intel Xeon CPU (2 vCPU) number and concluded AF3 was
+   CPU number against AF2's Google Colab Intel Xeon CPU (2 vCPU) number and concluded AF3 was
    faster - that comparison mixed two different physical machines. With
-   both models now measured on the *same* Colab Intel Xeon CPU (2 vCPU), the direction
+   both models now measured on the *same* Google Colab Intel Xeon CPU (2 vCPU), the direction
    flips: AF3 is slower, consistent with it running a 5-sample multi-step
    diffusion process against AF2's single `recycle=0` forward pass.
-2. **On identical Colab NVIDIA Tesla T4 hardware, AF3 is still slower than AF2,
+2. **On identical Google Colab NVIDIA Tesla T4 hardware, AF3 is still slower than AF2,
    but by a smaller margin: 1.74x** (22.82s vs. 13.086s/sample) - the gap
    narrows substantially from 2.3x on CPU to 1.74x on GPU.
 3. **AF3 benefits more from the GPU than AF2 does, proportionally**:
@@ -171,9 +171,9 @@ byte-identical input JSON (`src/make_af3_input.py`) across every backend:**
    to parallelize than AF2's tiny `recycle=0` single forward pass on a
    118-residue sequence, which is likely dominated by fixed overhead
    rather than raw compute.
-4. **Colab's free CPU is substantially weaker than the Stanford cluster's
+4. **Google Colab's free CPU is substantially weaker than the Stanford cluster's
    dedicated CPU for this specific workload**: the original Stanford Job
-   ran the same AF3 call in 78.43s/sample; the identical call on Colab
+   ran the same AF3 call in 78.43s/sample; the identical call on Google Colab
    CPU took 490.80s/sample - a **6.3x** slowdown attributable to shared
    vs. dedicated hardware, not to anything about the model itself.
 5. **AF3 has no TPU number to compare against AF2's 451x/16.2x/27.8x
@@ -190,9 +190,9 @@ benchmarks don't: the *same* input and seed was run three times, on three
 different hardware/backend combinations, letting us separate "hardware
 noise" from "backend behavior" empirically.
 
-### 5a. Same backend, different hardware (Stanford CPU vs. Colab Intel Xeon CPU (2 vCPU)) - nearly identical
+### 5a. Same backend, different hardware (Stanford CPU vs. Google Colab Intel Xeon CPU (2 vCPU)) - nearly identical
 
-| Sample | Stanford CPU | Colab Intel Xeon CPU (2 vCPU) | Diff |
+| Sample | Stanford CPU | Google Colab Intel Xeon CPU (2 vCPU) | Diff |
 |---|---|---|---|
 | 0 | 0.266709 | 0.271155 | +1.67% |
 | 1 | 0.412947 | 0.413291 | +0.08% |
@@ -208,7 +208,7 @@ plausibly because small numerical differences compound across AF3's many
 sequential denoising steps, but the overall picture is: **same seed, same
 backend, different physical machine → essentially the same output.**
 
-### 5b. Same hardware family, different backend (Colab Intel Xeon CPU (2 vCPU) vs. Colab NVIDIA Tesla T4) - substantially different
+### 5b. Same hardware family, different backend (Google Colab Intel Xeon CPU (2 vCPU) vs. Google Colab NVIDIA Tesla T4) - substantially different
 
 | Sample | CPU | GPU | Diff |
 |---|---|---|---|
@@ -224,7 +224,7 @@ backend, different physical machine → essentially the same output.**
 | `ranking_score` (best) | 0.41 | 0.33 (**-19.5%**) |
 | `fraction_disordered` | 0.37 | 0.21 (**-43.2%**) |
 
-| Statistic (5-sample distribution) | Stanford CPU | Colab Intel Xeon CPU (2 vCPU) | Colab GPU |
+| Statistic (5-sample distribution) | Stanford CPU | Google Colab Intel Xeon CPU (2 vCPU) | Google Colab GPU |
 |---|---|---|---|
 | Mean | 0.340 | 0.341 | 0.298 |
 | Stdev | 0.058 | 0.057 | 0.037 |
@@ -235,7 +235,7 @@ than the cross-hardware noise in 5a** - and it has a plausible, documented
 cause rather than being unexplained noise: AlphaFold3's own issue tracker
 (`google-deepmind/alphafold3#59`) documents *"known unresolved numerical
 issues with using devices with compute capability less than 8.0."* The
-Colab T4 is compute capability 7.5 - squarely in the affected range. A
+Google Colab T4 is compute capability 7.5 - squarely in the affected range. A
 more recent version of `run_alphafold.py` than the one this project
 cloned adds an explicit check that refuses to run inference on such GPUs
 at all, raising a `ValueError` pointing at that exact issue; our clone
@@ -289,15 +289,15 @@ counterpart of the numerical divergence documented in Section 5b.
 
 | File | Contents |
 |---|---|
-| [`../result_af3_cpu-colab.json`](../result_af3_cpu-colab.json) | AF3 CPU (Colab Intel Xeon, 2 vCPU) summary - timing + best-sample confidence |
-| [`../result_af3_gpu-t4.json`](../result_af3_gpu-t4.json) | AF3 GPU (Colab NVIDIA Tesla T4) summary - timing + best-sample confidence |
+| [`../result_af3_cpu-colab.json`](../result_af3_cpu-colab.json) | AF3 CPU (Google Colab Intel Xeon, 2 vCPU) summary - timing + best-sample confidence |
+| [`../result_af3_gpu-t4.json`](../result_af3_gpu-t4.json) | AF3 GPU (Google Colab NVIDIA Tesla T4) summary - timing + best-sample confidence |
 | [`af3_toy_test_summary_confidences.json`](af3_toy_test_summary_confidences.json) / [`af3_toy_test_ranking_scores.csv`](af3_toy_test_ranking_scores.csv) | Original Stanford cluster CPU run (raw AF3 output) |
-| [`af3_toy_test_cpu-colab_summary_confidences.json`](af3_toy_test_cpu-colab_summary_confidences.json) / [`af3_toy_test_cpu-colab_ranking_scores.csv`](af3_toy_test_cpu-colab_ranking_scores.csv) | Colab Intel Xeon CPU (2 vCPU) run (raw AF3 output) |
-| [`af3_toy_test_gpu-t4_summary_confidences.json`](af3_toy_test_gpu-t4_summary_confidences.json) / [`af3_toy_test_gpu-t4_ranking_scores.csv`](af3_toy_test_gpu-t4_ranking_scores.csv) | Colab NVIDIA Tesla T4 run (raw AF3 output) |
+| [`af3_toy_test_cpu-colab_summary_confidences.json`](af3_toy_test_cpu-colab_summary_confidences.json) / [`af3_toy_test_cpu-colab_ranking_scores.csv`](af3_toy_test_cpu-colab_ranking_scores.csv) | Google Colab Intel Xeon CPU (2 vCPU) run (raw AF3 output) |
+| [`af3_toy_test_gpu-t4_summary_confidences.json`](af3_toy_test_gpu-t4_summary_confidences.json) / [`af3_toy_test_gpu-t4_ranking_scores.csv`](af3_toy_test_gpu-t4_ranking_scores.csv) | Google Colab NVIDIA Tesla T4 run (raw AF3 output) |
 | [`af3_tpu_attempt.log`](af3_tpu_attempt.log) | Full log of the Stanford TPU attempt (Section 3) |
 | `../../structure/af3_toy_test_model.cif` | Original Stanford CPU run, top-ranked structure |
-| `../../structure/af3_toy_test_cpu-colab_model.cif` | Colab Intel Xeon CPU (2 vCPU) run, top-ranked structure |
-| `../../structure/af3_toy_test_gpu-t4_model.cif` | Colab NVIDIA Tesla T4 run, top-ranked structure |
+| `../../structure/af3_toy_test_cpu-colab_model.cif` | Google Colab Intel Xeon CPU (2 vCPU) run, top-ranked structure |
+| `../../structure/af3_toy_test_gpu-t4_model.cif` | Google Colab NVIDIA Tesla T4 run, top-ranked structure |
 | `../../notebooks/af3_cpu_colab.ipynb` / `af3_gpu_colab.ipynb` | Reproduction notebooks, all fixes applied (Section 2) |
 | `../../configs/af_spike_af3_tpu.yaml` / `../../scripts/run_af3_spike_tpu.sh` | TPU attempt - kept as documentation of a confirmed negative result, not a runnable path (Section 3) |
 | `../../src/make_af3_input.py` | Shared input builder - byte-identical input across all three backend attempts |
@@ -313,12 +313,12 @@ counterpart of the numerical divergence documented in Section 5b.
 - AF3 gains proportionally more from GPU than AF2 does (21.5x vs. 16.2x
   CPU→GPU speedup), consistent with its heavier, more parallelizable
   multi-sample diffusion workload.
-- Colab's free CPU is **6.3x slower** than the Stanford cluster's
+- Google Colab's free CPU is **6.3x slower** than the Stanford cluster's
   dedicated CPU for this workload - a real, measured hardware gap, not
   speculation.
 
 **Real reproducibility findings:**
-- Same seed, same backend, different machine (Stanford vs. Colab Intel Xeon CPU (2 vCPU)):
+- Same seed, same backend, different machine (Stanford vs. Google Colab Intel Xeon CPU (2 vCPU)):
   essentially identical output (<0.1% on 4/5 samples).
 - Same seed, different backend (CPU vs. GPU): substantially different
   output (up to 32% per-sample, 19.5% on the best-ranked structure),

@@ -1,6 +1,6 @@
 # XLA Profiler Trace Analysis
 
-**Hardware:** Stanford GKE TPU v5e-8 (`tpu-v5-lite-podslice`, 2×4, 8 chips). Baseline CPU/GPU comparison: Colab Intel Xeon (2 vCPU) and Colab NVIDIA Tesla T4.
+**Hardware:** Stanford GKE TPU v5e-8 (`tpu-v5-lite-podslice`, 2×4, 8 chips). Baseline CPU/GPU comparison: Google Colab Intel Xeon (2 vCPU) and Google Colab NVIDIA Tesla T4.
 
 ## Method
 

@@ -25,4 +25,4 @@ than the run-to-run variation measured in `repeated_runs.md`, ~0.06%
 stdev). Worth noting for anyone choosing which of AlphaFold's model
 checkpoints to deploy for latency-sensitive serving.
 
-**Hardware:** Stanford GKE TPU v5e-8 (`tpu-v5-lite-podslice`, topology 2×4, 8 chips) via Kubernetes Job + Kueue. AF2 baseline comparison also uses Colab Intel Xeon CPU (2 vCPU) and Colab NVIDIA Tesla T4 (`results/comparison.md`).
+**Hardware:** Stanford GKE TPU v5e-8 (`tpu-v5-lite-podslice`, topology 2×4, 8 chips) via Kubernetes Job + Kueue. AF2 baseline comparison also uses Google Colab Intel Xeon CPU (2 vCPU) and Google Colab NVIDIA Tesla T4 (`results/comparison.md`).

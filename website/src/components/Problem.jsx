@@ -22,8 +22,8 @@ export default function Problem() {
             <span className="font-medium text-ink">What we did.</span> Same
             AlphaFold 2 forward pass, script, and shape (118 residues,{' '}
             <code className="font-mono text-[0.92em] text-ink">model_3</code>, 0
-            recycles, Haiku random-init params) on Colab Intel Xeon CPU (2
-            vCPU), Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (
+            recycles, Haiku random-init params) on Google Colab Intel Xeon CPU
+            (2 vCPU), Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (
             <code className="font-mono text-[0.92em] text-ink">
               tpu-v5-lite-podslice
             </code>
@@ -35,7 +35,8 @@ export default function Problem() {
             <a href="#af3" className="link-quiet font-medium text-ink">
               AlphaFold 3
             </a>{' '}
-            (a separate diffusion codebase) on the same Colab Xeon CPU and Tesla
+            (a separate diffusion codebase) on the same Google Colab Intel Xeon
+            CPU and NVIDIA Tesla T4
             T4, plus a confirmed finding that its public release does not
             support TPU.
           </p>

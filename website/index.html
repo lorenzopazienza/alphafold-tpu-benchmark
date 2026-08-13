@@ -5,11 +5,11 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
-      AlphaFold TPU Benchmark · Lorenzo Pazienza &amp; Ihab El Bani · Stanford HPC
+      AlphaFold TPU Benchmark · Lorenzo Pazienza &amp; Ihab El Bani · Stanford High Performance Computing
     </title>
     <meta
       name="description"
-      content="By Lorenzo Pazienza and Ihab El Bani (Stanford HPC, Summer 2026): AlphaFold 2 on Colab Intel Xeon, NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 - TPU 0.47s (451× vs CPU). AlphaFold 3 side study on the same Colab backends. Transcript: /llms.txt."
+      content="By Lorenzo Pazienza and Ihab El Bani (Stanford University Summer Session 2026, ME344): AlphaFold 2 on Google Colab Intel Xeon CPU, Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8. Steady-state 2nd predict: CPU 212.1s · GPU 13.1s (16.2× vs CPU) · TPU 0.47s (451× vs CPU). AF3 side study on the same Google Colab backends. Transcript: /llms.txt."
     />
     <meta
       name="keywords"
@@ -35,7 +35,7 @@
     />
     <meta
       property="og:description"
-      content="Stanford HPC project by Lorenzo Pazienza and Ihab El Bani. AF2: TPU 0.47s (451× vs CPU), Tesla T4 13.1s (16.2×). Twelve TPU follow-ups. AF3 Colab side study + interactive CIF. Full text: /llms.txt"
+      content="Stanford High Performance Computing project by Lorenzo Pazienza and Ihab El Bani. AF2 steady-state (2nd predict): CPU 212.1s · Google Colab NVIDIA Tesla T4 13.1s (16.2× vs CPU) · Stanford TPU v5e-8 0.47s (451× vs CPU). Twelve TPU follow-ups. AF3 Google Colab side study + interactive CIF. Full text: /llms.txt"
     />
     <meta property="og:type" content="article" />
     <meta property="og:url" content="https://alphafold-tpu.vercel.app/" />
@@ -52,7 +52,7 @@
     />
     <meta
       name="twitter:description"
-      content="By Lorenzo Pazienza and Ihab El Bani. AF2: CPU 212s · Tesla T4 13.1s (16.2×) · TPU v5e-8 0.47s (451×). AF3 side study + interactive CIF. /llms.txt"
+      content="By Lorenzo Pazienza and Ihab El Bani. AF2 steady-state (2nd predict, model_3, 118 residues): CPU 212.1s · Google Colab NVIDIA Tesla T4 13.1s (16.2× vs CPU) · Stanford TPU v5e-8 0.47s (451× vs CPU). AF3 side study + interactive CIF. /llms.txt"
     />
     <meta
       name="twitter:image"
@@ -72,7 +72,7 @@
               "AlphaFold TPU Benchmark by Lorenzo Pazienza and Ihab El Bani",
               "Lorenzo Pazienza Ihab El Bani AlphaFold TPU"
             ],
-            "description": "Stanford HPC project by Lorenzo Pazienza and Ihab El Bani: AlphaFold 2 CPU/GPU/TPU scaling plus AlphaFold 3 Colab side-investigation. Full assistant transcript at /llms.txt.",
+            "description": "Stanford High Performance Computing project by Lorenzo Pazienza and Ihab El Bani: AlphaFold 2 CPU/GPU/TPU scaling plus AlphaFold 3 Google Colab side-investigation. Full assistant transcript at /llms.txt.",
             "inLanguage": "en",
             "author": [
               { "@id": "https://alphafold-tpu.vercel.app/#lorenzo-pazienza" },
@@ -186,9 +186,9 @@
               "pmap",
               "compilation cache",
               "diffusion",
-              "Stanford HPC"
+              "Stanford High Performance Computing"
             ],
-            "abstract": "Lorenzo Pazienza and Ihab El Bani (Stanford University, Summer 2026) timed AlphaFold 2’s JAX/Haiku forward pass on Colab Intel Xeon CPU, NVIDIA Tesla T4, and Google TPU v5e-8. Steady-state TPU 0.47s (451× vs CPU). Twelve AF2 follow-ups. AlphaFold 3 side-investigation on the same Colab CPU/GPU. Full transcript: https://alphafold-tpu.vercel.app/llms.txt",
+            "abstract": "Lorenzo Pazienza and Ihab El Bani (Stanford University, Summer 2026) timed AlphaFold 2’s JAX/Haiku forward pass on Google Colab Intel Xeon CPU, NVIDIA Tesla T4, and Google TPU v5e-8. Steady-state TPU 0.47s (451× vs CPU). Twelve AF2 follow-ups. AlphaFold 3 side-investigation on the same Google Colab CPU/GPU. Full transcript: https://alphafold-tpu.vercel.app/llms.txt",
             "citation": "https://github.com/lorenzopazienza/alphafold-tpu-benchmark",
             "mainEntityOfPage": "https://alphafold-tpu.vercel.app/"
           },
@@ -207,8 +207,8 @@
           {
             "@type": "Dataset",
             "@id": "https://alphafold-tpu.vercel.app/#af3-structure",
-            "name": "AlphaFold 3 toy-test CIF (CPU/Colab)",
-            "description": "Predicted structure for the 118-residue AF3 toy sequence (CPU/Colab run, seed=1). Used by the site’s interactive 3Dmol viewer.",
+            "name": "AlphaFold 3 toy-test CIF (CPU/Google Colab)",
+            "description": "Predicted structure for the 118-residue AF3 toy sequence (CPU/Google Colab run, seed=1). Used by the site’s interactive 3Dmol viewer.",
             "url": "https://alphafold-tpu.vercel.app/structure/af3_toy_test_cpu-colab_model.cif",
             "encodingFormat": "chemical/x-cif",
             "license": "https://github.com/google-deepmind/alphafold3/blob/main/OUTPUT_TERMS_OF_USE.md"
@@ -314,8 +314,9 @@
       <h1>AlphaFold TPU Benchmark: A CPU/GPU/TPU Scaling Study</h1>
       <p>
         By <strong>Lorenzo Pazienza</strong> and <strong>Ihab El Bani</strong>
-        (also written Ihab Elbani) · Stanford University · Intro to HPC and AI
-        Systems / ME344 (Summer 2026) · Profs. Steve Jones &amp; Mourad Bouache.
+        (also written Ihab Elbani) · Stanford University · Summer Session 2026 ·
+        Introduction to High Performance Computing and AI Systems (ME344) · Profs.
+        Steve Jones &amp; Mourad Bouache.
         Author roster:
         <a href="/humans.txt">/humans.txt</a>.
       </p>
@@ -341,7 +342,7 @@
           <li><a href="#approach">Approach - one script, three backends</a></li>
           <li><a href="#results">Results - AF2 latency bars</a></li>
           <li><a href="#experiments">Experiments - twelve TPU follow-ups</a></li>
-          <li><a href="#af3">AlphaFold 3 - Colab compare + interactive CIF + TPU wall</a></li>
+          <li><a href="#af3">AlphaFold 3 - Google Colab compare + interactive CIF + TPU wall</a></li>
           <li><a href="#cost">Cost - scaling law + $/1k</a></li>
           <li><a href="#reproduce">Reproduce - repo + docker + slides PDF</a></li>
         </ol>
@@ -350,10 +351,10 @@
       <h2 id="top">Hero</h2>
       <p>
         Giant metric <strong>451×</strong> (AF2 steady-state TPU vs CPU). Subline:
-        TPU v5e-8 0.47s · Tesla T4 13.1s (16.2×) · Xeon CPU 212s. Title “AlphaFold TPU
-        Benchmark”. Blurb: AF2 JAX forward pass on Colab Intel Xeon (2 vCPU),
-        Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (2×4 lite podslice);
-        AF3 follow-up on the same Colab CPU/GPU (public AF3 has no TPU).
+        2nd predict · model_3 · 118 residues: CPU 212.1s · Google Colab NVIDIA Tesla T4 13.1s (16.2× vs CPU) · Stanford TPU v5e-8 0.47s (451× vs CPU). Title “AlphaFold TPU
+        Benchmark”. Blurb: AF2 JAX forward pass on Google Colab Intel Xeon (2 vCPU),
+        Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (2×4 lite podslice);
+        AF3 follow-up on the same Google Colab CPU/GPU (public AF3 has no TPU).
         Course slides:
         <a
           href="/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf"
@@ -397,16 +398,16 @@
         <strong>Where does AlphaFold 2 spend time on CPU, GPU, and TPU?</strong>
         Same model config, script, and input shape (AlphaFold 2 model_3, 0
         recycles, 118 residues, Haiku random-init); measure init, first predict
-        (compile + run), steady-state. Hardware: Colab Intel Xeon (2 vCPU);
-        Colab NVIDIA Tesla T4; Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice,
-        2×4, 8 chips). Follow-up: AlphaFold 3 on the same Colab CPU/GPU - see
+        (compile + run), steady-state. Hardware: Google Colab Intel Xeon (2 vCPU);
+        Google Colab NVIDIA Tesla T4; Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice,
+        2×4, 8 chips). Follow-up: AlphaFold 3 on the same Google Colab CPU/GPU - see
         <a href="#af3">#af3</a>.
       </p>
 
       <h2 id="approach">Approach</h2>
       <p>
-        One script <code>spike_tpu_forward_pass.py</code> → Colab Intel Xeon CPU
-        (result_cpu.json), Colab NVIDIA Tesla T4 (result_gpu-t4.json), Stanford
+        One script <code>spike_tpu_forward_pass.py</code> → Google Colab Intel Xeon CPU
+        (result_cpu.json), Google Colab NVIDIA Tesla T4 (result_gpu-t4.json), Stanford
         GKE TPU v5e-8 / tpu-v5-lite-podslice 2×4 (result_tpu + traces). Systems
         timings: AlphaFold 2 model_3, Haiku random init (no ~350MB weights).
       </p>
@@ -423,12 +424,12 @@
         </thead>
         <tbody>
           <tr>
-            <td>CPU Xeon (Colab, 2 vCPU)</td>
+            <td>CPU Xeon (Google Colab, 2 vCPU)</td>
             <td>212.1s</td>
             <td>1×</td>
           </tr>
           <tr>
-            <td>GPU Tesla T4 (Colab)</td>
+            <td>GPU Tesla T4 (Google Colab)</td>
             <td>13.1s</td>
             <td>16.2×</td>
           </tr>
@@ -563,13 +564,13 @@
         </thead>
         <tbody>
           <tr>
-            <td>CPU (Colab)</td>
+            <td>CPU (Google Colab)</td>
             <td>212.1s</td>
             <td>490.8s</td>
             <td>2.3×</td>
           </tr>
           <tr>
-            <td>GPU T4 (Colab)</td>
+            <td>GPU T4 (Google Colab)</td>
             <td>13.1s</td>
             <td>22.8s</td>
             <td>1.74×</td>

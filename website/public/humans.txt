@@ -3,14 +3,14 @@ Lorenzo Pazienza
 Site: https://alphafold-tpu.vercel.app/
 GitHub: https://github.com/lorenzopazienza
 Role: Co-author · AlphaFold TPU Benchmark
-Affiliation: Stanford University · Intro to HPC and AI Systems (ME344) · Summer 2026
+Affiliation: Stanford University · Summer Session 2026 · Introduction to High Performance Computing and AI Systems (ME344)
 
 Ihab El Bani
 Also known as: Ihab Elbani, Ihab El-Bani
 Site: https://alphafold-tpu.vercel.app/
 GitHub: https://github.com/IhabProjects
 Role: Co-author · AlphaFold TPU Benchmark
-Affiliation: Stanford University · Intro to HPC and AI Systems (ME344) · Summer 2026
+Affiliation: Stanford University · Summer Session 2026 · Introduction to High Performance Computing and AI Systems (ME344)
 
 /* PROJECT */
 Site: AlphaFold TPU Benchmark

@@ -1,11 +1,11 @@
 # Scale-Bounds Study (Stanford GKE TPU v5e-8, 2×4 lite podslice, 8 chips)
 
 Twelve experiments, all on the real AlphaFold JAX/Haiku forward pass, same
-methodology as the CPU/GPU/TPU comparison (Colab Intel Xeon CPU (2 vCPU) / Colab NVIDIA Tesla T4 / Stanford GKE TPU v5e-8 (2×4 lite)) (`../comparison.md`).
+methodology as the CPU/GPU/TPU comparison (Google Colab Intel Xeon CPU (2 vCPU) / Google Colab NVIDIA Tesla T4 / Stanford GKE TPU v5e-8 (2×4 lite)) (`../comparison.md`).
 
 ```mermaid
 flowchart LR
-    CMP["CPU/GPU/TPU baseline (Colab Intel Xeon CPU (2 vCPU) / Colab NVIDIA Tesla T4 / Stanford GKE TPU v5e-8 (2×4 lite))\n(../comparison.md)"]
+    CMP["CPU/GPU/TPU baseline (Google Colab Intel Xeon CPU (2 vCPU) / Google Colab NVIDIA Tesla T4 / Stanford GKE TPU v5e-8 (2×4 lite))\n(../comparison.md)"]
 
     subgraph SB["Scale bounds"]
         SL["1. Sequence length"]
@@ -179,7 +179,7 @@ See `scaling_law.md`.
 Everything above benchmarks **AlphaFold2** on TPU. As a follow-up, we also
 got **AlphaFold3** - a separate, newer, diffusion-based DeepMind codebase,
 not a version of AlphaFold2 - running on the same 118-residue toy
-sequence across all three backends this project tests AF2 on: **Colab Intel Xeon CPU (2 vCPU), Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips)**. CPU and GPU produced full,
+sequence across all three backends this project tests AF2 on: **Google Colab Intel Xeon CPU (2 vCPU), Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips)**. CPU and GPU produced full,
 real, measured results. TPU did not - not an infrastructure failure on
 our side, but a confirmed finding that **AlphaFold3's public release does
 not support TPU inference at all** (`--jax_backend`'s valid values are
@@ -192,7 +192,7 @@ table, a build-effort table (AF2's engineering went into multi-chip
 sharding; AF3's went into a native C++ build, an easy-to-miss
 `build_data` step, and backend-specific flags undocumented outside a
 Dockerfile comment), a **real, same-hardware performance comparison**
-(on identical Colab hardware (Intel Xeon 2 vCPU / NVIDIA Tesla T4), AF3 is 2.3x slower than AF2 on CPU,
+(on identical Google Colab hardware (Intel Xeon 2 vCPU / NVIDIA Tesla T4), AF3 is 2.3x slower than AF2 on CPU,
 narrowing to 1.74x on GPU - reversing an earlier hardware-confounded
 estimate), a **reproducibility study** using the same seed across three
 hardware/backend combinations (near-identical across machines on the same

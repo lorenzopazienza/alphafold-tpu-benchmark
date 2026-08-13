@@ -16,7 +16,7 @@ export default function Footer() {
             <br />
             Stanford University · Summer Session 2026
             <br />
-            Intro to High Performance Computing and AI Systems (ME344)
+            Introduction to High Performance Computing and AI Systems (ME344)
             <br />
             Profs. Steve Jones & Mourad Bouache
           </p>

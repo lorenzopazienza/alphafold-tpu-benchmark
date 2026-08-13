@@ -1,7 +1,7 @@
 const TREE = [
   ['configs/', 'K8s Jobs (AF2 sweeps + AF3 TPU attempt)'],
   ['figures/', 'Charts + AF3 structure still'],
-  ['notebooks/', 'AF2 + AF3 Colab notebooks'],
+  ['notebooks/', 'AF2 + AF3 Google Colab notebooks'],
   ['presentation/', 'Course slides PDF'],
   ['profiling/', 'XLA trace notes'],
   ['results/', 'AF2 clocks + sweep/ + af3_comparison.md'],
@@ -23,7 +23,7 @@ export default function Repo() {
             <p className="kicker">Reproduce</p>
             <h2 className="section-title">Code and commands</h2>
             <p className="section-lede !mt-3">
-              AF2 Docker/K8s paths and AF3 Colab notebooks (
+              AF2 Docker/K8s paths and AF3 Google Colab notebooks (
               <code className="font-mono text-[0.9em]">af3_cpu_colab</code> /{' '}
               <code className="font-mono text-[0.9em]">af3_gpu_colab</code>) live
               in the repo. Full AF3 write-up:{' '}

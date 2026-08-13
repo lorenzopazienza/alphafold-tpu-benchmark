@@ -2,13 +2,13 @@ const NODES = [
   {
     id: 'cpu',
     label: 'CPU',
-    detail: 'Colab Intel Xeon · 2 vCPU',
+    detail: 'Google Colab Intel Xeon · 2 vCPU',
     out: 'result_cpu.json',
   },
   {
     id: 'gpu',
     label: 'GPU',
-    detail: 'Colab NVIDIA Tesla T4',
+    detail: 'Google Colab NVIDIA Tesla T4',
     out: 'result_gpu-t4.json',
   },
   {

@@ -60,7 +60,8 @@ export default function HeadlineResults() {
         <p className="section-note mt-4 max-w-xl">
           AlphaFold 2 <code className="font-mono text-[0.92em] text-ink">model_3</code>
           , 0 recycles, 118-residue input, Haiku random-init params. Backends:
-          Colab Intel Xeon (2 vCPU), Colab NVIDIA Tesla T4, Stanford GKE TPU
+          Google Colab Intel Xeon (2 vCPU), Google Colab NVIDIA Tesla T4,
+          Stanford GKE TPU
           v5e-8 (2×4 lite podslice, 8 chips). Identical code path; bar lengths
           are log-scaled.
         </p>

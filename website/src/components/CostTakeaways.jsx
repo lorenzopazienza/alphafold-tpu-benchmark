@@ -34,9 +34,9 @@ export default function CostTakeaways() {
         <div className="shell max-w-3xl">
           <p className="section-lede !mt-0 !max-w-none text-paper/90">
             On the Stanford GKE TPU v5e-8 (2×4 lite) baseline path only 1 of 8
-            chips was active (~87% idle), so list-price TPU and Colab Tesla T4
-            land almost together: $1.25 vs $1.27 per 1k predictions (Colab Xeon
-            CPU is $11.19). Multi-query pmap and single-query ensemble sharding
+            chips was active (~87% idle), so list-price TPU and Google Colab
+            NVIDIA Tesla T4 land almost together: $1.25 vs $1.27 per 1k
+            predictions (Google Colab Intel Xeon CPU is $11.19). Multi-query pmap and single-query ensemble sharding
             (pmap + pmean) both fill the slice; after that, cost per prediction
             stays roughly constant as chip count grows.
           </p>

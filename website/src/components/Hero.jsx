@@ -32,19 +32,22 @@ export default function Hero() {
       <div className="shell flex flex-1 flex-col justify-center">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
           <div className="min-w-0 max-w-md">
-            <p className="animate-rise kicker">Stanford HPC · Summer 2026</p>
+            <p className="animate-rise kicker">
+              Stanford University · Summer Session 2026 · High Performance
+              Computing
+            </p>
             <h1 className="animate-rise delay-1 mt-4 font-display text-[clamp(2.85rem,6vw,4.35rem)] font-semibold leading-[0.96] tracking-[-0.035em] text-ink">
               AlphaFold
               <br />
               TPU Benchmark
             </h1>
             <p className="animate-rise delay-2 section-lede !mt-5">
-              We timed AlphaFold 2’s real JAX forward pass on Colab Intel Xeon
-              CPU (2 vCPU), Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8
-              (2×4 lite podslice), tracking where time and idle chips go. As a
-              follow-up we also ran AlphaFold 3 on the same Colab Xeon CPU and
-              Tesla T4; its public release has no TPU. Steady-state AF2 on TPU is
-              451× faster than CPU.
+              We timed AlphaFold 2’s real JAX forward pass on Google Colab Intel
+              Xeon CPU (2 vCPU), Google Colab NVIDIA Tesla T4, and Stanford GKE
+              TPU v5e-8 (2×4 lite podslice), tracking where time and idle chips
+              go. As a follow-up we also ran AlphaFold 3 on the same Google Colab
+              CPU and GPU; its public release has no TPU. Steady-state AF2 on TPU
+              is 451× faster than CPU (0.47s vs 212.1s).
             </p>
             <p className="animate-rise delay-3 mt-7">
               <a href="#results" className="link-quiet text-base font-medium">
@@ -70,13 +73,14 @@ export default function Hero() {
           </div>
 
           <div className="animate-rise delay-2 shrink-0 lg:text-right">
-            <p className="kicker">AF2 steady-state vs CPU</p>
+            <p className="kicker">AF2 steady-state predict vs CPU</p>
             <p className="eq mt-1 font-display text-[clamp(5rem,14vw,8.5rem)] font-bold leading-[0.84] tracking-[-0.05em] text-ink">
               {n}
               <span className="text-teal">×</span>
             </p>
-            <p className="section-note mt-3 lg:ml-auto lg:max-w-[18rem]">
-              TPU v5e-8 0.47s · Tesla T4 13.1s (16.2×) · Xeon CPU 212s
+            <p className="section-note mt-3 lg:ml-auto lg:max-w-[20rem]">
+              2nd predict · model_3 · 118 residues: CPU 212.1s · Google Colab
+              NVIDIA Tesla T4 13.1s (16.2× vs CPU) · Stanford TPU v5e-8 0.47s
             </p>
           </div>
         </div>
@@ -85,8 +89,9 @@ export default function Hero() {
       <div className="shell shrink-0 pt-8">
         <hr className="rule" />
         <p className="section-note pt-4">
-          Authors: Lorenzo Pazienza & Ihab El Bani · Stanford · Intro to HPC and
-          AI Systems (ME344) · Profs. Steve Jones & Mourad Bouache
+          Authors: Lorenzo Pazienza & Ihab El Bani · Stanford University · Summer
+          Session 2026 · Introduction to High Performance Computing and AI
+          Systems (ME344) · Profs. Steve Jones & Mourad Bouache
         </p>
       </div>
     </section>
