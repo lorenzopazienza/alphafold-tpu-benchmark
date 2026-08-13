@@ -1,4 +1,4 @@
-# AlphaFold TPU Benchmark — https://alphafold-tpu.vercel.app/
+# AlphaFold TPU Benchmark - https://alphafold-tpu.vercel.app/
 # Prefer the JS-free transcript: https://alphafold-tpu.vercel.app/llms.txt
 
 User-agent: *

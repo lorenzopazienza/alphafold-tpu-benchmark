@@ -118,7 +118,7 @@ export const EXPERIMENTS = [
     stat: '0×',
     statLabel: 'tensor split',
     tone: 'negative',
-    body: 'We reused the auto-mesh pattern from the course Tunix lab on a single protein. Reproduced twice. Root cause: AlphaFold’s own ensembling is a sequential hk.while_loop — nothing independent for GSPMD to distribute — so the partitioner replicated a full ~463 MB copy on every chip.',
+    body: 'We reused the auto-mesh pattern from the course Tunix lab on a single protein. Reproduced twice. Root cause: AlphaFold’s own ensembling is a sequential hk.while_loop, so nothing independent for GSPMD to distribute, and the partitioner replicated a full ~463 MB copy on every chip.',
   },
   {
     id: 'ensemble-shard',
@@ -129,7 +129,7 @@ export const EXPERIMENTS = [
     stat: '8/8',
     statLabel: 'chips genuinely used',
     tone: 'default',
-    body: 'Left AlphaFold’s source untouched. Built 8 ensemble members externally (own random seeds), one per chip via pmap, averaged with a real jax.lax.pmean on raw predicted_lddt logits. Steady-state 0.54s. Per-chip HBM varied 427–624 MB (not the flat 463 MB replication signature). Honest scope: distributed ensembling for one query — not full Evoformer tensor sharding.',
+    body: 'Left AlphaFold’s source untouched. Built 8 ensemble members externally (own random seeds), one per chip via pmap, averaged with a real jax.lax.pmean on raw predicted_lddt logits. Steady-state 0.54s. Per-chip HBM varied 427–624 MB (not the flat 463 MB replication signature). Honest scope: distributed ensembling for one query, not full Evoformer tensor sharding.',
   },
   {
     id: 'scaling-law',

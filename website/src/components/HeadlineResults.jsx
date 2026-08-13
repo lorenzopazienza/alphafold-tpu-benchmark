@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 const DATA = [
   {
-    name: 'CPU',
+    name: 'CPU Xeon',
     seconds: 212.113,
     display: '212.1s',
     speedup: '1×',
@@ -10,7 +10,7 @@ const DATA = [
     color: '#7a8796',
   },
   {
-    name: 'GPU T4',
+    name: 'Tesla T4',
     seconds: 13.086,
     display: '13.1s',
     speedup: '16.2×',
@@ -18,7 +18,7 @@ const DATA = [
     color: '#3d5f94',
   },
   {
-    name: 'TPU v5e',
+    name: 'TPU v5e-8',
     seconds: 0.47,
     display: '0.47s',
     speedup: '451×',
@@ -58,15 +58,18 @@ export default function HeadlineResults() {
         </div>
 
         <p className="section-note mt-4 max-w-xl">
-          AlphaFold 2 · model_3, 0 recycles, 118-residue input, identical code
-          path. Bar lengths are log-scaled.
+          AlphaFold 2 <code className="font-mono text-[0.92em] text-ink">model_3</code>
+          , 0 recycles, 118-residue input, Haiku random-init params. Backends:
+          Colab Intel Xeon (2 vCPU), Colab NVIDIA Tesla T4, Stanford GKE TPU
+          v5e-8 (2×4 lite podslice, 8 chips). Identical code path; bar lengths
+          are log-scaled.
         </p>
 
         <div ref={ref} className="mt-8 space-y-5 md:mt-10">
           {DATA.map((d) => (
             <div
               key={d.name}
-              className="grid items-center gap-2 sm:grid-cols-[5.5rem_1fr_auto] sm:gap-6"
+              className="grid items-center gap-2 sm:grid-cols-[6.5rem_1fr_auto] sm:gap-6"
             >
               <div className="flex items-baseline justify-between gap-3 sm:contents">
                 <p className="font-display text-lg font-semibold text-ink">
@@ -105,9 +108,9 @@ export default function HeadlineResults() {
           </p>
           <dl className="mt-6 grid gap-6 sm:grid-cols-3 sm:text-center">
             {[
-              { k: 'CPU', v: '1.28×', s: 'Mostly compute' },
-              { k: 'GPU T4', v: '7.46×', s: 'Compile is visible' },
-              { k: 'TPU v5e', v: '59.1×', s: 'Cold path is compile' },
+              { k: 'CPU Xeon', v: '1.28×', s: 'Mostly compute' },
+              { k: 'GPU Tesla T4', v: '7.46×', s: 'Compile is visible' },
+              { k: 'TPU v5e-8', v: '59.1×', s: 'Cold path is compile' },
             ].map((row) => (
               <div key={row.k}>
                 <dt className="section-note">{row.k}</dt>

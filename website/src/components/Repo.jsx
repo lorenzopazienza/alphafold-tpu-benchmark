@@ -82,7 +82,7 @@ docker run -v $(pwd)/results:/alphafold/results \\
             </pre>
             <p className="section-note mt-4">
               GPU and TPU variants for AF2 are in the README. AF3 TPU Job is
-              kept as documentation of the unsupported CLI — not a working path.
+              kept as documentation of the unsupported CLI, not a working path.
             </p>
           </div>
         </div>

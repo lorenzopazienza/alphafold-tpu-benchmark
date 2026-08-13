@@ -39,10 +39,12 @@ export default function Hero() {
               TPU Benchmark
             </h1>
             <p className="animate-rise delay-2 section-lede !mt-5">
-              We timed AlphaFold 2’s real JAX forward pass on CPU, GPU (T4), and
-              TPU (v5e-8) — where time and idle chips go. As a follow-up we also
-              ran AlphaFold 3 on the same Colab CPU/GPU; its public release has
-              no TPU. Steady-state AF2 on TPU is 451× faster than CPU.
+              We timed AlphaFold 2’s real JAX forward pass on Colab Intel Xeon
+              CPU (2 vCPU), Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8
+              (2×4 lite podslice), tracking where time and idle chips go. As a
+              follow-up we also ran AlphaFold 3 on the same Colab Xeon CPU and
+              Tesla T4; its public release has no TPU. Steady-state AF2 on TPU is
+              451× faster than CPU.
             </p>
             <p className="animate-rise delay-3 mt-7">
               <a href="#results" className="link-quiet text-base font-medium">
@@ -73,8 +75,8 @@ export default function Hero() {
               {n}
               <span className="text-teal">×</span>
             </p>
-            <p className="section-note mt-3 lg:ml-auto lg:max-w-[16rem]">
-              TPU 0.47s · GPU 13.1s (16.2×) · CPU 212s
+            <p className="section-note mt-3 lg:ml-auto lg:max-w-[18rem]">
+              TPU v5e-8 0.47s · Tesla T4 13.1s (16.2×) · Xeon CPU 212s
             </p>
           </div>
         </div>

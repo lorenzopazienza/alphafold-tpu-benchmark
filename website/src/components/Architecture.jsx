@@ -2,19 +2,19 @@ const NODES = [
   {
     id: 'cpu',
     label: 'CPU',
-    detail: 'Colab / local',
+    detail: 'Colab Intel Xeon · 2 vCPU',
     out: 'result_cpu.json',
   },
   {
     id: 'gpu',
     label: 'GPU',
-    detail: 'Colab T4',
+    detail: 'Colab NVIDIA Tesla T4',
     out: 'result_gpu-t4.json',
   },
   {
     id: 'tpu',
     label: 'TPU',
-    detail: 'Stanford v5e-8',
+    detail: 'Stanford GKE v5e-8 · 2×4 lite',
     out: 'result_tpu + traces',
   },
 ]
@@ -27,12 +27,18 @@ export default function Architecture() {
           <p className="kicker">System topology</p>
           <h2 className="section-title">One script, three backends</h2>
           <p className="section-lede">
-            Docker for CPU/GPU images; Kubernetes Job + Kueue on GKE for the
-            TPU worker. Every timing run calls{' '}
+            Docker for CPU/GPU images; Kubernetes Job + Kueue on GKE for the TPU
+            worker (
+            <code className="font-mono text-[0.92em] text-ink">
+              tpu-v5-lite-podslice
+            </code>
+            ). Every timing run calls{' '}
             <code className="font-mono text-[0.92em] text-ink">
               spike_tpu_forward_pass.py
-            </code>
-            . Only the accelerator changes.
+            </code>{' '}
+            with AlphaFold 2{' '}
+            <code className="font-mono text-[0.92em] text-ink">model_3</code>, 0
+            recycles, 118 residues. Only the accelerator changes.
           </p>
         </div>
 
@@ -67,7 +73,7 @@ export default function Architecture() {
           timings use Haiku random init so we exercise the same compiled graph
           without downloading trained weights (~350MB). The ubiquitin structure
           above is separate: ESMFold with trained weights, for biology, not for
-          the CPU/GPU/TPU clocks. AlphaFold 3 uses its own notebooks and Jobs —
+          the CPU/GPU/TPU clocks. AlphaFold 3 uses its own notebooks and Jobs;
           see{' '}
           <a href="#af3" className="link-quiet font-medium text-ink">
             AF3

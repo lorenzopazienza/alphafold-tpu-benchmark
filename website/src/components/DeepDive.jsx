@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { EXPERIMENTS, PHASES } from '../data/experiments'
 
-/** One glyph control — no repeated “Read notes” labels on every row. */
+/** One glyph control; no repeated “Read notes” labels on every row. */
 function ExpandToggle({ open }) {
   return (
     <span

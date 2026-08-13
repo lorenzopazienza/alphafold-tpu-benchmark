@@ -1,4 +1,4 @@
-# AlphaFold TPU Benchmark — full site transcript for LLMs
+# AlphaFold TPU Benchmark - full site transcript for LLMs
 
 > Use this file when you cannot execute JavaScript or “see” the React app.
 > It mirrors the live page at https://alphafold-tpu.vercel.app/ section by section,
@@ -27,29 +27,29 @@
 
 ---
 
-## Section 1 — Hero (`#top`)
+## Section 1 - Hero (`#top`)
 
 **On-screen layout:** Two-column hero. Left: kicker + title + blurb + links. Right: giant “451×” metric.
 
 - Kicker: STANFORD HPC · SUMMER 2026
 - Title: AlphaFold / TPU Benchmark
-- Body: “We timed AlphaFold 2’s real JAX forward pass on CPU, GPU (T4), and TPU (v5e-8). As a follow-up we also ran AlphaFold 3 on the same Colab CPU/GPU; its public release has no TPU. Steady-state AF2 on TPU is 451× faster than CPU.”
+- Body: “We timed AlphaFold 2’s real JAX forward pass on Colab Intel Xeon CPU (2 vCPU), Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (2×4 lite podslice). As a follow-up we also ran AlphaFold 3 on the same Colab CPU/GPU; its public release has no TPU. Steady-state AF2 on TPU is 451× faster than CPU.”
 - Links: AF2 results · AF3 · Slides PDF · Reproduce
 - Metric label: AF2 STEADY-STATE VS CPU
 - Metric: **451×** (teal ×)
-- Subline: TPU 0.47s · GPU 13.1s (16.2×) · CPU 212s
+- Subline: TPU v5e-8 0.47s · Tesla T4 13.1s (16.2×) · Xeon CPU 212s
 - Footer credit line under a hairline rule: Lorenzo Pazienza & Ihab El Bani · Intro to HPC and AI Systems · Profs. Steve Jones & Mourad Bouache
 
 **Important:** GPU speedup vs CPU is **16.2×**. TPU vs GPU is ~27.8×. Do not say GPU is 27.8× vs CPU.
 
 ---
 
-## Section 2 — Structure (`#structure`)
+## Section 2 - Structure (`#structure`)
 
 **Headline:** Human ubiquitin  
 **Supporting:** ESMFold prediction · 76 residues · mean pLDDT **90.5**. Drag to rotate, scroll to zoom. Colors follow AlphaFold’s pLDDT scale.
 
-### Media A — Interactive 3D viewer
+### Media A - Interactive 3D viewer
 - Asset (fallback still): https://alphafold-tpu.vercel.app/figures/ubiquitin_structure.png
 - PDB: https://alphafold-tpu.vercel.app/structure/ubiquitin_predicted.pdb
 - **What it shows:** Cartoon ribbon of human ubiquitin. Residues colored by pLDDT confidence:
@@ -60,7 +60,7 @@
 - Most of the fold is blue/cyan (high confidence). The flexible C-terminal conjugating tail (roughly residues 71–76) is warmer / lower confidence.
 - Caption note: “Lower confidence at the C-terminus (residues ~71–76)”
 
-### Media B — Per-residue pLDDT line chart
+### Media B - Per-residue pLDDT line chart
 - Also available as still: https://alphafold-tpu.vercel.app/figures/ubiquitin_confidence.png
 - **What it shows:** Line chart, X = residue 1–76, Y = pLDDT ~40–100. Teal line stays high (~90–96) through the core, with a shaded band highlighting residues 70–76 where confidence drops (toward ~50s–70s at the end).
 - Caption: “Shaded band: residues 70–76”
@@ -70,54 +70,54 @@
 
 ---
 
-## Section 3 — Problem (`#problem`)
+## Section 3 - Problem (`#problem`)
 
 - Kicker: Problem
 - Headline: “Where does AlphaFold 2 spend time on CPU, GPU, and TPU?”
-- Body: The problem — AlphaFold 1 showed deep learning could help; AlphaFold 2 (DeepMind) made high-accuracy structure prediction practical with a large JAX/Haiku Evoformer, but inference is still costly/opaque across accelerators. What we did — same AF2 forward pass (118 residues, model_3, 0 recycles) on Colab CPU, T4, Stanford GKE TPU v5e-8; timed init, cold predict, steady-state; fixed bottlenecks.
+- Body: The problem - AlphaFold 1 showed deep learning could help; AlphaFold 2 (DeepMind) made high-accuracy structure prediction practical with a large JAX/Haiku Evoformer, but inference is still costly/opaque across accelerators. What we did - same AF2 forward pass (118 residues, model_3, 0 recycles, Haiku random-init) on Colab Intel Xeon (2 vCPU), Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips); timed init, cold predict, steady-state; fixed bottlenecks.
 
 ---
 
-## Section 4 — Approach (`#approach`)
+## Section 4 - Approach (`#approach`)
 
 - Kicker: Approach
 - Headline: “One script, three backends”
 - Body: Every timing run calls `spike_tpu_forward_pass.py`. Only the accelerator changes.
 
 **Architecture strip (4 cells):**
-1. Script — `spike_tpu_forward_pass.py`
-2. CPU — Colab / local → `result_cpu.json`
-3. GPU — Colab T4 → `result_gpu-t4.json`
-4. TPU — Stanford v5e-8 → `result_tpu + traces`
+1. Script - `spike_tpu_forward_pass.py` (AF2 `model_3`, 0 recycles, 118 residues)
+2. CPU - Colab Intel Xeon · 2 vCPU → `result_cpu.json`
+3. GPU - Colab NVIDIA Tesla T4 → `result_gpu-t4.json`
+4. TPU - Stanford GKE v5e-8 · 2×4 lite (`tpu-v5-lite-podslice`) → `result_tpu + traces`
 
 **Parameters note:** Systems timings use Haiku random init to exercise the same compiled graph without downloading trained weights (~350MB). Ubiquitin above is separate (ESMFold).
 
 ---
 
-## Section 5 — Results (`#results`)
+## Section 5 - Results (`#results`)
 
 - Kicker: Results
 - Headline: “Steady-state predict latency”
 - Big callout: **0.47s**
-- Subcopy: model_3, 0 recycles, 118-residue input, identical code path. Bar lengths are log-scaled.
+- Subcopy: model_3, 0 recycles, 118-residue input, Haiku random-init. Backends: Colab Intel Xeon (2 vCPU), Colab NVIDIA Tesla T4, Stanford GKE TPU v5e-8 (2×4 lite). Identical code path; bar lengths are log-scaled.
 
 **Latency bars (log-scaled widths on page):**
 | Backend | Display time | Speedup vs CPU | Bar color (approx) |
 |---------|--------------|----------------|--------------------|
-| CPU     | 212.1s       | 1×             | gray               |
-| GPU T4  | 13.1s        | 16.2×          | blue               |
-| TPU v5e | 0.47s        | 451×           | teal               |
+| CPU Xeon (Colab, 2 vCPU) | 212.1s | 1× | gray |
+| GPU Tesla T4 (Colab) | 13.1s | 16.2× | blue |
+| TPU v5e-8 (Stanford GKE, 2×4) | 0.47s | 451× | teal |
 
 **First predict / steady-state (compile visibility):**
 | Backend | Ratio | Note |
 |---------|-------|------|
-| CPU     | 1.28× | Mostly compute |
-| GPU T4  | 7.46× | Compile is visible |
-| TPU v5e | 59.1× | Cold path is compile |
+| CPU Xeon | 1.28× | Mostly compute |
+| GPU Tesla T4 | 7.46× | Compile is visible |
+| TPU v5e-8 | 59.1× | Cold path is compile |
 
 ---
 
-## Section 6 — Experiments (`#experiments`)
+## Section 6 - Experiments (`#experiments`)
 
 - Kicker: Experiments
 - Headline: “Twelve TPU follow-ups”
@@ -125,83 +125,83 @@
 
 ### Phase: Scaling
 
-#### 01 Sequence length — **14.6×** (time for 8.3× length)
+#### 01 Sequence length - **14.6×** (time for 8.3× length)
 - Finding: Steady-state time grew faster than sequence length (8.3× length → 14.6× time).
 - Notes: Swept 60, 120, 250, 500 residues. Super-linear; matches pair representation. Compile ~flat.
 
-#### 02 Recycle depth — **~0.46s** (per extra recycle)
+#### 02 Recycle depth - **~0.46s** (per extra recycle)
 - Finding: Steady-state rose linearly with recycles; compile did not.
 - Notes: 0/1/3 recycles; ~0.46s each added recycle. Compile jumps 0→1 then flat 1→3.
 
-#### 03 Chip visibility — **1 of 8** (chips used)
+#### 03 Chip visibility - **1 of 8** (chips used)
 - Finding: 1 visible chip and 8 visible chips gave the same single-query time.
 - Notes: Default path one query on one chip. 2-/4-chip libtpu flag attempts failed.
 
-### Media C — Shared scaling charts
+### Media C - Shared scaling charts
 - URL: https://alphafold-tpu.vercel.app/figures/scaling_charts.png
 - Caption: “Left: sequence length. Right: recycle depth. Same TPU v5e-8 runs.”
 - **What it shows:** Two side-by-side line charts for TPU v5e-8. Left: latency vs sequence length; right: latency vs recycle depth (118 residues). Each panel plots orange “compile + run (1st call)” and blue “steady-state (2nd call)”. Orange sits much higher; blue rises with length/recycles more gently.
 
 ### Phase: Bottleneck & fix
 
-#### 04 Profiler trace — **76%** (of first call in cache_miss)
+#### 04 Profiler trace - **76%** (of first call in cache_miss)
 - Finding: cache_miss in JAX pjit accounted for ~76% of the first predict call.
 - Notes: `$pjit.py:250` ~12.55s self-time inside 16.56s first predict; TPU device nearly idle → host-side JIT.
 
-#### 05 Compilation cache — **6.8×** (faster init_params)
+#### 05 Compilation cache - **6.8×** (faster init_params)
 - Finding: Persisting JAX compile cache across process restart cut init_params by 6.8×.
 - Notes: First predict also ~1.9× with warm cache; steady-state unchanged.
 
-#### 06 Precision (bf16) — **−40%** (steady-state HBM)
+#### 06 Precision (bf16) - **−40%** (steady-state HBM)
 - Finding: bfloat16 cut steady-state HBM ~40% with little runtime change at this size.
 - Notes: Wall-clock barely moved; peak memory briefly higher during cast.
 
 ### Phase: Multi-chip
 
-#### 07 Multi-query batching — **lower** (proteins/sec vs batch=1) · NEGATIVE
+#### 07 Multi-query batching - **lower** (proteins/sec vs batch=1) · NEGATIVE
 - Finding: jax.vmap reduced proteins/sec as batch size grew; only TPU_0 used HBM.
 - Notes: Batches 1/2/4/8; throughput never beat batch=1; memory stayed on one chip.
 
-### Media D — Batching chart
+### Media D - Batching chart
 - URL: https://alphafold-tpu.vercel.app/figures/batching_chart.png
 - Caption: “Wall-clock scales ~linearly; per-protein cost rises with batch size.”
 - **What it shows:** Chart of batching experiment outcomes: as batch size increases, wall-clock grows roughly linearly and per-protein efficiency worsens versus batch=1; reinforces that vmap did not spread work across the 8-chip slice.
 
-#### 08 pmap parallelism — **6.92×** (throughput speedup)
+#### 08 pmap parallelism - **6.92×** (throughput speedup)
 - Finding: jax.pmap ran 8 proteins on 8 chips at 6.92× single-chip throughput.
 - Notes: 2.13 → 14.72 proteins/sec; per-chip HBM 445–469 MB ≈ single-protein footprint.
 
-#### 09 Auto-sharding (GSPMD) — **0×** (tensor split) · NEGATIVE
+#### 09 Auto-sharding (GSPMD) - **0×** (tensor split) · NEGATIVE
 - Finding: GSPMD auto-mesh left a full ~463 MB copy on every chip (no split).
-- Notes: Root cause — AlphaFold ensembling is a sequential hk.while_loop; nothing for GSPMD to distribute. Reproduced twice.
+- Notes: Root cause - AlphaFold ensembling is a sequential hk.while_loop; nothing for GSPMD to distribute. Reproduced twice.
 
-#### 10 Real single-query sharding — **8/8** (chips genuinely used)
+#### 10 Real single-query sharding - **8/8** (chips genuinely used)
 - Finding: Re-implemented AlphaFold’s ensemble average with pmap + cross-device pmean; verified correct on all 8 chips.
 - Notes: AlphaFold source untouched. Steady-state 0.54s. Per-chip HBM 427–624 MB (not flat 463 MB replication). Scope: distributed ensembling, not full Evoformer tensor sharding.
 
 ### Phase: Fit & rigor
 
-#### 11 Empirical scaling law — **R² 0.981** (16-point TPU grid)
+#### 11 Empirical scaling law - **R² 0.981** (16-point TPU grid)
 - Finding: Power law on 16 TPU runs (4 chip counts × 4 lengths) fits R² 0.981.
 - Equation: throughput ≈ 4527.77 · chips^0.963 · length^−1.572
 - Implication: chip exponent near 1 → pmap scaling holds; cost/prediction nearly flat in chips.
 
-### Media E — Scaling law chart
+### Media E - Scaling law chart
 - URL: https://alphafold-tpu.vercel.app/figures/scaling_law_chart.png
 - Caption: “Throughput vs chips and sequence length on the measured grid.”
 - **What it shows:** Visualization of the 16-run grid / fit: throughput rising with chip count and falling with sequence length, consistent with the fitted power law (R² 0.981).
 
-#### 12 Model pick & repeats — **<1%** (stdev on repeats)
+#### 12 Model pick & repeats - **<1%** (stdev on repeats)
 - Finding: model_5 ~15% faster at steady-state; three repeats stayed under 1% stdev.
 - Notes: model_5 beat model_3 and model_4 by ~15%; all tracked metrics <1% stdev across three repeats.
 
 ---
 
-## Section 6b — AlphaFold 3 (`#af3`)
+## Section 6b - AlphaFold 3 (`#af3`)
 
 - Kicker: Side investigation
 - Headline: “AlphaFold 3 on the same backends”
-- Body: Separate DeepMind codebase (Pairformer + diffusion — not an AF2 version bump). Same 118-residue toy input, seed=1. Trained weights ~1.15 GB. Five diffusion samples per call.
+- Body: Separate DeepMind codebase (Pairformer + diffusion - not an AF2 version bump). Same 118-residue toy input, seed=1. Trained weights ~1.15 GB. Five diffusion samples per call.
 
 ### Latency compare (per sample, identical Colab)
 | Backend | AF2 | AF3 | AF3 / AF2 |
@@ -211,16 +211,16 @@
 
 AF3 also gains more from GPU: CPU→GPU **21.5×** vs AF2’s **16.2×**.
 
-### Media F — Interactive AF3 3D viewer + confidence chart
+### Media F - Interactive AF3 3D viewer + confidence chart
 - Same component pattern as ubiquitin (`ProteinViewer` + 3Dmol.js).
 - CIF: https://alphafold-tpu.vercel.app/structure/af3_toy_test_cpu-colab_model.cif
 - Fallback still: https://alphafold-tpu.vercel.app/figures/af3_toy_test_structure.png
 - On-page kicker: “AlphaFold 3 · structure”
 - Title: “AF3 toy structure”
 - Subtitle: Diffusion sample, seed 1 · 118 residues, no MSA · **ptm 0.23**
-- **What the 3D shows:** Cartoon ribbon colored by per-atom confidence (CIF `B_iso_or_equiv`, same pLDDT color scale as ubiquitin). Expect mostly orange/yellow (low–medium), not blue — correct for this input.
+- **What the 3D shows:** Cartoon ribbon colored by per-atom confidence (CIF `B_iso_or_equiv`, same pLDDT color scale as ubiquitin). Expect mostly orange/yellow (low–medium), not blue - correct for this input.
 - **What the chart shows:** Per-residue CA confidence for residues 1–118; values roughly ~23–61 (mean CA ~43). No shaded C-term band (unlike ubiquitin).
-- Caption (stated on site): “Low confidence throughout — expected for a no-MSA input, not a defect. Not comparable to the ubiquitin mean pLDDT above.”
+- Caption (stated on site): “Low confidence throughout - expected for a no-MSA input, not a defect. Not comparable to the ubiquitin mean pLDDT above.”
 - **Cross-model quality note:** Do **not** treat AF3 ptm 0.23 / low CA confidence vs ubiquitin mean pLDDT 90.5 as a head-to-head model-quality ranking. The AF3 toy run deliberately has no MSA.
 
 ### TPU wall (negative result)
@@ -229,7 +229,7 @@ AF3 also gains more from GPU: CPU→GPU **21.5×** vs AF2’s **16.2×**.
 - Log: `FATAL Flags parsing error: flag --jax_backend=tpu: value should be one of <cpu|gpu|mps>`
 - Matches DeepMind docs (NVIDIA GPU ≥7.0 or CPU). Not an infra miss on our side.
 
-## Section 7 — Cost (`#cost`)
+## Section 7 - Cost (`#cost`)
 
 - Kicker: Cost
 - Headline: “Cost per prediction is nearly flat in chip count”
@@ -252,7 +252,7 @@ On the baseline path only 1 of 8 chips was active (~87% idle), so list-price TPU
 
 ---
 
-## Section 8 — Reproduce (`#reproduce`)
+## Section 8 - Reproduce (`#reproduce`)
 
 - Kicker: Reproduce
 - Headline: “Code and commands”
@@ -304,10 +304,10 @@ When an assistant can fetch images, prefer these URLs. When it cannot, use the �
 
 1. Read this file end-to-end; treat it as the page content.
 2. Separate three exhibit types:
-   - **AF2 systems timing** (118-res, Haiku random init, CPU/GPU/TPU) — main study
-   - **Ubiquitin ESMFold** (`#structure`) — biology demo with high mean pLDDT 90.5
-   - **AF3 side-investigation** (`#af3`) — separate codebase; Colab CPU/GPU timing + interactive CIF; public AF3 has no TPU
+   - **AF2 systems timing** (118-res, Haiku random init, CPU/GPU/TPU) - main study
+   - **Ubiquitin ESMFold** (`#structure`) - biology demo with high mean pLDDT 90.5
+   - **AF3 side-investigation** (`#af3`) - separate codebase; Colab CPU/GPU timing + interactive CIF; public AF3 has no TPU
 3. Quote the tables for latency, compile ratios, costs, and experiment stats.
 4. Mention amber/negative results: AF2 batching (vmap), GSPMD auto-shard, and AF3 TPU CLI gap; then the AF2 ensemble-shard fix (8/8 chips).
-5. Never rank AF3 toy confidence against ubiquitin pLDDT as model quality — no-MSA input by design.
+5. Never rank AF3 toy confidence against ubiquitin pLDDT as model quality - no-MSA input by design.
 6. Link section anchors (#structure, #results, #experiments, #af3, #cost, #reproduce) or the GitHub repo for code.

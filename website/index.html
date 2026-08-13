@@ -7,7 +7,7 @@
     <title>AlphaFold TPU Benchmark · AF2 CPU/GPU/TPU + AF3 Side Study · Stanford HPC</title>
     <meta
       name="description"
-      content="Stanford HPC: AlphaFold 2 on CPU/GPU/TPU — steady-state TPU 0.47s (451× vs CPU). AlphaFold 3 on the same Colab backends (2.3×/1.74× slower; interactive CIF viewer; public AF3 has no TPU). Transcript: /llms.txt."
+      content="Stanford HPC: AlphaFold 2 on Colab Intel Xeon (2 vCPU), Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (2×4) - steady-state TPU 0.47s (451× vs CPU). AlphaFold 3 on the same Colab backends (interactive CIF; public AF3 has no TPU). Transcript: /llms.txt."
     />
     <meta
       name="keywords"
@@ -100,7 +100,7 @@
               "compilation cache",
               "diffusion"
             ],
-            "abstract": "AlphaFold TPU Benchmark: we timed AlphaFold 2’s JAX/Haiku forward pass on CPU, NVIDIA T4, and Google TPU v5e-8. Steady-state TPU 0.47s (451× vs CPU). Twelve AF2 follow-ups (compile cache, pmap, ensemble shard). AlphaFold 3 side-investigation on the same Colab CPU/GPU — 2.3×/1.74× slower per sample; interactive 3D CIF + confidence chart; public AF3 CLI has no TPU backend. Full transcript: https://alphafold-tpu.vercel.app/llms.txt",
+            "abstract": "AlphaFold TPU Benchmark: we timed AlphaFold 2’s JAX/Haiku forward pass on CPU, NVIDIA T4, and Google TPU v5e-8. Steady-state TPU 0.47s (451× vs CPU). Twelve AF2 follow-ups (compile cache, pmap, ensemble shard). AlphaFold 3 side-investigation on the same Colab CPU/GPU - 2.3×/1.74× slower per sample; interactive 3D CIF + confidence chart; public AF3 CLI has no TPU backend. Full transcript: https://alphafold-tpu.vercel.app/llms.txt",
             "citation": "https://github.com/lorenzopazienza/alphafold-tpu-benchmark",
             "mainEntityOfPage": "https://alphafold-tpu.vercel.app/"
           },
@@ -114,7 +114,7 @@
             "@type": "ImageObject",
             "contentUrl": "https://alphafold-tpu.vercel.app/figures/af3_toy_test_structure.png",
             "name": "AlphaFold 3 toy-test structure",
-            "description": "Fallback still for the interactive AF3 CIF viewer. 118-residue no-MSA toy input, seed=1, trained weights. Low/medium confidence coloring expected; ptm 0.23 — not comparable to ubiquitin mean pLDDT."
+            "description": "Fallback still for the interactive AF3 CIF viewer. 118-residue no-MSA toy input, seed=1, trained weights. Low/medium confidence coloring expected; ptm 0.23 - not comparable to ubiquitin mean pLDDT."
           },
           {
             "@type": "Dataset",
@@ -220,7 +220,7 @@
         <a href="https://alphafold-tpu.vercel.app/llms.txt"
           >https://alphafold-tpu.vercel.app/llms.txt</a
         >
-        — it describes every section, chart, and image.
+        - it describes every section, chart, and image.
       </p>
 
       <h1>AlphaFold TPU Benchmark: A CPU/GPU/TPU Scaling Study</h1>
@@ -244,24 +244,25 @@
       <nav aria-label="On-page sections">
         <h2>Site structure (nav)</h2>
         <ol>
-          <li><a href="#top">Hero — 451× headline</a></li>
-          <li><a href="#structure">Structure — ubiquitin 3D + pLDDT</a></li>
+          <li><a href="#top">Hero - 451× headline</a></li>
+          <li><a href="#structure">Structure - ubiquitin 3D + pLDDT</a></li>
           <li><a href="#problem">Problem</a></li>
-          <li><a href="#approach">Approach — one script, three backends</a></li>
-          <li><a href="#results">Results — AF2 latency bars</a></li>
-          <li><a href="#experiments">Experiments — twelve TPU follow-ups</a></li>
-          <li><a href="#af3">AlphaFold 3 — Colab compare + interactive CIF + TPU wall</a></li>
-          <li><a href="#cost">Cost — scaling law + $/1k</a></li>
-          <li><a href="#reproduce">Reproduce — repo + docker + slides PDF</a></li>
+          <li><a href="#approach">Approach - one script, three backends</a></li>
+          <li><a href="#results">Results - AF2 latency bars</a></li>
+          <li><a href="#experiments">Experiments - twelve TPU follow-ups</a></li>
+          <li><a href="#af3">AlphaFold 3 - Colab compare + interactive CIF + TPU wall</a></li>
+          <li><a href="#cost">Cost - scaling law + $/1k</a></li>
+          <li><a href="#reproduce">Reproduce - repo + docker + slides PDF</a></li>
         </ol>
       </nav>
 
       <h2 id="top">Hero</h2>
       <p>
         Giant metric <strong>451×</strong> (AF2 steady-state TPU vs CPU). Subline:
-        TPU 0.47s · GPU 13.1s (16.2× vs CPU) · CPU 212s. Title “AlphaFold TPU
-        Benchmark”. Blurb: AF2 JAX forward pass on CPU, GPU (T4), and TPU
-        (v5e-8); AF3 follow-up on the same Colab CPU/GPU (public AF3 has no TPU).
+        TPU v5e-8 0.47s · Tesla T4 13.1s (16.2×) · Xeon CPU 212s. Title “AlphaFold TPU
+        Benchmark”. Blurb: AF2 JAX forward pass on Colab Intel Xeon (2 vCPU),
+        Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (2×4 lite podslice);
+        AF3 follow-up on the same Colab CPU/GPU (public AF3 has no TPU).
         Course slides:
         <a
           href="/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf"
@@ -270,10 +271,10 @@
         >.
       </p>
 
-      <h2 id="structure">Structure — Human ubiquitin</h2>
+      <h2 id="structure">Structure - Human ubiquitin</h2>
       <p>
         ESMFold prediction · 76 residues · mean pLDDT 90.5. Interactive 3D
-        (drag/zoom) colored by AlphaFold pLDDT scale. Biology demo — not the
+        (drag/zoom) colored by AlphaFold pLDDT scale. Biology demo - not the
         systems timing workload.
       </p>
       <figure>
@@ -303,20 +304,23 @@
       <h2 id="problem">Problem</h2>
       <p>
         <strong>Where does AlphaFold 2 spend time on CPU, GPU, and TPU?</strong>
-        Same model config, script, and input shape; measure init, first predict
-        (compile + run), steady-state. Hardware: Colab CPU/T4; Stanford TPU
-        v5e-8 (2×4). Follow-up: AlphaFold 3 on the same Colab CPU/GPU — see
+        Same model config, script, and input shape (AlphaFold 2 model_3, 0
+        recycles, 118 residues, Haiku random-init); measure init, first predict
+        (compile + run), steady-state. Hardware: Colab Intel Xeon (2 vCPU);
+        Colab NVIDIA Tesla T4; Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice,
+        2×4, 8 chips). Follow-up: AlphaFold 3 on the same Colab CPU/GPU - see
         <a href="#af3">#af3</a>.
       </p>
 
       <h2 id="approach">Approach</h2>
       <p>
-        One script <code>spike_tpu_forward_pass.py</code> → CPU
-        (result_cpu.json), GPU T4 (result_gpu-t4.json), TPU v5e-8 (result_tpu +
-        traces). Systems timings: Haiku random init (no ~350MB weights).
+        One script <code>spike_tpu_forward_pass.py</code> → Colab Intel Xeon CPU
+        (result_cpu.json), Colab NVIDIA Tesla T4 (result_gpu-t4.json), Stanford
+        GKE TPU v5e-8 / tpu-v5-lite-podslice 2×4 (result_tpu + traces). Systems
+        timings: AlphaFold 2 model_3, Haiku random init (no ~350MB weights).
       </p>
 
-      <h2 id="results">Results — Steady-state predict latency</h2>
+      <h2 id="results">Results - Steady-state predict latency</h2>
       <p>Callout: <strong>0.47s</strong>. model_3, 0 recycles, 118 residues. Log-scaled bars.</p>
       <table>
         <thead>
@@ -328,17 +332,17 @@
         </thead>
         <tbody>
           <tr>
-            <td>CPU</td>
+            <td>CPU Xeon (Colab, 2 vCPU)</td>
             <td>212.1s</td>
             <td>1×</td>
           </tr>
           <tr>
-            <td>GPU T4</td>
+            <td>GPU Tesla T4 (Colab)</td>
             <td>13.1s</td>
             <td>16.2×</td>
           </tr>
           <tr>
-            <td>TPU v5e</td>
+            <td>TPU v5e-8 (Stanford GKE, 2×4)</td>
             <td>0.47s</td>
             <td>451×</td>
           </tr>
@@ -346,21 +350,21 @@
       </table>
       <p>First/steady-state: CPU 1.28× · GPU 7.46× · TPU 59.1×.</p>
 
-      <h2 id="experiments">Experiments — Twelve TPU follow-ups</h2>
+      <h2 id="experiments">Experiments - Twelve TPU follow-ups</h2>
       <p>Amber rail = negative result. Click + for method notes on the live UI.</p>
 
       <h3>Scaling</h3>
       <ol>
         <li>
-          <strong>Sequence length — 14.6×</strong> time for 8.3× length.
+          <strong>Sequence length - 14.6×</strong> time for 8.3× length.
           Super-linear; swept 60–500 residues.
         </li>
         <li>
-          <strong>Recycle depth — ~0.46s</strong> per extra recycle; compile flat
+          <strong>Recycle depth - ~0.46s</strong> per extra recycle; compile flat
           after first.
         </li>
         <li>
-          <strong>Chip visibility — 1 of 8</strong> chips used on default path.
+          <strong>Chip visibility - 1 of 8</strong> chips used on default path.
         </li>
       </ol>
       <figure>
@@ -378,15 +382,15 @@
       <h3>Bottleneck &amp; fix</h3>
       <ol start="4">
         <li>
-          <strong>Profiler trace — 76%</strong> of first call in pjit cache_miss
+          <strong>Profiler trace - 76%</strong> of first call in pjit cache_miss
           (host JIT).
         </li>
         <li>
-          <strong>Compilation cache — 6.8×</strong> faster init_params; steady-state
+          <strong>Compilation cache - 6.8×</strong> faster init_params; steady-state
           unchanged.
         </li>
         <li>
-          <strong>Precision bf16 — −40%</strong> steady-state HBM; little runtime
+          <strong>Precision bf16 - −40%</strong> steady-state HBM; little runtime
           change.
         </li>
       </ol>
@@ -394,7 +398,7 @@
       <h3>Multi-chip</h3>
       <ol start="7">
         <li>
-          <strong>Multi-query batching — lower</strong> proteins/sec vs batch=1
+          <strong>Multi-query batching - lower</strong> proteins/sec vs batch=1
           (negative). vmap stayed on one chip.
         </li>
       </ol>
@@ -411,16 +415,16 @@
       </figure>
       <ol start="8">
         <li>
-          <strong>pmap — 6.92×</strong> throughput (2.13 → 14.72 proteins/sec on 8
+          <strong>pmap - 6.92×</strong> throughput (2.13 → 14.72 proteins/sec on 8
           chips).
         </li>
         <li>
-          <strong>Auto-sharding GSPMD — 0×</strong> tensor split (negative);
+          <strong>Auto-sharding GSPMD - 0×</strong> tensor split (negative);
           ~463 MB copy on every chip (AlphaFold ensemble is a sequential
           <code>hk.while_loop</code>).
         </li>
         <li>
-          <strong>Ensemble shard — 8/8 chips</strong> via
+          <strong>Ensemble shard - 8/8 chips</strong> via
           <code>pmap</code> + <code>pmean</code> on one query’s ensemble
           average; reduction verified; HBM 427–624 MB/chip.
         </li>
@@ -429,7 +433,7 @@
       <h3>Fit &amp; rigor</h3>
       <ol start="11">
         <li>
-          <strong>Empirical scaling law — R² 0.981</strong> on 16 runs:
+          <strong>Empirical scaling law - R² 0.981</strong> on 16 runs:
           throughput ≈ 4527.77 · chips<sup>0.963</sup> · length<sup>−1.572</sup>.
         </li>
       </ol>
@@ -446,12 +450,12 @@
       </figure>
       <ol start="12">
         <li>
-          <strong>Model pick &amp; repeats — &lt;1%</strong> stdev; model_5 ~15%
+          <strong>Model pick &amp; repeats - &lt;1%</strong> stdev; model_5 ~15%
           faster steady-state than model_3/4.
         </li>
       </ol>
 
-      <h2 id="af3">AlphaFold 3 — side investigation</h2>
+      <h2 id="af3">AlphaFold 3 - side investigation</h2>
       <p>
         Separate DeepMind codebase (Pairformer + diffusion), not an AF2 version
         bump. Same 118-residue toy input, seed=1, trained weights (~1.15 GB),
@@ -489,7 +493,7 @@
         >
         via 3Dmol.js (same pattern as ubiquitin) plus a per-residue confidence
         chart. Global <strong>ptm 0.23</strong>; CA confidences roughly 23–61.
-        Low confidence is expected for a no-MSA input — not comparable to
+        Low confidence is expected for a no-MSA input - not comparable to
         ubiquitin mean pLDDT 90.5.
       </p>
       <figure>

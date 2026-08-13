@@ -145,7 +145,7 @@ section[id] {
   color: var(--color-mute);
 }
 
-/* Shared section type scale — keep headings / ledes / notes in lockstep. */
+/* Shared section type scale  -  keep headings / ledes / notes in lockstep. */
 .section-title {
   margin: 0.75rem 0 0;
   font-family: var(--font-display);
@@ -288,7 +288,7 @@ section[id] {
   background: #000;
 }
 
-/* Present mode: only the 16:9 slide — no site chrome */
+/* Present mode: only the 16:9 slide  -  no site chrome */
 .deck-shell.is-fullscreen .deck-toolbar,
 .deck-shell.is-fullscreen .deck-nav {
   display: none !important;
@@ -632,7 +632,7 @@ section[id] {
   line-height: 1.3;
 }
 
-/* slide 2 — pipeline with icons */
+/* slide 2  -  pipeline with icons */
 .deck-s2 {
   display: flex;
   flex-direction: column;

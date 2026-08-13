@@ -103,7 +103,7 @@ export default function ProteinViewer({
   confidenceLabel = 'mean pLDDT',
   confidenceData = CONFIDENCE,
   fallbackImage = '/figures/ubiquitin_structure.png',
-  fallbackAlt = 'Human ubiquitin ESMFold structure colored by pLDDT — blue/cyan high confidence, yellow/orange C-terminal tail',
+  fallbackAlt = 'Human ubiquitin ESMFold structure colored by pLDDT: blue/cyan high confidence, yellow/orange C-terminal tail',
   captionNote = 'Lower confidence at the C-terminus (residues ~71–76)',
   chartBlurb = 'Confidence stays high through the structured core and drops in the last residues, the flexible conjugating tail.',
   chartTitle = 'Per-residue pLDDT',
