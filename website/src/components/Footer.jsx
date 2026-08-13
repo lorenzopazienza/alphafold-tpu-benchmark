@@ -9,11 +9,14 @@ export default function Footer() {
             AlphaFold TPU Benchmark
           </p>
           <p className="section-note mt-2">
-            Lorenzo Pazienza & Ihab El Bani
+            Authors:{' '}
+            <span itemProp="author">Lorenzo Pazienza</span>
+            {' & '}
+            <span itemProp="author">Ihab El Bani</span>
             <br />
             Stanford University · Summer Session 2026
             <br />
-            Intro to High Performance Computing and AI Systems
+            Intro to High Performance Computing and AI Systems (ME344)
             <br />
             Profs. Steve Jones & Mourad Bouache
           </p>

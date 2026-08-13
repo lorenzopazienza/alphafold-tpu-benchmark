@@ -4,26 +4,38 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AlphaFold TPU Benchmark · AF2 CPU/GPU/TPU + AF3 Side Study · Stanford HPC</title>
+    <title>
+      AlphaFold TPU Benchmark · Lorenzo Pazienza &amp; Ihab El Bani · Stanford HPC
+    </title>
     <meta
       name="description"
-      content="Stanford HPC: AlphaFold 2 on Colab Intel Xeon (2 vCPU), Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (2×4) - steady-state TPU 0.47s (451× vs CPU). AlphaFold 3 on the same Colab backends (interactive CIF; public AF3 has no TPU). Transcript: /llms.txt."
+      content="By Lorenzo Pazienza and Ihab El Bani (Stanford HPC, Summer 2026): AlphaFold 2 on Colab Intel Xeon, NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 - TPU 0.47s (451× vs CPU). AlphaFold 3 side study on the same Colab backends. Transcript: /llms.txt."
     />
     <meta
       name="keywords"
-      content="AlphaFold, AlphaFold 2, AlphaFold 3, AF3, TPU, GPU, CPU, JAX, XLA, Stanford, HPC, protein structure, ESMFold, ubiquitin, scaling, pmap, compilation cache, v5e, diffusion, Pairformer"
+      content="Lorenzo Pazienza, Ihab El Bani, Ihab Elbani, AlphaFold, AlphaFold 2, AlphaFold 3, AF3, TPU, GPU, CPU, JAX, XLA, Stanford, HPC, ME344, protein structure, ESMFold, ubiquitin, scaling, pmap, compilation cache, v5e, diffusion, Pairformer"
     />
     <meta name="author" content="Lorenzo Pazienza, Ihab El Bani" />
+    <meta name="citation_author" content="Pazienza, Lorenzo" />
+    <meta name="citation_author" content="El Bani, Ihab" />
+    <meta name="citation_title" content="AlphaFold TPU Benchmark: A CPU/GPU/TPU Scaling Study" />
+    <meta name="citation_publication_date" content="2026" />
+    <meta property="article:author" content="Lorenzo Pazienza" />
+    <meta property="article:author" content="Ihab El Bani" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="theme-color" content="#f7f8f9" />
     <link rel="canonical" href="https://alphafold-tpu.vercel.app/" />
     <link rel="alternate" type="text/plain" href="https://alphafold-tpu.vercel.app/llms.txt" title="Full LLM page transcript" />
+    <link rel="author" href="/humans.txt" title="Authors" />
 
     <meta property="og:site_name" content="AlphaFold TPU Benchmark" />
-    <meta property="og:title" content="AlphaFold TPU Benchmark · AF2 + AF3 · Stanford HPC" />
+    <meta
+      property="og:title"
+      content="AlphaFold TPU Benchmark · Lorenzo Pazienza & Ihab El Bani · Stanford"
+    />
     <meta
       property="og:description"
-      content="AF2: TPU 0.47s (451× vs CPU), GPU 13.1s (16.2×). Twelve TPU follow-ups. AF3: same Colab CPU/GPU compare + interactive 3D CIF; public release has no TPU. Full text: /llms.txt"
+      content="Stanford HPC project by Lorenzo Pazienza and Ihab El Bani. AF2: TPU 0.47s (451× vs CPU), Tesla T4 13.1s (16.2×). Twelve TPU follow-ups. AF3 Colab side study + interactive CIF. Full text: /llms.txt"
     />
     <meta property="og:type" content="article" />
     <meta property="og:url" content="https://alphafold-tpu.vercel.app/" />
@@ -34,10 +46,13 @@
     <meta property="og:image:alt" content="ESMFold cartoon of human ubiquitin colored by pLDDT confidence" />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="AlphaFold TPU Benchmark · AF2 + AF3 · Stanford HPC" />
+    <meta
+      name="twitter:title"
+      content="AlphaFold TPU Benchmark · Lorenzo Pazienza & Ihab El Bani"
+    />
     <meta
       name="twitter:description"
-      content="AF2: CPU 212s · GPU T4 13.1s (16.2×) · TPU v5e-8 0.47s (451×). AF3 side study + interactive CIF. Transcript: /llms.txt"
+      content="By Lorenzo Pazienza and Ihab El Bani. AF2: CPU 212s · Tesla T4 13.1s (16.2×) · TPU v5e-8 0.47s (451×). AF3 side study + interactive CIF. /llms.txt"
     />
     <meta
       name="twitter:image"
@@ -53,21 +68,91 @@
             "@id": "https://alphafold-tpu.vercel.app/#website",
             "url": "https://alphafold-tpu.vercel.app/",
             "name": "AlphaFold TPU Benchmark",
-            "description": "Stanford HPC project: AlphaFold 2 CPU/GPU/TPU scaling plus AlphaFold 3 Colab side-investigation with interactive CIF viewer. Full assistant transcript at /llms.txt.",
+            "alternateName": [
+              "AlphaFold TPU Benchmark by Lorenzo Pazienza and Ihab El Bani",
+              "Lorenzo Pazienza Ihab El Bani AlphaFold TPU"
+            ],
+            "description": "Stanford HPC project by Lorenzo Pazienza and Ihab El Bani: AlphaFold 2 CPU/GPU/TPU scaling plus AlphaFold 3 Colab side-investigation. Full assistant transcript at /llms.txt.",
             "inLanguage": "en",
-            "hasPart": {
-              "@type": "WebPage",
-              "url": "https://alphafold-tpu.vercel.app/llms.txt",
-              "name": "LLM page transcript"
-            }
+            "author": [
+              { "@id": "https://alphafold-tpu.vercel.app/#lorenzo-pazienza" },
+              { "@id": "https://alphafold-tpu.vercel.app/#ihab-el-bani" }
+            ],
+            "hasPart": [
+              {
+                "@type": "WebPage",
+                "url": "https://alphafold-tpu.vercel.app/llms.txt",
+                "name": "LLM page transcript"
+              },
+              {
+                "@type": "WebPage",
+                "url": "https://alphafold-tpu.vercel.app/humans.txt",
+                "name": "Authors"
+              }
+            ]
+          },
+          {
+            "@type": "Person",
+            "@id": "https://alphafold-tpu.vercel.app/#lorenzo-pazienza",
+            "name": "Lorenzo Pazienza",
+            "givenName": "Lorenzo",
+            "familyName": "Pazienza",
+            "url": "https://alphafold-tpu.vercel.app/",
+            "affiliation": {
+              "@type": "CollegeOrUniversity",
+              "name": "Stanford University"
+            },
+            "jobTitle": "Student",
+            "sameAs": ["https://github.com/lorenzopazienza"],
+            "knowsAbout": [
+              "AlphaFold",
+              "TPU",
+              "high performance computing",
+              "JAX"
+            ]
+          },
+          {
+            "@type": "Person",
+            "@id": "https://alphafold-tpu.vercel.app/#ihab-el-bani",
+            "name": "Ihab El Bani",
+            "alternateName": ["Ihab Elbani", "Ihab El-Bani"],
+            "givenName": "Ihab",
+            "familyName": "El Bani",
+            "url": "https://alphafold-tpu.vercel.app/",
+            "affiliation": {
+              "@type": "CollegeOrUniversity",
+              "name": "Stanford University"
+            },
+            "jobTitle": "Student",
+            "sameAs": ["https://github.com/IhabProjects"],
+            "knowsAbout": [
+              "AlphaFold",
+              "TPU",
+              "high performance computing",
+              "JAX"
+            ]
+          },
+          {
+            "@type": "WebPage",
+            "@id": "https://alphafold-tpu.vercel.app/#webpage",
+            "url": "https://alphafold-tpu.vercel.app/",
+            "name": "AlphaFold TPU Benchmark by Lorenzo Pazienza and Ihab El Bani",
+            "isPartOf": { "@id": "https://alphafold-tpu.vercel.app/#website" },
+            "about": { "@id": "https://alphafold-tpu.vercel.app/#article" },
+            "author": [
+              { "@id": "https://alphafold-tpu.vercel.app/#lorenzo-pazienza" },
+              { "@id": "https://alphafold-tpu.vercel.app/#ihab-el-bani" }
+            ],
+            "inLanguage": "en"
           },
           {
             "@type": "ScholarlyArticle",
             "@id": "https://alphafold-tpu.vercel.app/#article",
             "url": "https://alphafold-tpu.vercel.app/",
             "headline": "AlphaFold TPU Benchmark: A CPU/GPU/TPU Scaling Study",
+            "name": "AlphaFold TPU Benchmark by Lorenzo Pazienza and Ihab El Bani",
             "datePublished": "2026-08-01",
-            "dateModified": "2026-08-12",
+            "dateModified": "2026-08-13",
             "inLanguage": "en",
             "isAccessibleForFree": true,
             "image": [
@@ -79,8 +164,8 @@
               "https://alphafold-tpu.vercel.app/figures/ubiquitin_confidence.png"
             ],
             "author": [
-              { "@type": "Person", "name": "Lorenzo Pazienza" },
-              { "@type": "Person", "name": "Ihab El Bani" }
+              { "@id": "https://alphafold-tpu.vercel.app/#lorenzo-pazienza" },
+              { "@id": "https://alphafold-tpu.vercel.app/#ihab-el-bani" }
             ],
             "contributor": [
               { "@type": "Person", "name": "Steve Jones", "jobTitle": "Professor" },
@@ -88,6 +173,8 @@
             ],
             "publisher": { "@type": "Organization", "name": "Stanford University" },
             "keywords": [
+              "Lorenzo Pazienza",
+              "Ihab El Bani",
               "AlphaFold",
               "AlphaFold 2",
               "AlphaFold 3",
@@ -98,9 +185,10 @@
               "protein structure prediction",
               "pmap",
               "compilation cache",
-              "diffusion"
+              "diffusion",
+              "Stanford HPC"
             ],
-            "abstract": "AlphaFold TPU Benchmark: we timed AlphaFold 2’s JAX/Haiku forward pass on CPU, NVIDIA T4, and Google TPU v5e-8. Steady-state TPU 0.47s (451× vs CPU). Twelve AF2 follow-ups (compile cache, pmap, ensemble shard). AlphaFold 3 side-investigation on the same Colab CPU/GPU - 2.3×/1.74× slower per sample; interactive 3D CIF + confidence chart; public AF3 CLI has no TPU backend. Full transcript: https://alphafold-tpu.vercel.app/llms.txt",
+            "abstract": "Lorenzo Pazienza and Ihab El Bani (Stanford University, Summer 2026) timed AlphaFold 2’s JAX/Haiku forward pass on Colab Intel Xeon CPU, NVIDIA Tesla T4, and Google TPU v5e-8. Steady-state TPU 0.47s (451× vs CPU). Twelve AF2 follow-ups. AlphaFold 3 side-investigation on the same Colab CPU/GPU. Full transcript: https://alphafold-tpu.vercel.app/llms.txt",
             "citation": "https://github.com/lorenzopazienza/alphafold-tpu-benchmark",
             "mainEntityOfPage": "https://alphafold-tpu.vercel.app/"
           },
@@ -225,8 +313,11 @@
 
       <h1>AlphaFold TPU Benchmark: A CPU/GPU/TPU Scaling Study</h1>
       <p>
-        Lorenzo Pazienza &amp; Ihab El Bani · Stanford University · Intro to HPC
-        and AI Systems (Summer 2026) · Profs. Steve Jones &amp; Mourad Bouache
+        By <strong>Lorenzo Pazienza</strong> and <strong>Ihab El Bani</strong>
+        (also written Ihab Elbani) · Stanford University · Intro to HPC and AI
+        Systems / ME344 (Summer 2026) · Profs. Steve Jones &amp; Mourad Bouache.
+        Author roster:
+        <a href="/humans.txt">/humans.txt</a>.
       </p>
       <p>
         Live site:

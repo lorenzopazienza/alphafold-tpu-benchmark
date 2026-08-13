@@ -1,0 +1,22 @@
+/* TEAM */
+Lorenzo Pazienza
+Site: https://alphafold-tpu.vercel.app/
+GitHub: https://github.com/lorenzopazienza
+Role: Co-author · AlphaFold TPU Benchmark
+Affiliation: Stanford University · Intro to HPC and AI Systems (ME344) · Summer 2026
+
+Ihab El Bani
+Also known as: Ihab Elbani, Ihab El-Bani
+Site: https://alphafold-tpu.vercel.app/
+GitHub: https://github.com/IhabProjects
+Role: Co-author · AlphaFold TPU Benchmark
+Affiliation: Stanford University · Intro to HPC and AI Systems (ME344) · Summer 2026
+
+/* PROJECT */
+Site: AlphaFold TPU Benchmark
+URL: https://alphafold-tpu.vercel.app/
+Repo: https://github.com/lorenzopazienza/alphafold-tpu-benchmark
+Transcript: https://alphafold-tpu.vercel.app/llms.txt
+Slides: https://alphafold-tpu.vercel.app/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf
+Location: Stanford University
+Standards: HTML5, Schema.org Person + ScholarlyArticle

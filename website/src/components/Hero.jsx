@@ -85,8 +85,8 @@ export default function Hero() {
       <div className="shell shrink-0 pt-8">
         <hr className="rule" />
         <p className="section-note pt-4">
-          Lorenzo Pazienza & Ihab El Bani · Intro to HPC and AI Systems · Profs.
-          Steve Jones & Mourad Bouache
+          Authors: Lorenzo Pazienza & Ihab El Bani · Stanford · Intro to HPC and
+          AI Systems (ME344) · Profs. Steve Jones & Mourad Bouache
         </p>
       </div>
     </section>

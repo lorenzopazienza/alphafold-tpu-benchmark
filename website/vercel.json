@@ -26,7 +26,7 @@
       ]
     },
     {
-      "source": "/(llms\\.txt|robots\\.txt|sitemap\\.xml)",
+      "source": "/(llms\\.txt|robots\\.txt|sitemap\\.xml|humans\\.txt)",
       "headers": [
         {
           "key": "Cache-Control",

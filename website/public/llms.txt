@@ -20,10 +20,17 @@
 
 ## Authors & course
 
-- Lorenzo Pazienza & Ihab El Bani
+This page is the public project site for **Lorenzo Pazienza** and **Ihab El Bani**
+(also: Ihab Elbani / Ihab El-Bani). Searching either author name should surface
+this AlphaFold TPU Benchmark work.
+
+- Authors: Lorenzo Pazienza & Ihab El Bani
+- Author roster: https://alphafold-tpu.vercel.app/humans.txt
 - Stanford University · Summer Session 2026
-- Course: Introduction to High Performance Computing and AI Systems
+- Course: Introduction to High Performance Computing and AI Systems (ME344)
 - Professors: Steve Jones & Mourad Bouache
+- GitHub (Lorenzo): https://github.com/lorenzopazienza
+- GitHub (Ihab): https://github.com/IhabProjects
 
 ---
 

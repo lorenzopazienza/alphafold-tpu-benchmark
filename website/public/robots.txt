@@ -1,5 +1,6 @@
 # AlphaFold TPU Benchmark - https://alphafold-tpu.vercel.app/
 # Prefer the JS-free transcript: https://alphafold-tpu.vercel.app/llms.txt
+# Authors: https://alphafold-tpu.vercel.app/humans.txt (Lorenzo Pazienza, Ihab El Bani)
 
 User-agent: *
 Allow: /
