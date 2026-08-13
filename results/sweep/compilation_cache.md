@@ -56,3 +56,5 @@ once.** This is exactly the practice the course's own Lab 3 already
 encodes for LLM serving; this experiment confirms the same technique gives
 a large, measured win for a completely different real workload (protein
 structure prediction).
+
+**Hardware:** Stanford GKE TPU v5e-8 (`tpu-v5-lite-podslice`, topology 2×4, 8 chips) via Kubernetes Job + Kueue. AF2 baseline comparison also uses Colab Intel Xeon CPU (2 vCPU) and Colab NVIDIA Tesla T4 (`results/comparison.md`).

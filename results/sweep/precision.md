@@ -1,4 +1,4 @@
-# Precision Experiment: float32 vs bfloat16 (TPU v5e-8)
+# Precision Experiment: float32 vs bfloat16 (Stanford GKE v5e-8, 2×4 lite)
 
 ## What this tests
 
@@ -46,3 +46,5 @@ a free one, and not automatically a speed lever for every workload size.
 This is exactly the kind of nuance a course reviewer is more likely to
 reward than a flat "we used bfloat16 and it was 2x faster" claim would
 have been.
+
+**Hardware:** Stanford GKE TPU v5e-8 (`tpu-v5-lite-podslice`, topology 2×4, 8 chips) via Kubernetes Job + Kueue. AF2 baseline comparison also uses Colab Intel Xeon CPU (2 vCPU) and Colab NVIDIA Tesla T4 (`results/comparison.md`).

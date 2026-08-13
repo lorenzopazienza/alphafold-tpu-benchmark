@@ -1,11 +1,11 @@
-# Scale-Bounds Study (TPU v5e-podslice, 8 chips)
+# Scale-Bounds Study (Stanford GKE TPU v5e-8, 2×4 lite podslice, 8 chips)
 
 Twelve experiments, all on the real AlphaFold JAX/Haiku forward pass, same
-methodology as the CPU/GPU/TPU comparison (`../comparison.md`).
+methodology as the CPU/GPU/TPU comparison (Colab Intel Xeon CPU (2 vCPU) / Colab NVIDIA Tesla T4 / Stanford GKE TPU v5e-8 (2×4 lite)) (`../comparison.md`).
 
 ```mermaid
 flowchart LR
-    CMP["CPU/GPU/TPU baseline\n(../comparison.md)"]
+    CMP["CPU/GPU/TPU baseline (Colab Intel Xeon CPU (2 vCPU) / Colab NVIDIA Tesla T4 / Stanford GKE TPU v5e-8 (2×4 lite))\n(../comparison.md)"]
 
     subgraph SB["Scale bounds"]
         SL["1. Sequence length"]
@@ -177,15 +177,14 @@ See `scaling_law.md`.
 ## AlphaFold3 side-investigation (separate from the 12 experiments above)
 
 Everything above benchmarks **AlphaFold2** on TPU. As a follow-up, we also
-got **AlphaFold3** — a separate, newer, diffusion-based DeepMind codebase,
-not a version of AlphaFold2 — running on the same 118-residue toy
-sequence across all three backends this project tests AF2 on: **CPU
-(Colab), GPU (T4, Colab), and TPU (Stanford)**. CPU and GPU produced full,
-real, measured results. TPU did not — not an infrastructure failure on
+got **AlphaFold3** - a separate, newer, diffusion-based DeepMind codebase,
+not a version of AlphaFold2 - running on the same 118-residue toy
+sequence across all three backends this project tests AF2 on: **Colab Intel Xeon CPU (2 vCPU), Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips)**. CPU and GPU produced full,
+real, measured results. TPU did not - not an infrastructure failure on
 our side, but a confirmed finding that **AlphaFold3's public release does
 not support TPU inference at all** (`--jax_backend`'s valid values are
-`cpu`/`gpu`/`mps` only, verified both by a real attempt on the Stanford
-TPU slice and by AlphaFold3's own official docs, which require an NVIDIA
+`cpu`/`gpu`/`mps` only, verified both by a real attempt on the Stanford GKE TPU v5e-8 (2×4 lite)
+slice and by AlphaFold3's own official docs, which require an NVIDIA
 GPU or CPU).
 
 `af3_comparison.md` is the full write-up: an architecture/characteristics
@@ -193,11 +192,11 @@ table, a build-effort table (AF2's engineering went into multi-chip
 sharding; AF3's went into a native C++ build, an easy-to-miss
 `build_data` step, and backend-specific flags undocumented outside a
 Dockerfile comment), a **real, same-hardware performance comparison**
-(on identical Colab hardware, AF3 is 2.3x slower than AF2 on CPU,
-narrowing to 1.74x on GPU — reversing an earlier hardware-confounded
+(on identical Colab hardware (Intel Xeon 2 vCPU / NVIDIA Tesla T4), AF3 is 2.3x slower than AF2 on CPU,
+narrowing to 1.74x on GPU - reversing an earlier hardware-confounded
 estimate), a **reproducibility study** using the same seed across three
 hardware/backend combinations (near-identical across machines on the same
-backend; substantially different across backends — CPU vs. GPU differs
+backend; substantially different across backends - CPU vs. GPU differs
 by up to 32% per sample, plausibly explained by a numerical issue
 AlphaFold3's own issue tracker documents for GPUs below compute
 capability 8.0), and the full TPU-unsupported finding with log evidence.

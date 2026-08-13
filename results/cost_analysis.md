@@ -7,7 +7,7 @@
   regions). Our cluster requests a full `2x4` (8-chip) topology, so the
   actual bill is **$9.60/hour for the whole pod**; there is no option to
   rent a smaller slice on this GKE Autopilot setup.
-- **GPU T4**: ~$0.35/hour on-demand (current market rate, Google Cloud
+- **GPU (Colab NVIDIA Tesla T4)**: ~$0.35/hour on-demand (current market rate, Google Cloud
   Compute Engine, per Thunder Compute's Aug 2026 GCP pricing survey).
 - **CPU**: ~$0.19/hour (approx. n2-standard-4 on-demand).
 
@@ -16,7 +16,7 @@
 | Backend | Predictions/hour | Cost basis | Cost per 1,000 predictions |
 |---|---|---|---|
 | CPU | 17.0 | $0.19/hr | $11.19 |
-| GPU (T4) | 275 | $0.35/hr | $1.27 |
+| GPU (Colab NVIDIA Tesla T4) | 275 | $0.35/hr | $1.27 |
 | **TPU (full 8-chip pod)** | **7,660** | **$9.60/hr** | **$1.25** |
 
 ## The finding that surprised us: TPU and GPU cost almost the same per prediction

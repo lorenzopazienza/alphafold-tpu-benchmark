@@ -86,3 +86,5 @@ distribution and reduction mechanism work correctly on real hardware, it
 is not a scientifically meaningful ensemble average (that would need a
 real multi-sequence MSA with genuine stochastic subsampling diversity
 between members).
+
+**Hardware:** Stanford GKE TPU v5e-8 (`tpu-v5-lite-podslice`, topology 2×4, 8 chips) via Kubernetes Job + Kueue. AF2 baseline comparison also uses Colab Intel Xeon CPU (2 vCPU) and Colab NVIDIA Tesla T4 (`results/comparison.md`).

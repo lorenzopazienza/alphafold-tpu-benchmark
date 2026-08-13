@@ -1,4 +1,4 @@
-# Multi-Query Batching Experiment (jax.vmap, TPU v5e-8)
+# Multi-Query Batching Experiment (jax.vmap, Stanford GKE TPU v5e-8 (2×4 lite))
 
 ## What this tests
 
@@ -51,3 +51,5 @@ different batch elements on *different* physical chips). Getting real
 throughput scaling on this 8-chip slice requires rewriting the forward
 pass with explicit device-mesh sharding, which `sweep/sharding.md` does
 next.
+
+**Hardware:** Stanford GKE TPU v5e-8 (`tpu-v5-lite-podslice`, topology 2×4, 8 chips) via Kubernetes Job + Kueue. AF2 baseline comparison also uses Colab Intel Xeon CPU (2 vCPU) and Colab NVIDIA Tesla T4 (`results/comparison.md`).

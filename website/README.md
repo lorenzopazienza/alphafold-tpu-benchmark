@@ -2,6 +2,8 @@
 
 Phase 4 showcase for the Stanford ME344 AlphaFold / TPU scaling study.
 
+**Hardware under test (AF2):** Colab Intel Xeon CPU (2 vCPU); Colab NVIDIA Tesla T4; Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips).
+
 **Repo:** [lorenzopazienza/alphafold-tpu-benchmark](https://github.com/lorenzopazienza/alphafold-tpu-benchmark)
 
 ## Stack

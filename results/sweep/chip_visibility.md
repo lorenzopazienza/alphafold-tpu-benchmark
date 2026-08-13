@@ -1,4 +1,4 @@
-# Chip-Visibility Experiment (1 vs 8 TPU chips)
+# Chip-Visibility Experiment (1 vs 8 chips on Stanford GKE TPU v5e-8, 2×4 lite)
 
 ## What this tests
 
@@ -48,8 +48,10 @@ denser sweep. Both failed:
 These are undocumented, internal libtpu flags (the error message itself
 says "Contact tfrt-devs@" for questions), so getting arbitrary chip-count
 subsets working would mean guessing at unpublished internal configuration
-on a shared class TPU slice, with real risk of destabilizing the node for
+on a shared Stanford GKE TPU v5e-8 (2×4 lite) slice, with real risk of destabilizing the node for
 other teams. We stopped after this one documented attempt rather than
 continue guessing at internal flags under time pressure. The two clean
 data points (1 and 8 chips) already answer the question this experiment
 was designed to ask.
+
+**Hardware:** Stanford GKE TPU v5e-8 (`tpu-v5-lite-podslice`, topology 2×4, 8 chips) via Kubernetes Job + Kueue. AF2 baseline comparison also uses Colab Intel Xeon CPU (2 vCPU) and Colab NVIDIA Tesla T4 (`results/comparison.md`).
