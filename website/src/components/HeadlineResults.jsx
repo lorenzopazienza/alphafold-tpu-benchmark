@@ -10,7 +10,7 @@ const DATA = [
     color: '#7a8796',
   },
   {
-    name: 'Tesla T4',
+    name: 'NVIDIA Tesla T4',
     seconds: 13.086,
     display: '13.1s',
     speedup: '16.2×',
@@ -110,7 +110,7 @@ export default function HeadlineResults() {
           <dl className="mt-6 grid gap-6 sm:grid-cols-3 sm:text-center">
             {[
               { k: 'CPU Xeon', v: '1.28×', s: 'Mostly compute' },
-              { k: 'GPU Tesla T4', v: '7.46×', s: 'Compile is visible' },
+              { k: 'GPU NVIDIA Tesla T4', v: '7.46×', s: 'Compile is visible' },
               { k: 'TPU v5e-8', v: '59.1×', s: 'Cold path is compile' },
             ].map((row) => (
               <div key={row.k}>

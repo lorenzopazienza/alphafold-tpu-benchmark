@@ -50,7 +50,7 @@ export default function CostTakeaways() {
         <dl className="grid gap-8 sm:grid-cols-3 sm:gap-6">
           {[
             { k: 'CPU Xeon', v: '$11.19' },
-            { k: 'GPU Tesla T4', v: '$1.27' },
+            { k: 'GPU NVIDIA Tesla T4', v: '$1.27' },
             { k: 'TPU v5e-8', v: '$1.25' },
           ].map((row) => (
             <div key={row.k} className="text-center">

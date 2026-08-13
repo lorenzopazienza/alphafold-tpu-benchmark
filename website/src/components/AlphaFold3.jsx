@@ -16,7 +16,7 @@ const ROWS = [
     af3Pct: 100,
   },
   {
-    backend: 'GPU Tesla T4 (Google Colab)',
+    backend: 'GPU NVIDIA Tesla T4 (Google Colab)',
     af2: '13.1s',
     af3: '22.8s',
     ratio: '1.74×',

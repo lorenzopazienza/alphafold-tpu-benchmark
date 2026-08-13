@@ -29,21 +29,26 @@ const METRIC_CONTEXT = '2nd predict · model_3 · 118 residues'
 const METRIC_ROWS = [
   {
     backend: 'Google Colab Intel Xeon CPU (2 vCPU)',
+    detail: 'Google Colab free-tier · 13.6 GB RAM',
     time: '212.1s',
-    speedup: '1× baseline',
+    speedups: ['1× baseline'],
     color: '#7a8796',
   },
   {
     backend: 'Google Colab NVIDIA Tesla T4',
+    detail: 'Google Colab free-tier · 15 GB VRAM',
     time: '13.1s',
-    speedup: '16.2× vs CPU',
+    speedups: ['16.2× vs Google Colab Intel Xeon CPU (2 vCPU)'],
     color: '#3d5f94',
   },
   {
     backend: 'Stanford GKE TPU v5e-8',
     detail: 'tpu-v5-lite-podslice · 2×4 · 8 chips',
     time: '0.47s',
-    speedup: '451× vs CPU',
+    speedups: [
+      '451× vs Google Colab Intel Xeon CPU (2 vCPU)',
+      '27.8× vs Google Colab NVIDIA Tesla T4',
+    ],
     color: '#0b6e7a',
   },
 ]
@@ -124,7 +129,16 @@ export default function Hero() {
                     </div>
                     <div className="hero-metric-stats">
                       <span className="hero-metric-time eq">{row.time}</span>
-                      <span className="hero-metric-speedup eq">{row.speedup}</span>
+                      {row.speedups.map((line) => (
+                        <span
+                          key={line}
+                          className={`hero-metric-speedup eq${
+                            line.includes('451×') ? ' hero-metric-speedup--highlight' : ''
+                          }`}
+                        >
+                          {line}
+                        </span>
+                      ))}
                     </div>
                   </li>
                 ))}

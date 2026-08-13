@@ -193,7 +193,7 @@ section[id] {
 }
 
 .hero-metric-stack {
-  max-width: 22rem;
+  max-width: 26rem;
   border-top: 1px solid var(--color-line);
   padding-top: 0.875rem;
   text-align: left;
@@ -267,13 +267,20 @@ section[id] {
 
 .hero-metric-speedup {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.06em;
+  font-size: 0.625rem;
+  line-height: 1.35;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--color-mute);
+  max-width: 11rem;
+  text-align: right;
 }
 
-.hero-metric-row:last-child .hero-metric-speedup {
+.hero-metric-speedup--highlight {
+  color: var(--color-teal);
+}
+
+.hero-metric-row:last-child .hero-metric-speedup--highlight {
   color: var(--color-teal);
 }
 
