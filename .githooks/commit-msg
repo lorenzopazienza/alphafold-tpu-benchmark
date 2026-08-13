@@ -1,0 +1,11 @@
+#!/bin/sh
+# Drop Cursor agent co-author trailers from commit messages.
+sed -i '' \
+  -e '/^Co-authored-by:.*[Cc]ursor/d' \
+  -e '/^Co-authored-by:.*cursoragent/d' \
+  -e '/^Co-authored-by:.*anysphere/d' \
+  -e '/^Co-Authored-By:.*[Cc]ursor/d' \
+  -e '/^Co-Authored-By:.*cursoragent/d' \
+  -e '/^Co-Authored-By:.*anysphere/d' \
+  -e '/^Made-with:.*Cursor/d' \
+  "$1"

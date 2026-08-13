@@ -1,0 +1,15 @@
+#!/bin/sh
+case "$2" in
+  message|template|merge|squash|commit) ;;
+  *) exit 0 ;;
+esac
+[ -f "$1" ] || exit 0
+sed -i '' \
+  -e '/^Co-authored-by:.*[Cc]ursor/d' \
+  -e '/^Co-authored-by:.*cursoragent/d' \
+  -e '/^Co-authored-by:.*anysphere/d' \
+  -e '/^Co-Authored-By:.*[Cc]ursor/d' \
+  -e '/^Co-Authored-By:.*cursoragent/d' \
+  -e '/^Co-Authored-By:.*anysphere/d' \
+  -e '/^Made-with:.*Cursor/d' \
+  "$1"
