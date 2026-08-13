@@ -18,7 +18,7 @@
 
 | Tooling matrix (course requirement: ≥3 stack elements) | Choice |
 |---|---|
-| **Compute targets** | Colab CPU · Colab NVIDIA T4 · Stanford GKE TPU v5e-8 (`2×4`) |
+| **Compute targets** | Colab CPU Intel Xeon (2vCPU)· Colab NVIDIA Tesla 4 · Stanford GKE TPU v5e-8 (`2×4`) Lite|
 | **Orchestration** | Docker (multi-backend image) · Kubernetes Jobs on GKE + Kueue |
 | **Compilation layer** | JAX/XLA (JIT, compile cache, `vmap` / `pmap`) |
 | **Telemetry** | `jax.profiler` traces · TensorBoard Profile · in-process HBM / `tpu-info` |
