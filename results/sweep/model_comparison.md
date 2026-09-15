@@ -21,8 +21,8 @@ model_3 and model_4 are essentially identical across every metric. model_5
 is consistently ~15% faster at steady-state (0.403s vs ~0.47s) while
 having near-identical compile time, a real, measurable architectural
 difference between the model variants, not noise (the gap is far larger
-than the run-to-run variation measured in `repeated_runs.md`, ~0.06%
-stdev). Worth noting for anyone choosing which of AlphaFold's model
+than the run-to-run variation measured in `repeated_runs.md`, ~0.12%
+coefficient of variation, i.e. 0.0006s stdev on a 0.469s mean). Worth noting for anyone choosing which of AlphaFold's model
 checkpoints to deploy for latency-sensitive serving.
 
 **Hardware:** Stanford GKE TPU v5e-8 (`tpu-v5-lite-podslice`, topology 2×4, 8 chips) via Kubernetes Job + Kueue. AF2 baseline comparison also uses Google Colab Intel Xeon CPU (2 vCPU) and Google Colab NVIDIA Tesla T4 (`results/comparison.md`).

@@ -8,7 +8,7 @@ recycles, random-init params). Only the backend changes.
 |---|---|---|---|---|
 | CPU (Google Colab Intel Xeon, 2 vCPU) | 1 | 41.99 | 271.98 | 212.113 |
 | GPU (Google Colab NVIDIA Tesla T4) | 1 | 109.16 | 97.62 | 13.086 |
-| **TPU (Stanford GKE v5e-8, 2×4 lite)** | **8 chips** | **36.6** | **27.78** | **0.47** |
+| **TPU (Stanford GKE v5e-8, 2×4 lite)** | **8 visible, 1 used** | **36.6** | **27.78** | **0.47** |
 
 **Hardware specifications:**
 
@@ -30,14 +30,14 @@ in Google Colab's runtime menu.
 
 **Steady-state speedup vs CPU:**
 - GPU (Google Colab NVIDIA Tesla T4): **16.2x** faster than CPU
-- TPU (Stanford GKE v5e-8, 2×4 lite): **451x** faster than CPU
+- TPU (Stanford GKE v5e-8, 2×4 lite): **451x** faster than CPU, running on 1 of the slice's 8 chips
 
 **Steady-state speedup vs GPU:**
-- TPU (Stanford GKE v5e-8, 2×4 lite): **27.8x** faster than a single Google Colab NVIDIA Tesla T4
+- TPU (Stanford GKE v5e-8, 2×4 lite): **27.8x** faster than a single Google Colab NVIDIA Tesla T4, running on 1 of the slice's 8 chips (effectively one v5e chip vs one T4)
 
 The TPU number is the strongest single result: identical 118-residue
 AlphaFold forward pass, same code, three backends, a >400x gap between the
-slowest and fastest.
+slowest and fastest. The slice exposes 8 chips, but this single-query run uses only `TPU_0` (`TPU_1`-`TPU_7` hold 0 MB, see `sweep/chip_visibility.md`), so both TPU ratios compare one v5e chip against one T4 or 2 vCPUs, not the full 8-chip slice.
 
 ## Where the time actually goes
 
@@ -64,7 +64,7 @@ cost once, not per request.
    measure past the first call, which is exactly why we report both
    numbers rather than just wall-clock time for one run.
 2. **For sustained/production workloads** (many structures processed by a
-   long-lived, already-compiled process), the TPU's 27.8x edge over GPU and
+   long-lived, already-compiled process), the single TPU chip's 27.8x edge over GPU and
    451x edge over CPU is the number that matters, and it's a direct,
    measured result, not extrapolated.
 3. **Practical mitigation**, regardless of backend: batch multiple

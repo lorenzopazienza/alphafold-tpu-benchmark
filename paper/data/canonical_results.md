@@ -63,7 +63,7 @@ recomputed from those raw values, not copied from the prose write-ups.
 | C-12 | Cost | GPU cost / TPU 1-chip cost | 8.12× | D | C-09 / C-11 | md: "about 8x cheaper" (`cost_analysis.md:45`) |
 | C-13 | Cost | Pod hourly price / GPU hourly price | 27.4× | D | C-02 / C-03 | md: "27x" (`cost_analysis.md:27`) |
 | C-14 | Cost | Idle pod fraction (baseline workload) | 87.5% (7/8 chips) | D | from CV-10 | md: "~87%" (`cost_analysis.md:50`) |
-| C-15 | Cost | Pod cost / 1,000 with pmap multi-query | $0.181 | D | C-02 / (MQ-05 × 3600) × 1000 | **Not stated in any source file** (`sharding.md:47-48` says only "roughly 7x" lower) |
+| C-15 | Cost | Pod cost / 1,000 with pmap multi-query | $0.181 | D | C-02 / (MQ-05 × 3600) × 1000 | **Not stated in any source file** (`sharding.md:48-49` says only "roughly 7x" lower) |
 | **SL** | **Sequence-length sweep (TPU, recycle=0)** | | | | | |
 | SL-01 | Seq length 60 | init_params | 36.12 s | M | `results/sweep/sequence_length_sweep.json → [0].init_params_seconds` | |
 | SL-02 | Seq length 60 | 1st predict | 25.95 s | M | `… → [0].first_predict_seconds` | |
@@ -252,10 +252,24 @@ result (VM) that runs on one chip. Keep them apart in the paper.
 1. **pmap multi-query memory range is misreported.** `sweep/sharding.md:12-15` (diagram)
    and `:38` say "445-469 MB across all 8 chips". `sharding.json → memory_per_chip_mb`
    has TPU_0 = **644 MB**. The 445–469 MB range only holds for TPU_1…TPU_7 (MQ-08).
+
+   **RISOLTO:** fixed in `results/sweep/sharding.md`. The diagram (lines 10-15) now shows
+   the real per-chip values (chip 0 = 644 MB, chip 1 = 452 MB, chips 2-6 = 445-454 MB,
+   chip 7 = 469 MB) and labels each chip as running its own forward pass. Line 38 now says
+   445-469 MB on chips 1-7 and 644 MB on `TPU_0`, stressing that the values differ per chip
+   rather than repeating GSPMD's identical 463 MB. A new paragraph at line 40 states that
+   the data does not establish why chip 0 holds more memory, and gives one plausible,
+   unmeasured contributor (`init_params` and `jnp.stack` run outside `pmap` on the JAX
+   default device). The line numbers in the problem text above refer to the pre-fix
+   version at commit `96a2186`.
 2. **Run-to-run noise in `model_comparison.md:24-25` is misquoted.** It says "~0.06%
    stdev", but the steady-state CV from `repeated_runs.json` is 0.0006 / 0.4693 = **0.12%**
    (RR-06). "0.0006" appears to be the absolute stdev in seconds, read as a percent.
    The conclusion still holds: model_5's −14.4% is far above the noise.
+
+   **RISOLTO:** fixed in `results/sweep/model_comparison.md:24-25`, which now reads
+   "~0.12% coefficient of variation, i.e. 0.0006s stdev on a 0.469s mean". No measured
+   value was changed.
 3. **The trace ↔ cache link in `profiling/trace_analysis.md:70-74` is not supported by
    the numbers.** The trace covers the first `predict()` (TR-01, 16.56 s). The 6.81×
    speedup (CC-07) is on `init_params` (37.68 → 5.53 s). 16.56 / 5.53 = 2.99, and the
@@ -263,7 +277,22 @@ result (VM) that runs on one chip. Keep them apart in the paper.
    claim should not go into the paper. The trace's 16.56 s is also shorter than every
    measured cold first-predict (27.4–28.8 s), so it is a different run or timing window,
    and the raw trace file is not in the repo.
-4. **`sweep/sharding.md:76-79` calls auto-mesh timings "statistically indistinguishable"
+
+   **RISOLTO:** fixed in `profiling/trace_analysis.md`. The table header (line 28) now
+   reads "% of traced `apply_fn` call" instead of "% of first predict() call", and lines
+   37-38 speak of the traced `apply_fn` call rather than the entire first-call cost. The
+   "matching the 6.8x measured speedup almost exactly" paragraph was replaced (now lines
+   68-85). The new text:
+   - compares the trace with the cache's first-`predict` result (1.90×, about 13.6 s saved);
+   - says the 6.81× applies to `init_params`, which the trace does not cover;
+   - notes that trace and cache are separate runs, and that the 16.56 s span is shorter
+     than the 27.37–28.80 s cold first predicts.
+
+   It also says, marked as plausible and not measured, that JAX's persistent cache stores
+   XLA binaries while a fresh process still re-traces to a jaxpr. The raw trace file is
+   still not in the repo. The line numbers in the problem text above (70-74) refer to the
+   pre-fix version at commit `96a2186`.
+4. **`sweep/sharding.md:77-80` calls auto-mesh timings "statistically indistinguishable"
    from baseline.** First predict was 14.76 / 14.46 s (GS-01/03), against ~27.4 s
    single-chip (CV-06), a 1.9× difference. The md attributes this to a warm XLA cache.
    That is a plausible explanation, not a measurement.
@@ -278,6 +307,18 @@ result (VM) that runs on one chip. Keep them apart in the paper.
 7. **The TPU baseline speedups (B-11, B-12) compare against an 8-chip slice label, but the
    work runs on one chip** (CV-09/CV-10). "TPU over GPU 27.8×" is effectively *one v5e
    chip* against one T4. State this explicitly.
+
+   **RISOLTO:** fixed in `results/comparison.md`, with no change to any measured value
+   or line numbering:
+   - line 11: the TPU devices column reads "8 visible, 1 used" instead of "8 chips";
+   - lines 33 and 36: the 451x and 27.8x bullets add "running on 1 of the slice's 8
+     chips", with "(effectively one v5e chip vs one T4)" on the latter;
+   - line 40: a new sentence says the single-query run uses only `TPU_0` (`TPU_1`-`TPU_7`
+     at 0 MB), so both ratios compare one v5e chip against one T4 or 2 vCPUs, not the
+     full slice;
+   - line 67: "the TPU's 27.8x edge" became "the single TPU chip's 27.8x edge".
+
+   The paper must still state this caveat wherever B-11 or B-12 are cited.
 8. **`af3_comparison.md:264-267` lists the ubiquitin "AF2 exhibit" as using ESMFold
    weights, with 90.5 mean pLDDT.** That is not an AlphaFold2 result, and nothing in
    `results/` backs it. Keep it out of AF2 numbers.

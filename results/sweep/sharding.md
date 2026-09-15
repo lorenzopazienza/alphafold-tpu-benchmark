@@ -7,12 +7,12 @@ paths to genuine multi-chip parallelism.
 
 ```mermaid
 flowchart LR
-    subgraph PM["jax.pmap: real data parallelism"]
+    subgraph PM["jax.pmap: 8 independent proteins, one per chip (memory differs per chip)"]
         direction TB
-        P0["Chip 0: protein 1<br/>445-469 MB"]
-        P1["Chip 1: protein 2<br/>445-469 MB"]
-        Pd["... 6 more chips ..."]
-        P7["Chip 7: protein 8<br/>445-469 MB"]
+        P0["Chip 0: protein 1, own forward pass<br/>644 MB (JAX default device, see note below)"]
+        P1["Chip 1: protein 2, own forward pass<br/>452 MB"]
+        Pd["Chips 2-6: proteins 3-7, own forward passes<br/>445-454 MB"]
+        P7["Chip 7: protein 8, own forward pass<br/>469 MB"]
     end
     subgraph GS["GSPMD auto-mesh: replication, not sharding"]
         direction TB
@@ -35,11 +35,12 @@ flowchart LR
 | Throughput | 2.13 proteins/sec | **14.72 proteins/sec** |
 | **Speedup** | n/a | **6.92x** |
 
-**Confirmed real, not replication:** memory per chip is 445-469 MB across
-all 8 chips, close to but not identical to the single-chip baseline
-(463 MB), consistent with 8 genuinely independent single-protein
-computations running in parallel, each doing its own real work. This is
-the opposite memory signature from the mesh-sharding attempt below.
+**Confirmed real, not replication:** memory per chip is 445-469 MB on chips 1-7 and 644 MB on chip 0 (`TPU_0`). What matters is that the values differ from chip to chip instead of showing the identical 463 MB copy on every chip that gives away replication in section B below; this is consistent with 8 independent single-protein computations running in parallel.
+
+**Why chip 0 holds more memory is not established by our data:** the run records only the final per-chip totals, with no breakdown.
+One plausible but unmeasured contributor: `TPU_0` is JAX's default device, and `src/spike_pmap_forward_pass.py` runs `init_params` and stacks the 8 input feature sets (`jnp.stack`) outside `pmap`, so those arrays sit on `TPU_0` on top of its own per-chip work.
+The same chip-0-heavier pattern appears in `ensemble_shard.md` (624 MB vs 427-450 MB), which uses the same structure.
+It does not change the conclusion: every chip, chip 0 included, runs its own protein.
 
 **This is the direct fix** for two earlier findings: it resolves the
 "only 1 of 8 chips used" result from the chip-visibility experiment, and

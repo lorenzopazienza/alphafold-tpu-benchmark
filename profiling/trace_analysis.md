@@ -25,7 +25,7 @@ a file already captured from a since-terminated pod.
 Clicking through the call stack under `pjrt-tpu-tasks` -> `spike_tpu_forwa`
 down to the deepest frames, one specific named function stands out:
 
-| Function | Wall Duration | Self Time | % of first predict() call |
+| Function | Wall Duration | Self Time | % of traced `apply_fn` call |
 |---|---|---|---|
 | `PjitFunction(apply_fn)` (outer wrapper) | 16.56s | 440 ns (~0%) | n/a |
 | **`$pjit.py:250 cache_miss`** | 16.56s | **12.55s** | **~76%** |
@@ -34,8 +34,8 @@ down to the deepest frames, one specific named function stands out:
 (not something we wrote), whose job is to trace and compile this function
 because JAX hasn't seen this exact input shape/computation before. Its
 **Self Time** (time spent directly in this function's own code, not its
-children) is 12.55 out of the 16.56-second call: three quarters of the
-entire first-call cost is JAX's own JIT tracing/compilation machinery, not
+children) is 12.55 out of the 16.56-second traced call: three quarters of the
+traced `apply_fn` call is JAX's own JIT tracing/compilation machinery, not
 TPU device execution.
 
 ## What sits inside cache_miss (the call stack)
@@ -65,13 +65,24 @@ timing): **the bottleneck genuinely is JIT compilation overhead**, and
 specifically it's concentrated in JAX's `cache_miss` tracing path, not in
 TPU compute, not in data movement, not in the model's actual math.
 
-This is also the direct, named justification for why the compilation
-cache experiment (`results/sweep/compilation_cache.md`) is the correct fix:
-caching persists the *compiled artifact* that `cache_miss` produces, so a
-second process's `pjit` call goes straight to a cache hit instead of
-repeating this 12.55-second tracing pass, matching the 6.8x measured
-speedup almost exactly (16.56s dominated by a 12.55s `cache_miss` vs the
-cache-warm run's 5.53s `init_params`).
+This is also why the compilation cache experiment
+(`results/sweep/compilation_cache.md`) targets the right cost, with an
+important limit on how far the two results can be linked:
+
+- The trace covers the first `predict()` call. The comparable cache
+  measurement is therefore first `predict`, which drops from 28.80s (cold)
+  to 15.19s (warm): **1.90x**, about 13.6s saved. The cache's larger
+  **6.81x** speedup is on `init_params` (37.68s to 5.53s), a separate
+  compilation that this trace does not cover, so it should not be compared
+  with the 12.55s `cache_miss` figure.
+- JAX's persistent cache stores compiled XLA binaries; a fresh process
+  still re-traces the Python function to a jaxpr, which plausibly accounts
+  for part of the 15.19s that remains on the warm first call.
+- The trace and the cache experiment are separate runs. The traced
+  `apply_fn` span (16.56s) is also shorter than the cold first `predict()`
+  measured elsewhere (27.37s to 28.80s), and the trace does not explain that
+  difference. The percentages above are relative to the 16.56s traced span,
+  not to the full first-predict timing.
 
 ## Operational lesson learned along the way
 
