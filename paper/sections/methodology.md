@@ -396,12 +396,26 @@ field in `results/result_af3_*.json`:
 | **`seconds_per_sample`** (model inference ÷ 5) | **480.28 s** | **17.24 s** |
 | `wall_clock_seconds_per_sample` (published until 2026-09-15) | 490.80 s | 22.82 s |
 
-- **Not like-for-like with AF2.** AF3's `seconds_per_sample` excludes process
-  overhead but still includes JIT compilation; AF2 steady-state times exclude
-  compilation.
-  - **Effect:** the AF3/AF2 ratios (2.26× on CPU, 1.32× on GPU) overstate AF3's
-    steady-state gap by an unmeasured amount.
-  - **See:** `paper/data/canonical_results.md`, discrepancy 6.
+- **AF3 and AF2 timings are not comparable, and no AF3/AF2 ratio is reported.**
+  The nominal per-sample ratios (2.26× on CPU, 1.32× on GPU) exist only as
+  arithmetic. Three differences make them impossible to interpret:
+  - **Recycles:** the notebooks do not pass `--num_recycles`, so AF3 used its
+    default of 10, i.e. 11 trunk passes (`run_alphafold.py:372-377`,
+    `src/alphafold3/model/model.py:317-319`, AF3 commit `29596b970`). AF2 ran
+    `num_recycle = 0`, one pass (§3.1). The flag has `lower_bound=1`, so AF3 cannot
+    run at AF2's setting.
+  - **Compilation:** included in AF3's single model call, excluded from AF2's warm
+    second call (§5.1).
+  - **Samples:** one AF3 call produces 5 samples from one trunk run, so the ÷ 5
+    per-sample figure charges each sample only a fifth of the trunk.
+  - **The direction is not robust:** scaling AF2 to AF3's recycle count with the
+    measured recycle sweep (RD-03/06/09) already puts the per-sample ratios below 1.
+    They become 0.58× (CPU) and 0.34× (GPU) at the measured 3 recycles, and about
+    0.21× and 0.12× extrapolated to 10.
+  - **See:** `paper/data/canonical_results.md`, discrepancies 6 and 15.
+- **Still valid:** AF3's own GPU-over-CPU ratio, 27.9× (2,401.38 s / 86.21 s,
+  A3-10), because both sides use identical AF3 settings. It is not comparable with
+  AF2's 16.2× GPU-over-CPU speedup.
 - **Stanford CPU run:** only prose reports it (78.43 s/sample,
   `results/sweep/af3_comparison.md:176-177`); no log or config is in the repo
   **[NOT IN REPO]**. The notebooks' guard message mentions an existing CPU result

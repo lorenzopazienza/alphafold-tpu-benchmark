@@ -147,30 +147,30 @@ byte-identical input JSON (`src/make_af3_input.py`) across every backend:**
 | Setup step, CPU | `init_params`: 41.99s (Google Colab) | `featurising`: 12.92s (Google Colab; 6.66s on Stanford). Everything outside model inference (start-up, model build, parameter loading, featurising, sample extraction, output writing): 52.61s in total |
 | Setup step, GPU | `init_params`: 109.16s (T4, Google Colab) | `featurising`: 11.09s (Google Colab). Everything outside model inference: 27.91s in total |
 | Setup step, TPU | `init_params`: 36.6s (Stanford) | **not applicable - TPU unsupported (Section 3)** |
-| Inference, CPU | steady-state: 212.113s (1 sample) | **480.28s/sample** (2401.38s model inference / 5, Google Colab; includes JIT compilation). Previously reported: 490.80s/sample = 2453.99s process wall-clock / 5, which also counted the 52.61s (10.52s/sample) of non-inference work above |
-| Inference, GPU (Google Colab NVIDIA Tesla T4) | steady-state: 13.086s | **17.24s/sample** (86.21s model inference / 5, Google Colab; includes JIT compilation). Previously reported: 22.82s/sample = 114.12s process wall-clock / 5, which also counted the 27.91s (5.58s/sample) of non-inference work above |
+| Inference, CPU | steady-state: 212.113s (1 structure; `recycle=0`, warm 2nd call) | **480.28s/sample** (2401.38s model inference / 5, Google Colab; includes JIT compilation; default `--num_recycles 10` = 11 trunk passes, 5 samples per call). Previously reported: 490.80s/sample = 2453.99s process wall-clock / 5, which also counted the 52.61s (10.52s/sample) of non-inference work above |
+| Inference, GPU (Google Colab NVIDIA Tesla T4) | steady-state: 13.086s (1 structure; `recycle=0`, warm 2nd call) | **17.24s/sample** (86.21s model inference / 5, Google Colab; includes JIT compilation; default `--num_recycles 10` = 11 trunk passes, 5 samples per call). Previously reported: 22.82s/sample = 114.12s process wall-clock / 5, which also counted the 27.91s (5.58s/sample) of non-inference work above |
 | Inference, TPU (Stanford GKE v5e-8, 2×4 lite) | steady-state: 0.47s | **not applicable - TPU unsupported (Section 3)** |
 
-**Real, measured findings from this table:**
+**What this table does and does not show** (the AF2 and AF3 columns are measured, but they are not the same workload, see `paper/data/canonical_results.md`, discrepancy 15):
 
-1. **On identical Google Colab Intel Xeon CPU (2 vCPU) hardware, AF3 is 2.26x slower than AF2 per
-   sample** (480.28s vs. 212.113s; previously reported as 2.3x using the 490.80s process wall-clock figure). This reverses an earlier draft finding
-   of this document, which (incorrectly) compared AF3's Stanford-cluster
-   CPU number against AF2's Google Colab Intel Xeon CPU (2 vCPU) number and concluded AF3 was
-   faster - that comparison mixed two different physical machines. With
-   both models now measured on the *same* Google Colab Intel Xeon CPU (2 vCPU), the direction
-   flips: AF3 is slower, consistent with it running a 5-sample multi-step
-   diffusion process against AF2's single `recycle=0` forward pass.
-2. **On identical Google Colab NVIDIA Tesla T4 hardware, AF3 is still slower than AF2,
-   but by a smaller margin: 1.32x** (17.24s vs. 13.086s/sample; previously reported as 1.74x using the 22.82s wall-clock figure) - the gap
-   narrows substantially from 2.26x on CPU to 1.32x on GPU. **Caveat for findings 1 and 2:** the AF3 figure is model-inference time / 5. That still includes JIT compilation, because it is the only model call in the process and there is no warm-up. The AF2 figure is a warm second call. Both ratios are therefore not like-for-like, and they overstate AF3's steady-state gap by an unmeasured amount.
-3. **AF3 benefits more from the GPU than AF2 does, proportionally**:
-   AF2's CPU→GPU speedup is 16.2x; AF3's is **27.9x** (2401.38s / 86.21s model inference; previously reported as 21.5x from process wall-clock). This is consistent
-   with AF3's larger, more matmul/attention-heavy workload (5 diffusion
-   samples, each with its own multi-step denoising) having more for a GPU
-   to parallelize than AF2's tiny `recycle=0` single forward pass on a
-   118-residue sequence, which is likely dominated by fixed overhead
-   rather than raw compute.
+1. **AF3 vs AF2 on the same Google Colab Intel Xeon CPU (2 vCPU): not interpretable, no speed ratio is reported.**
+   Raw figures: AF3 480.28s per sample (model inference / 5), AF2 212.113s (steady state). Their nominal ratio, 2.26x (2.3x on the earlier wall-clock basis), must not be read as a speed comparison (`paper/data/canonical_results.md`, discrepancies 6 and 15). The two runs differ in three ways that pull in different directions:
+   - **Recycles:** AF3 used its default `--num_recycles 10` (11 trunk passes); AF2 used `num_recycle=0` (1 pass). This inflates AF3.
+   - **Compilation:** included in AF3's single model call (no warm-up); excluded from AF2's warm second call. This inflates AF3.
+   - **Samples:** one AF3 call yields 5 diffusion samples from one trunk run, so dividing by 5 charges each sample only a fifth of the trunk. This deflates AF3.
+   Correcting only the recycle mismatch with AF2's measured recycle sweep (`recycle_depth_sweep.json`) already pushes the per-sample ratio below 1: 0.58x at the measured 3 recycles, ~0.21x extrapolated to 10. Per call it lands at about parity (~1.05x at 10). The sign of the comparison is not robust.
+   *History:* an earlier draft compared AF3's Stanford-cluster CPU number with AF2's Colab CPU number and called AF3 faster, which mixed two machines. A later version called AF3 "2.3x slower" on identical hardware. Both conclusions are withdrawn.
+2. **AF3 vs AF2 on the same Google Colab NVIDIA Tesla T4: not interpretable, no speed ratio is reported.**
+   Raw figures: AF3 17.24s per sample, AF2 13.086s. Their nominal ratio, 1.32x (1.74x on the earlier wall-clock basis), has the same three confounds as finding 1.
+   Correcting only the recycles gives 0.34x per sample at the measured 3 recycles and ~0.12x extrapolated to 10; per call it is 1.68x at 3 and ~0.61x at 10. The earlier claim that "the gap narrows from CPU to GPU" is withdrawn with the ratios.
+   Scope of that check: the AF2 recycle sweep was measured on the TPU, not on Colab hardware, and compilation and trunk sharing remain uncorrected. It shows that the sign is unstable, not what the true ratio is.
+3. **AF3's own GPU-over-CPU speedup is 27.9x** (2401.38s / 86.21s model inference on the same Colab CPU and T4; previously reported as 21.5x from process wall-clock). This AF3-internal ratio is valid: both sides use identical AF3 settings (10 recycles, 5 samples, compilation included on both).
+   It must **not** be set against AF2's 16.2x CPU→GPU speedup to claim that AF3 "benefits more from the GPU". AF2's ratio uses warm calls with 0 recycles; AF3's uses single compiled-once calls with 10 recycles and 5 samples. The two ratios measure different workloads (discrepancy 15).
+   Whether AF3's heavier per-call workload is more GPU-friendly than AF2's is plausible but untested here.
+   Answering it would need both models at matched trunk passes: AF2 at `num_recycle=10`, or both at 1, since
+   AF3's flag has `lower_bound=1`. It would also need warm timings that exclude compilation (e.g. a second fold job in
+   the same process for AF3, and a second `predict()` call for AF2) and an explicit per-call or
+   per-structure normalisation.
 4. **Google Colab's free CPU is substantially weaker than the Stanford cluster's
    dedicated CPU for this specific workload**: the original Stanford Job
    ran the same AF3 call in 78.43s/sample; the identical call on Google Colab
@@ -307,12 +307,12 @@ counterpart of the numerical divergence documented in Section 5b.
 ## 8. Summary: what this comparison shows
 
 **Real performance findings, fully measured (not estimated):**
-- On identical hardware, AF3 is slower than AF2 per prediction - **2.26x on
-  CPU, narrowing to 1.32x on GPU** (AF3 model-inference time, which still includes its JIT compilation; previously reported as 2.3x / 1.74x from process wall-clock) - the opposite of an earlier,
-  hardware-confounded draft of this comparison.
-- AF3 gains proportionally more from GPU than AF2 does (27.9x vs. 16.2x
-  CPU→GPU speedup; previously reported as 21.5x), consistent with its heavier, more parallelizable
-  multi-sample diffusion workload.
+- AF3-vs-AF2 speed ratios on identical Colab hardware (nominally 2.26x on CPU and 1.32x on GPU per sample; 2.3x / 1.74x on the
+  earlier wall-clock basis) are **not interpretable** and are not reported as findings. AF3 ran 10 recycles against AF2's 0, includes compilation, and spreads one trunk run over 5 samples; correcting the recycles alone flips the per-sample direction (`paper/data/canonical_results.md`, discrepancy 15).
+  Both the earlier hardware-confounded draft (which called AF3 faster) and the later "AF3 is slower" conclusion are withdrawn.
+- AF3's own CPU→GPU speedup is **27.9x** (model inference, identical AF3 settings on both sides; previously reported as 21.5x). It is
+  not comparable with AF2's 16.2x, which measures a different workload (0 recycles, warm calls), so no claim is made that AF3
+  benefits more from the GPU than AF2 does.
 - Google Colab's free CPU is **6.3x slower** than the Stanford cluster's
   dedicated CPU for this workload - a real, measured hardware gap, not
   speculation.

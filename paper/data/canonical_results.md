@@ -208,8 +208,8 @@ recomputed from those raw values, not copied from the prose write-ups.
 | A3-08 | AF3 Stanford CPU | seconds per sample | 78.43 s | R | `results/sweep/af3_comparison.md:176-177` | No timing JSON for this run in repo; hardware unspecified |
 | A3-09 | AF3 Stanford CPU | featurising | 6.66 s | R | `results/sweep/af3_comparison.md:147` | |
 | A3-10 | AF3 | **GPU over CPU** (Colab, model inference) | **27.86×** | D | `t_CPU / t_GPU` = A3-25 / A3-28 = 2401.38 / 86.21 | md: 27.9x. Previously 21.50× (wall-clock). Compilation is included on both sides |
-| A3-11 | AF3 vs AF2 | AF3 per sample / AF2 steady state, Colab CPU | 2.26× (AF3 slower) | D | A3-02 / B-03 | md: 2.26x. Previously 2.31×. Still not like-for-like (AF3 includes compilation), see discrepancy 6 |
-| A3-12 | AF3 vs AF2 | AF3 per sample / AF2 steady state, Colab T4 | 1.32× (AF3 slower) | D | A3-05 / B-06 | md: 1.32x. Previously 1.74×. Still not like-for-like (AF3 includes compilation), see discrepancy 6 |
+| A3-11 | AF3 vs AF2 | AF3 per sample / AF2 steady state, Colab CPU | 2.26× (AF3 slower) | D | A3-02 / B-03 | md: 2.26x. Previously 2.31×. **Not interpretable; do not report.** AF3 includes compilation and runs 11 trunk passes (vs AF2's 1) shared across 5 samples. See discrepancies 6 and 15 |
+| A3-12 | AF3 vs AF2 | AF3 per sample / AF2 steady state, Colab T4 | 1.32× (AF3 slower) | D | A3-05 / B-06 | md: 1.32x. Previously 1.74×. **Not interpretable; do not report.** AF3 includes compilation and runs 11 trunk passes (vs AF2's 1) shared across 5 samples. See discrepancies 6 and 15 |
 | A3-13 | AF3 | Colab CPU per sample / Stanford CPU per sample | 6.26× (Colab slower) | D | wall-clock per sample (490.80) / A3-08 | Depends on an R value whose measurement method is not recorded. On the inference-only figure (A3-02): 6.12×. md: 6.3x |
 | A3-14 | AF3 ranking | Stanford CPU, samples 0–4 | 0.26671 / 0.41295 / 0.38284 / 0.31773 / 0.32173 | M | `results/sweep/af3_toy_test_ranking_scores.csv` | Best = sample 1 |
 | A3-15 | AF3 ranking | Colab CPU, samples 0–4 | 0.27116 / 0.41329 / 0.38312 / 0.31759 / 0.32182 | M | `results/sweep/af3_toy_test_cpu-colab_ranking_scores.csv` | Best = sample 1 |
@@ -323,6 +323,11 @@ result (VM) that runs on one chip. Keep them apart in the paper.
      steady-state gap by an unmeasured amount.
    - **Line references:** `af3_comparison.md:148` now describes the GPU featurising
      time. The problem text above refers to its content at commit `9f640ad`.
+   - **See discrepancy 15.** Isolating compilation would not make A3-11 and A3-12
+     usable. AF3 also ran 11 trunk passes (default `--num_recycles 10`) against AF2's 1,
+     and its per-sample figure shares one trunk run across 5 diffusion samples.
+     Correcting only the recycle mismatch flips the direction of the per-sample ratios.
+     Treat both ratios as not interpretable and do not report them.
 7. **The TPU baseline speedups (B-11, B-12) compare against an 8-chip slice label, but the
    work runs on one chip** (CV-09/CV-10). "TPU over GPU 27.8×" is effectively *one v5e
    chip* against one T4. State this explicitly.
@@ -454,6 +459,62 @@ result (VM) that runs on one chip. Keep them apart in the paper.
     - **Related:** this is the slide-level form of discrepancy 3, and the same
       misattribution appears on the website and in the README
       (`paper/WEBSITE_UPDATES_NEEDED.md`, items 5.2–5.6).
+15. **AF3 ran with 10 recycles and AF2 with 0, so A3-11 and A3-12 cannot be interpreted.**
+    - **Settings.**
+      - The AF3 Colab runs did not pass `--num_recycles` (`notebooks/af3_*_colab.ipynb`,
+        cell 14), so AF3 used its default of **10** (`run_alphafold.py:372-377`, AF3
+        commit `29596b970`). That means `num_recycles + 1` = **11 trunk passes**
+        (`src/alphafold3/model/model.py:317-319`).
+      - AF2 ran with `num_recycle = 0`: **1 Evoformer pass** (HW-05, RD-03).
+      - The flag has `lower_bound=1` (`run_alphafold.py:376`), so AF3 cannot be run at
+        AF2's recycle 0.
+    - **Three confounds in A3-11 / A3-12, pulling in different directions:**
+      1. **Recycles:** 11 trunk passes for AF3 against 1 for AF2. This inflates AF3.
+      2. **Compilation:** included in AF3's model-inference time (A3-25, A3-28),
+         excluded from AF2's steady state (B-03, B-06). This inflates AF3 (disc. 6).
+      3. **Diffusion samples:** one AF3 call produces 5 samples, but the trunk and its
+         recycles run once for all 5 (`model.py:317-321`). Dividing by 5 gives each
+         sample only a fifth of the trunk cost. This deflates AF3. AF2 produces one
+         structure per call.
+
+      The net effect is unknown. Neither ratio says whether AF3 is faster or slower than
+      AF2 on comparable work.
+    - **Correcting only the recycle axis flips the direction.** Here AF2 is scaled to
+      AF3's recycle count with the measured AF2 recycle sweep: RD-03/06/09, 0.469 →
+      0.933 → 1.845 s, factors 1.99× and 3.93×, roughly proportional to recycles + 1.
+      "Per sample" divides AF3 by 5 first (the A3-11 and A3-12 definition); "per call"
+      uses A3-25 or A3-28 directly.
+
+      | AF2 scaled to | AF2 factor | CPU per sample | GPU per sample | CPU per call | GPU per call |
+      |---|---|---|---|---|---|
+      | not scaled (current A3-11 / A3-12) | 1× | 2.26× | 1.32× | 11.32× | 6.59× |
+      | r = 3, measured (no extrapolation; a lower bound for r = 10) | 3.93× | **0.58×** | **0.34×** | 2.88× | 1.68× |
+      | r = 10, linear in the measured 0.4587 s per recycle | 10.78× | **0.21×** | **0.12×** | 1.05× | **0.61×** |
+      | r = 10, time ∝ (r + 1) | 11× | **0.21×** | **0.12×** | 1.03× | **0.60×** |
+
+      All values are AF3 ÷ scaled AF2; below 1 means AF3 is faster.
+      - **Per sample (how A3-11 and A3-12 are defined):** both backends drop below 1 in
+        every scaled row, already at the measured r = 3 point with no extrapolation.
+        AF3 would be *faster* than AF2, the opposite of the current 2.26× / 1.32×.
+      - **Per call:** GPU drops below 1 at r = 10, while CPU lands at about parity
+        (1.03–1.05×). So even after this correction the result depends on the
+        normalisation.
+      - **Limits of this check:**
+        - The recycle sweep was measured on the TPU, not on Colab CPU/GPU.
+        - r = 10 lies beyond the measured 0–3 range.
+        - AF3 still includes compilation, and the per-sample trunk sharing is not
+          corrected.
+        - The table shows that the sign is not robust. It does not estimate the true
+          ratio.
+    - **Consequence.** A3-11 and A3-12 must not be reported as AF3-vs-AF2 speed
+      comparisons. The same applies to their predecessors (2.3× / 1.74×, and 2.31× in
+      earlier notes) and to "AF3 gains more from the GPU (27.9×) than AF2 (16.2×)",
+      which compares the same mismatched workloads. AF3's own GPU-over-CPU ratio (A3-10)
+      is unaffected: both of its sides use the same AF3 settings.
+      - A valid comparison would need matched trunk passes: AF2 measured at
+        `num_recycle = 10`, or both models at 1. It would also need warm timing that
+        excludes compilation (e.g. a second fold job in the same process) and a stated
+        normalisation, per call or per structure.
 
 ## Speedup direction check (summary)
 

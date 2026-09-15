@@ -28,20 +28,28 @@ fallback, `llms.txt` and README. Each item lists every occurrence found.
 
 The old values were process wall-clock / 5. The new values are AF3's own
 model-inference time / 5 (`A3-02`, `A3-05`, `A3-10`…`A3-12`). **The new AF3 figures
-still include JIT compilation**, whereas AF2 is a warm second call. Any AF3-vs-AF2
-ratio must say so (item 1.7).
+still include JIT compilation**, whereas AF2 is a warm second call.
+
+**AF3-vs-AF2 ratios must be removed, not corrected** (items 1.3, 1.4, 1.6, 1.7;
+disc. 15). Besides compilation:
+- AF3 ran its default `--num_recycles 10` (11 trunk passes) against AF2's 0 (1 pass);
+- AF3's per-sample figure spreads one trunk run over 5 diffusion samples.
+
+Correcting only the recycle mismatch already flips the per-sample ratios below 1. No
+single replacement number is defensible.
 
 | # | What | Old | New | Occurrences |
 |---|---|---|---|---|
 | 1.1 | AF3 per sample, Colab CPU | 490.8s | **480.3s** | `AlphaFold3.jsx:13` (#af3 "Same-hardware · per sample" bars) · `index.html:570` · `llms.txt:219` |
 | 1.2 | AF3 per sample, Colab T4 | 22.8s | **17.2s** | `AlphaFold3.jsx:21` · `index.html:576` · `llms.txt:220` |
-| 1.3 | AF3 / AF2, CPU | 2.3× (2.31×) | **2.26×** | `AlphaFold3.jsx:14` · `index.html:571` · `llms.txt:219` · `README.md:336` · `results/sweep/README.md:195` |
-| 1.4 | AF3 / AF2, GPU | 1.74× | **1.32×** | `AlphaFold3.jsx:22` · `index.html:577` · `llms.txt:220` · `README.md:336` · `results/sweep/README.md:196` |
-| 1.5 | AF3 CPU→GPU speedup (`t_CPU / t_GPU`) | 21.5× | **27.9×** | `AlphaFold3.jsx:65` · `index.html:582` · `llms.txt:222` · `README.md:337` |
-| 1.6 | AF2 bar widths (percentage of the AF3 bar) | CPU `af2Pct: 43`, GPU `af2Pct: 57` | CPU **44** (212.1 / 480.3), GPU **76** (13.1 / 17.2) | `AlphaFold3.jsx:15`, `AlphaFold3.jsx:23` |
-| 1.7 | Caveat missing | "Same-hardware · per sample … AF3 is slower" | Add: "AF3 per-sample time includes JIT compilation (single call, no warm-up); AF2 is a warm second call, so ratios overstate AF3's steady-state gap." | `AlphaFold3.jsx:61-66` · `index.html:557-582` · `llms.txt:216-222` · `README.md:335-338` |
+| 1.3 | AF3 / AF2, CPU | 2.3× (2.31×) | **Remove.** Do not replace with 2.26× (disc. 15) | `AlphaFold3.jsx:14` · `index.html:571` · `llms.txt:219` · `README.md:336` · `results/sweep/README.md:195` |
+| 1.4 | AF3 / AF2, GPU | 1.74× | **Remove.** Do not replace with 1.32× (disc. 15) | `AlphaFold3.jsx:22` · `index.html:577` · `llms.txt:220` · `README.md:336` · `results/sweep/README.md:196` |
+| 1.5 | AF3 CPU→GPU speedup (`t_CPU / t_GPU`) | 21.5× | **27.9×**, as an AF3-only figure. Drop the "vs AF2's 16.2×" comparison: it compares different recycle counts and compilation treatment (disc. 15) | `AlphaFold3.jsx:65` · `index.html:582` · `llms.txt:222` · `README.md:337` |
+| 1.6 | AF2-vs-AF3 bars (percentage of the AF3 bar) | CPU `af2Pct: 43`, GPU `af2Pct: 57` | **Remove the AF2-vs-AF3 bar pairs.** They draw the same non-interpretable ratio. Show AF3 per-sample times on their own (480.3s CPU, 17.2s T4), labelled "incl. JIT compilation, 10 recycles, 5 samples per call" | `AlphaFold3.jsx:15`, `AlphaFold3.jsx:23` |
+| 1.7 | AF3-slower claim | "Same-hardware · per sample … AF3 is slower" and the "AF3 {ratio} AF2" labels | **Remove the claim and the labels.** Replace with: "AF2 and AF3 timings are not directly comparable here: AF3 ran 10 recycles (AF2: 0), includes JIT compilation, and produces 5 samples per call." | `AlphaFold3.jsx:61-66` · `index.html:557-582` · `llms.txt:216-222` · `README.md:335-338` |
 
-The slides contain no AF3 timing numbers; slide 5 only links to `#af3`.
+The slides contain no AF3 timing numbers or AF3-vs-AF2 ratios; slide 5 only links to
+`#af3`. Nothing needs removing there, but no future slide should add 2.26× or 1.32×.
 
 ---
 
