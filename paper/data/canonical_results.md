@@ -198,19 +198,19 @@ recomputed from those raw values, not copied from the prose write-ups.
 | SC-18 | Cost | $/1000 predictions, length 500, chips 1 / 2 / 4 / 8 | $1.004 / $1.012 / $1.019 / $1.036 | D | same | `scaling_law.md:50` |
 | SC-19 | Cost | $/1000 predictions, length 1000, chips 1 / 2 / 4 / 8 | $5.051 / $5.089 / $5.089 / $5.109 | D | same | `scaling_law.md:51`. Low precision: throughput at 1 chip has 2 significant figures (0.066) |
 | **A3** | **AlphaFold3 side-investigation (118 res, seed 1, 5 diffusion samples, real weights, empty MSA)** | | | | | |
-| A3-01 | AF3 Colab CPU | total inference | 2453.99 s | M | `results/result_af3_cpu-colab.json → total_inference_seconds` | |
-| A3-02 | AF3 Colab CPU | seconds per sample | 490.80 s | M | `… → seconds_per_sample` (= A3-01 / 5) | |
+| A3-01 | AF3 Colab CPU | process wall-clock total | 2453.99 s | M | `results/result_af3_cpu-colab.json → wall_clock_total_seconds` (formerly `total_inference_seconds`) | Includes start-up, model build, parameter loading, featurisation, JIT compilation, inference, extraction and output writing. Per sample: 490.80 s (`wall_clock_seconds_per_sample`), the previously reported value |
+| A3-02 | AF3 Colab CPU | **seconds per sample (model inference)** | **480.28 s** | M / D | `… → seconds_per_sample` = A3-25 / 5 | **Still includes JIT compilation.** Replaces 490.80 s (wall-clock / 5) |
 | A3-03 | AF3 Colab CPU | best ranking_score / ptm / fraction_disordered / has_clash | 0.41 / 0.23 / 0.37 / 0.0 | M | `… → best_ranking_score, ptm, fraction_disordered, has_clash` | Same values in `sweep/af3_toy_test_cpu-colab_summary_confidences.json` |
-| A3-04 | AF3 Colab GPU T4 | total inference | 114.12 s | M | `results/result_af3_gpu-t4.json → total_inference_seconds` | Includes setup/compile per `af3_comparison.md:148` |
-| A3-05 | AF3 Colab GPU T4 | seconds per sample | 22.82 s | M | `… → seconds_per_sample` (= A3-04 / 5) | |
+| A3-04 | AF3 Colab GPU T4 | process wall-clock total | 114.12 s | M | `results/result_af3_gpu-t4.json → wall_clock_total_seconds` (formerly `total_inference_seconds`) | Same scope as A3-01. Per sample: 22.82 s (`wall_clock_seconds_per_sample`), the previously reported value |
+| A3-05 | AF3 Colab GPU T4 | **seconds per sample (model inference)** | **17.24 s** | M / D | `… → seconds_per_sample` = A3-28 / 5 | **Still includes JIT compilation.** Replaces 22.82 s (wall-clock / 5) |
 | A3-06 | AF3 Colab GPU T4 | best ranking_score / ptm / fraction_disordered / has_clash | 0.33 / 0.23 / 0.21 / 0.0 | M | `… → best_ranking_score, ptm, fraction_disordered, has_clash` | Same values in `sweep/af3_toy_test_gpu-t4_summary_confidences.json` |
 | A3-07 | AF3 Stanford CPU | ranking_score / ptm / fraction_disordered / has_clash / iptm | 0.41 / 0.23 / 0.37 / 0.0 / null | M | `results/sweep/af3_toy_test_summary_confidences.json` | `chain_pair_pae_min` = 0.76 in all three runs |
 | A3-08 | AF3 Stanford CPU | seconds per sample | 78.43 s | R | `results/sweep/af3_comparison.md:176-177` | No timing JSON for this run in repo; hardware unspecified |
 | A3-09 | AF3 Stanford CPU | featurising | 6.66 s | R | `results/sweep/af3_comparison.md:147` | |
-| A3-10 | AF3 | **GPU over CPU** (Colab, per sample) | **21.50×** | D | `t_CPU / t_GPU` = A3-02 / A3-05 | md: 21.5x |
-| A3-11 | AF3 vs AF2 | AF3 per sample / AF2 steady state, Colab CPU | 2.31× (AF3 slower) | D | A3-02 / B-03 | md: 2.3x. Not like-for-like, see discrepancy 6 |
-| A3-12 | AF3 vs AF2 | AF3 per sample / AF2 steady state, Colab T4 | 1.74× (AF3 slower) | D | A3-05 / B-06 | md: 1.74x. Not like-for-like, see discrepancy 6 |
-| A3-13 | AF3 | Colab CPU per sample / Stanford CPU per sample | 6.26× (Colab slower) | D | A3-02 / A3-08 | Depends on an R value. md: 6.3x |
+| A3-10 | AF3 | **GPU over CPU** (Colab, model inference) | **27.86×** | D | `t_CPU / t_GPU` = A3-25 / A3-28 = 2401.38 / 86.21 | md: 27.9x. Previously 21.50× (wall-clock). Compilation is included on both sides |
+| A3-11 | AF3 vs AF2 | AF3 per sample / AF2 steady state, Colab CPU | 2.26× (AF3 slower) | D | A3-02 / B-03 | md: 2.26x. Previously 2.31×. Still not like-for-like (AF3 includes compilation), see discrepancy 6 |
+| A3-12 | AF3 vs AF2 | AF3 per sample / AF2 steady state, Colab T4 | 1.32× (AF3 slower) | D | A3-05 / B-06 | md: 1.32x. Previously 1.74×. Still not like-for-like (AF3 includes compilation), see discrepancy 6 |
+| A3-13 | AF3 | Colab CPU per sample / Stanford CPU per sample | 6.26× (Colab slower) | D | wall-clock per sample (490.80) / A3-08 | Depends on an R value whose measurement method is not recorded. On the inference-only figure (A3-02): 6.12×. md: 6.3x |
 | A3-14 | AF3 ranking | Stanford CPU, samples 0–4 | 0.26671 / 0.41295 / 0.38284 / 0.31773 / 0.32173 | M | `results/sweep/af3_toy_test_ranking_scores.csv` | Best = sample 1 |
 | A3-15 | AF3 ranking | Colab CPU, samples 0–4 | 0.27116 / 0.41329 / 0.38312 / 0.31759 / 0.32182 | M | `results/sweep/af3_toy_test_cpu-colab_ranking_scores.csv` | Best = sample 1 |
 | A3-16 | AF3 ranking | Colab GPU, samples 0–4 | 0.25646 / 0.33112 / 0.25924 / 0.31599 / 0.32586 | M | `results/sweep/af3_toy_test_gpu-t4_ranking_scores.csv` | Best = sample 1 |
@@ -222,6 +222,12 @@ recomputed from those raw values, not copied from the prose write-ups.
 | A3-22 | AF3 | weights file size (decompressed) | 1,146,811,260 bytes (1.147 GB / 1.068 GiB) | M | `results/sweep/af3_tpu_attempt.log:18` | md: "~1.15 GB" |
 | A3-23 | AF3 | weights size vs AF2 | 3.3× | R / D | A3-22 / 350 MB | AF2 "~350 MB" is R only (`af3_comparison.md:31`) |
 | A3-24 | AF3 TPU attempt | outcome / wall time to failure | `--jax_backend=tpu` rejected at flag parsing / 5.588 s real (18.874 s user, 0.447 s sys) | M | `results/sweep/af3_tpu_attempt.log:32-37` | Valid values: cpu, gpu, mps |
+| A3-25 | AF3 Colab CPU | model inference, seed 1, 5 samples | 2401.38 s | M | `results/result_af3_cpu-colab.json → model_inference_seconds`; AF3 log in `notebooks/af3_cpu_colab.ipynb` cell 14 | Includes JIT compilation |
+| A3-26 | AF3 Colab CPU | featurisation / sample extraction | 12.92 s / 0.33 s | M | `… → featurisation_seconds, sample_extraction_seconds`; same log | |
+| A3-27 | AF3 Colab CPU | non-inference overhead, total / per sample | 52.61 s / 10.52 s | D | A3-01 − A3-25; ÷ 5 | Start-up, model build, parameter load, featurisation, extraction, output writing. **Not** compilation |
+| A3-28 | AF3 Colab GPU T4 | model inference, seed 1, 5 samples | 86.21 s | M | `results/result_af3_gpu-t4.json → model_inference_seconds`; AF3 log in `notebooks/af3_gpu_colab.ipynb` cell 14 | Includes JIT compilation |
+| A3-29 | AF3 Colab GPU T4 | featurisation / sample extraction | 11.09 s / 0.18 s | M | `… → featurisation_seconds, sample_extraction_seconds`; same log | |
+| A3-30 | AF3 Colab GPU T4 | non-inference overhead, total / per sample | 27.91 s / 5.58 s | D | A3-04 − A3-28; ÷ 5 | Same scope as A3-27. **Not** compilation |
 
 ## The multi-chip experiments are separate. Do not merge them.
 
@@ -304,6 +310,19 @@ result (VM) that runs on one chip. Keep them apart in the paper.
    AF3 time is `total_inference_seconds / 5`, which per `af3_comparison.md:148` includes
    setup and compile on GPU. AF2 time is the warm second call. The ratios are real
    arithmetic but not like-for-like, so qualify them in the paper.
+
+   **AGGIORNATO (partially resolved):** the AF3 per-sample figures now use AF3's own
+   model-inference time / 5 (A3-02 = 480.28 s, A3-05 = 17.24 s).
+   - **What changed:** the non-inference overhead (A3-27: 52.61 s; A3-30: 27.91 s)
+     that the old wall-clock figures counted is now excluded. Updated in
+     `results/result_af3_*.json` and `results/sweep/af3_comparison.md`.
+   - **New values:** A3-11 = 2.26×, A3-12 = 1.32×, A3-10 = 27.9×.
+   - **Still open:** the AF3 inference time **still includes JIT compilation**, because
+     it is the only model call in the process and there is no warm-up. AF2 is a warm
+     second call, so A3-11 and A3-12 remain not like-for-like and overstate AF3's
+     steady-state gap by an unmeasured amount.
+   - **Line references:** `af3_comparison.md:148` now describes the GPU featurising
+     time. The problem text above refers to its content at commit `9f640ad`.
 7. **The TPU baseline speedups (B-11, B-12) compare against an 8-chip slice label, but the
    work runs on one chip** (CV-09/CV-10). "TPU over GPU 27.8×" is effectively *one v5e
    chip* against one T4. State this explicitly.
@@ -334,6 +353,107 @@ result (VM) that runs on one chip. Keep them apart in the paper.
       section 9). Refer to experiments by name, not number.
     - MQ-01's 0.470 s baseline does not say which run it comes from; it equals CV-07
       and CC-03.
+11. **`jax.profiler.trace` inflates first-call times in the scripts that use it.**
+    In `spike_tpu_forward_pass.py` and `spike_batch_forward_pass.py` the first call
+    runs inside `jax.profiler.trace(...)`, and the timer stops only after the profiler
+    context exits (`src/spike_tpu_forward_pass.py:174-178`). The Colab logs
+    (`notebooks/alphafold_{cpu,gpu}_benchmark.ipynb`, cell 10) show how much of the
+    timed value comes after `predict()` has already returned (`model.py:183` exit log →
+    script's "First predict() done" log):
+
+    | Backend | Timed 1st predict | After `predict()` returned, still timed | Same interval, 2nd call (no profiler) |
+    |---|---|---|---|
+    | CPU (B-02) | 271.98 s | **36.00 s** (13%) | 0.0004 s |
+    | GPU (B-05) | 97.62 s | **42.02 s** (43%) | 0.0003 s |
+
+    The only code in that interval is `jax.block_until_ready` plus exiting the profiler
+    context. `block_until_ready` takes under 1 ms in the second call, so the extra time
+    is profiler-trace finalisation, not compilation. **43% of B-05 is profiler overhead.**
+
+    Effect on the first-call / steady-state ratios:
+    - **B-13 (CPU):** 1.28× → **~1.11×** ((271.98 − 36.00) / 212.113).
+    - **B-14 (GPU):** 7.46× → **~4.25×** ((97.62 − 42.02) / 13.086).
+    - **B-15 (TPU, 59.1×) and B-08:** the correction **cannot be verified**; no TPU run
+      log is in the repo.
+
+    Scripts without the profiler (`spike_pmap_forward_pass.py`,
+    `spike_ensemble_shard_forward_pass.py`, `spike_meshshard_forward_pass.py`) time their
+    first call without it. Their first-call numbers (GS-01/03: 14.76 / 14.46 s; EN-02:
+    16.61 s) are therefore **not comparable** with the ~27–29 s first predicts of CV,
+    PR, MC, RR, CC and B-08.
+    - This offers an alternative to the "warm XLA cache" explanation in
+      `sweep/sharding.md:77-80`: `configs/af_spike_sharding.yaml` runs the `pmap` and
+      GSPMD scripts as separate processes without a cache directory.
+    - It may also explain why the traced span TR-01 (16.56 s) is shorter than B-08
+      (27.78 s).
+    - Both are unverified on TPU.
+    - CC-02 and CC-05 both include the profiler, so CC-08 compares like with like.
+12. **The headline baselines were produced by script versions that were never
+    committed.** Git has a single commit of `src/spike_tpu_forward_pass.py`
+    (`2755250`, 2026-08-08, the same commit that added the results), so no history
+    links a result to a script version.
+    - **CPU and GPU (B-01…B-06, B-10, B-13, B-14):** they ran the copy embedded in the
+      Colab notebooks (cell 8, identical in both). That copy differs from `src/`: it
+      hard-codes `model_3`, recycle 0 and the toy sequence, and its log lines
+      (`spike_tpu_forward_pass.py:111…153`, "Run tag: …") do not exist in `src/`. Its
+      timing structure is the same (profiler on the 1st call, `block_until_ready` on
+      both).
+    - **TPU (B-07…B-09):** `results/result_tpu-v5e-podslice.json` has a field set that
+      matches **neither** version. It lacks `host_processor`, which both write. The
+      producing version is unknown.
+    - **Consequence:** B-01…B-15, including the 16.2× / 27.8× / 451× headline ratios,
+      **cannot be reproduced from the repository as it stands**. Running `src/` today
+      would use a different script version and an environment whose dependencies are
+      mostly unpinned (`paper/sections/methodology.md`, Sections 2 and 5.1).
+13. **Slide 5's throughput chart shows values that exist in no data file.**
+    The chart in `presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf`
+    (slide 5; identical copy in `website/public/presentation/`) plots x = TPU chips
+    {1, 2, 4, 8}. Its y-axis is labelled "Throughput (predictions / second)" (log scale,
+    10¹–10⁵) and its points **1,720 / 3,350 / 6,520 / 12,900**. Checked against
+    `results/sweep/scaling_law_data.json`:
+    - **Per second:** the highest measured throughput is **19.153 proteins/s** (8 chips,
+      length 100; SC-04). No measured or fitted value comes within two orders of
+      magnitude of the labels. The fit (SC-05…07) would reach 1,720/s on one chip only
+      at length ≈ 1.9.
+    - **Per minute or per hour:** no measured or fitted grid point matches either. The
+      nearest candidates are 5–7% off and inconsistent with each other. Three are fit
+      values at length 500 but for 2, 4 and 8 chips (not 1, 2, 4, 8), and the fourth is
+      a measured 4-chip, length-250 value. The fit gives 1,720/h on one chip only at
+      length ≈ 338, which was not tested.
+    - **Ratios:** the labels scale as 1 : 1.95 : 3.79 : 7.50, close to the fitted chip
+      term `chips^0.963` (1 : 1.95 : 3.80 : 7.41). The labels therefore look derived
+      from the fit at an unstated length and unit, not measured.
+    - **Dot positions:** in the rendered slide the dots sit visibly below their labels
+      (e.g. the 1-chip dot is under 10³ while labelled 1,720).
+    - **Measured values to use instead** at length 100: 2.94 / 5.51 / 10.42 / 19.15
+      proteins/s (= 10,566 / 19,832 / 37,501 / 68,951 per hour). The measured
+      8-over-1-chip speedup is 6.53× at that length (SC-13), not 7.5×. Any throughput
+      figure needs its sequence length stated.
+14. **Slide 3 attributes the profiler's 76% to the whole first prediction.**
+    Slide 3 shows "Cold start 27 s → Steady state 0.47 s" and, under it, a bar labelled
+    "FIRST PREDICTION" split "76% JAX/XLA compilation / 24% other". The callout reads
+    "~76% of first prediction → JAX/XLA compilation". Against the data:
+    - **The 76% is not a share of the first prediction.** It is TR-04 / TR-01 = 12.55 s
+      of `cache_miss` self time over the **16.56 s traced `apply_fn` span**. That span
+      comes from a separate trace-capture run (`configs/af_spike_trace_capture.yaml`),
+      and its timer and window differ from B-08.
+    - **The share of the 27.78 s timed first call cannot be obtained from the repo.**
+      The runs differ, the timed call includes profiler finalisation (disc. 11) and no
+      TPU logs exist. Placing the 76% under the 27 s cold start is unsupported.
+    - **"24% other" is also mislabelled.** `cache_miss` has the same 16.56 s wall time as
+      `apply_fn` (`profiling/trace_analysis.md:30-31`), so the whole span is inside
+      `cache_miss`. The remaining 4.01 s (24.2%) is its child frames, `_infer_params` →
+      `_trace_for_jit` → `trace_to_jaxpr` → Haiku `apply_fn`
+      (`profiling/trace_analysis.md:41-51`). That is still JAX tracing, not other work.
+      The device track is nearly idle over the span (`profiling/trace_analysis.md:53-58`).
+    - **"27 s"** rounds B-08 (27.78 s) down and includes profiler overhead of unknown
+      size on TPU (disc. 11).
+    - **Supported wording:** "~76% of the traced `apply_fn` call (12.55 of 16.56 s) is
+      self time in JAX's `cache_miss` tracing/compilation path; the rest is its child
+      tracing frames."
+    - **Related:** this is the slide-level form of discrepancy 3, and the same
+      misattribution appears on the website and in the README
+      (`paper/WEBSITE_UPDATES_NEEDED.md`, items 5.2–5.6).
 
 ## Speedup direction check (summary)
 
@@ -344,7 +464,7 @@ All speedups use time on the slower system divided by time on the faster system.
 | B-10 | 212.113 / 13.086 | 16.21× | GPU (T4) is 16.2× faster than CPU |
 | B-11 | 13.086 / 0.47 | 27.84× | TPU is 27.8× faster than GPU (T4) |
 | B-12 | 212.113 / 0.47 | 451.3× | TPU is 451× faster than CPU |
-| A3-10 | 490.80 / 22.82 | 21.50× | AF3: GPU is 21.5× faster than CPU |
+| A3-10 | 2401.38 / 86.21 | 27.86× | AF3: GPU is 27.9× faster than CPU (model inference, compilation included on both sides) |
 | MQ-06 | 14.718 / 2.128 | 6.92× | pmap on 8 chips gives 6.92× the throughput of a single protein on 1 chip |
 | CC-07 | 37.68 / 5.53 | 6.81× | init_params with a warm cache is 6.81× faster than cold |
 
