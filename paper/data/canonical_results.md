@@ -362,7 +362,7 @@ result (VM) that runs on one chip. Keep them apart in the paper.
     In `spike_tpu_forward_pass.py` and `spike_batch_forward_pass.py` the first call
     runs inside `jax.profiler.trace(...)`, and the timer stops only after the profiler
     context exits (`src/spike_tpu_forward_pass.py:174-178`). The Colab logs
-    (`notebooks/alphafold_{cpu,gpu}_benchmark.ipynb`, cell 10) show how much of the
+    (`notebooks/alphafold_{cpu,gpu}_benchmark.ipynb` at commit `faeaa4b`, cell 10) show how much of the
     timed value comes after `predict()` has already returned (`model.py:183` exit log →
     script's "First predict() done" log):
 
@@ -398,7 +398,8 @@ result (VM) that runs on one chip. Keep them apart in the paper.
     (`2755250`, 2026-08-08, the same commit that added the results), so no history
     links a result to a script version.
     - **CPU and GPU (B-01…B-06, B-10, B-13, B-14):** they ran the copy embedded in the
-      Colab notebooks (cell 8, identical in both). That copy differs from `src/`: it
+      Colab notebooks (cell 8, identical in both; see the notebooks at commit `faeaa4b`,
+      because the current notebooks have been rewritten). That copy differs from `src/`: it
       hard-codes `model_3`, recycle 0 and the toy sequence, and its log lines
       (`spike_tpu_forward_pass.py:111…153`, "Run tag: …") do not exist in `src/`. Its
       timing structure is the same (profiler on the 1st call, `block_until_ready` on

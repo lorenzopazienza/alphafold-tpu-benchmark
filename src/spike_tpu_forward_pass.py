@@ -11,11 +11,14 @@ recycle depth, so one script covers:
 Usage:
     python3 spike_tpu_forward_pass.py --run_tag=tpu-v5e --num_residues=120 --num_recycle=0
     python3 spike_tpu_forward_pass.py --run_tag=cpu --num_residues=250 --num_recycle=1
+    python3 spike_tpu_forward_pass.py --run_tag=cpu --noprofile_first_predict --num_steady_state_runs=5
 """
 
+import contextlib
 import json
 import os
 import platform
+import statistics
 import time
 
 from absl import app
@@ -81,6 +84,19 @@ flags.DEFINE_enum(
     "Numeric precision for the model's parameters. bfloat16 is one of the "
     "course rubric's own example mitigations for a compute/memory "
     "bottleneck, and TPUs have native bfloat16 matmul support.")
+flags.DEFINE_integer(
+    "num_steady_state_runs", 1,
+    "Number of timed predict() calls after the first (compiling) call, all in "
+    "this process. Every value is saved, together with their mean and sample "
+    "standard deviation. The default of 1 matches earlier runs.",
+    lower_bound=1)
+flags.DEFINE_bool(
+    "profile_first_predict", True,
+    "Wrap the first predict() call in jax.profiler.trace. The trace is "
+    "finalised inside the timed region and inflates the first-call time "
+    "(36 s on Colab CPU and 42 s on a T4 in the 2026-08-08 runs), so pass "
+    "--noprofile_first_predict for a clean compile + run time. The default "
+    "matches earlier runs.")
 
 # The 20 standard amino acids, cycled to build a sequence of any requested
 # length. Not a real protein for lengths other than 118 (the toy sequence
@@ -130,6 +146,8 @@ def main(_):
   num_res = FLAGS.num_residues
   num_recycle = FLAGS.num_recycle
   run_id = f"{run_tag}_{FLAGS.model_name}_len{num_res}_recycle{num_recycle}_{FLAGS.precision}"
+  if not FLAGS.profile_first_predict:
+    run_id += "_noprofile"
 
   os.makedirs(FLAGS.results_dir, exist_ok=True)
   trace_dir = os.path.join(FLAGS.results_dir, f"trace_{run_id}")
@@ -170,20 +188,32 @@ def main(_):
         runner.params,
     )
 
-  logging.info("First predict() call -- XLA COMPILE + run (profiler trace on)...")
+  if FLAGS.profile_first_predict:
+    logging.info("First predict() call -- XLA COMPILE + run (profiler trace on)...")
+  else:
+    logging.info("First predict() call -- XLA COMPILE + run (profiler off)...")
   t0 = time.time()
-  with jax.profiler.trace(trace_dir):
+  with (jax.profiler.trace(trace_dir) if FLAGS.profile_first_predict
+        else contextlib.nullcontext()):
     result = runner.predict(processed_features, random_seed=0)
     jax.block_until_ready(result)
   t_compile_and_run = time.time() - t0
   logging.info("First predict() done in %.1fs (compile + execute)", t_compile_and_run)
 
-  logging.info("Second predict() call -- should be compiled already (steady-state)...")
-  t0 = time.time()
-  result2 = runner.predict(processed_features, random_seed=0)
-  jax.block_until_ready(result2)
-  t_steady_state = time.time() - t0
-  logging.info("Second predict() done in %.2fs (steady-state, no compile)", t_steady_state)
+  # Steady state: the same compiled call, repeated in this process. The first
+  # of these is the "second predict" reported by earlier runs.
+  num_runs = FLAGS.num_steady_state_runs
+  steady_state_runs = []
+  for i in range(num_runs):
+    logging.info("Steady-state predict() call %d/%d (already compiled)...",
+                 i + 1, num_runs)
+    t0 = time.time()
+    result2 = runner.predict(processed_features, random_seed=0)
+    jax.block_until_ready(result2)
+    steady_state_runs.append(time.time() - t0)
+    logging.info("Steady-state predict() %d/%d done in %.2fs",
+                 i + 1, num_runs, steady_state_runs[-1])
+  t_steady_state = steady_state_runs[0]
 
   # Real per-device HBM memory usage via JAX's own API -- works regardless
   # of the container-level metrics setup that tpu-info needed (which wasn't
@@ -216,9 +246,15 @@ def main(_):
       "model_name": FLAGS.model_name,
       "precision": FLAGS.precision,
       "cache_dir": FLAGS.cache_dir,
+      "profile_first_predict": FLAGS.profile_first_predict,
       "init_params_seconds": round(t_init, 2),
       "first_predict_compile_and_run_seconds": round(t_compile_and_run, 2),
       "second_predict_steady_state_seconds": round(t_steady_state, 3),
+      "num_steady_state_runs": num_runs,
+      "steady_state_runs_seconds": [round(t, 4) for t in steady_state_runs],
+      "steady_state_mean_seconds": round(statistics.mean(steady_state_runs), 4),
+      "steady_state_stdev_seconds": (
+          round(statistics.stdev(steady_state_runs), 4) if num_runs > 1 else None),
       "memory_stats_per_device": memory_stats,
       "output_final_atom_positions_shape": list(
           result["structure_module"]["final_atom_positions"].shape
@@ -236,7 +272,8 @@ def main(_):
       continue  # printed separately below, more readably
     print(f"  {k:38s}: {v}")
   print(f"  {'results JSON':38s}: {out_path}")
-  print(f"  {'profiler trace':38s}: {trace_dir}")
+  print(f"  {'profiler trace':38s}: "
+        f"{trace_dir if FLAGS.profile_first_predict else '(disabled)'}")
   print("-" * 60)
   print("  Per-device HBM memory:")
   for m in memory_stats:

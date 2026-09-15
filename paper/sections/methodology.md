@@ -9,6 +9,11 @@ Evidence rules used here:
 - **Code or config:** what a script or Job file says it does (`file:line`).
 - **Log:** what a run actually printed. The only raw run logs in the repo are
   the Colab notebook outputs and `results/sweep/af3_tpu_attempt.log`.
+- **AF2 notebooks:** every citation of `alphafold_cpu_benchmark.ipynb` or
+  `alphafold_gpu_benchmark.ipynb` (cell numbers, embedded script, run logs) refers to
+  those notebooks **at commit `faeaa4b`**, the versions that produced the 2026-08-08
+  baselines. The current notebooks were rewritten to regenerate the baselines from the
+  committed script, and they no longer contain those outputs.
 - **Prose:** claims that appear only in a `.md` write-up. These are flagged
   whenever they are the only source.
 
