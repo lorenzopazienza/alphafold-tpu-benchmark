@@ -1,0 +1,39 @@
+{
+  "run_tag": "gpu-t4-repro",
+  "run_id": "gpu-t4-repro_model_3_len118_recycle0_float32",
+  "backend": "gpu",
+  "devices": [
+    "cuda:0"
+  ],
+  "num_devices": 1,
+  "host_processor": "x86_64",
+  "host_machine": "x86_64",
+  "num_residues": 118,
+  "num_recycle": 0,
+  "model_name": "model_3",
+  "precision": "float32",
+  "cache_dir": null,
+  "profile_first_predict": true,
+  "init_params_seconds": 101.65,
+  "first_predict_compile_and_run_seconds": 68.26,
+  "second_predict_steady_state_seconds": 6.967,
+  "num_steady_state_runs": 1,
+  "steady_state_runs_seconds": [
+    6.9673
+  ],
+  "steady_state_mean_seconds": 6.9673,
+  "steady_state_stdev_seconds": null,
+  "memory_stats_per_device": [
+    {
+      "device": "cuda:0",
+      "bytes_in_use": 390069504,
+      "peak_bytes_in_use": 1054714880,
+      "bytes_limit": 11729371136
+    }
+  ],
+  "output_final_atom_positions_shape": [
+    118,
+    37,
+    3
+  ]
+}
