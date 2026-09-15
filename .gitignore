@@ -5,3 +5,5 @@ node_modules/
 dist/
 *.local
 .vercel
+*_results.zip
+results/**/trace_*/
