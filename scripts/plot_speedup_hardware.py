@@ -1,101 +1,122 @@
 """
 Speedup figure for results_hardware.tex (T1-B deliverable, WORK_PLAN).
 
-Steady-state single-call timing per backend, log scale, with the three
-pairwise speedup ratios annotated. All numbers are the August 2026
-baseline from paper/data/canonical_results.md (rows B-03, B-06, B-09,
-B-10, B-11; B-10/B-11 also appear as 16.2x / 27.8x in
-results/comparison.md). Do not edit the numbers here without updating
-canonical_results.md first - this script is meant to be re-run, not
-hand-edited to change a value.
+Steady-state time per call for each backend, as a bar chart on a log axis.
+Above each bar: the measured time, and the speedup over the CPU baseline.
+All numbers are the August 2026 baseline from
+paper/data/canonical_results.md:
 
-Usage: python3 scripts/plot_speedup_hardware.py
-Output: figures/speedup_hardware.pdf (vector, for \\includegraphics in
-the paper) and figures/speedup_hardware.png (quick preview only).
+    B-03  CPU steady state        212.113 s
+    B-06  GPU (T4) steady state    13.086 s
+    B-09  TPU (v5e) steady state    0.47  s
+    B-10  GPU over CPU             16.21x
+    B-11  TPU over GPU             27.84x
+    TPU over CPU is derived here as B-03 / B-09.
+
+Do not edit a number here without updating canonical_results.md first.
+Re-run the script; never edit the figure by hand.
+
+Usage:  python3 scripts/plot_speedup_hardware.py
+Output: figures/speedup_hardware.pdf (vector, for \\includegraphics)
 """
+
+import os
 
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
-import os
+from matplotlib.ticker import FixedLocator, FixedFormatter, NullLocator
 
-# --- Canonical numbers (canonical_results.md, master table, status M) ---
-BACKENDS = ["CPU", "GPU (T4)", "TPU (v5e, 1 chip)"]
-STEADY_STATE_S = [212.113, 13.086, 0.47]   # B-03, B-06, B-09
+# ---- canonical numbers ------------------------------------------------------
+ROWS = [
+    # label,   detail,               seconds,  color (Okabe-Ito, colorblind-safe)
+    ("CPU",    "Colab, 2 vCPU",       212.113,  "#0072B2"),   # B-03, blue
+    ("GPU",    "NVIDIA T4, Colab",     13.086,  "#E69F00"),   # B-06, orange
+    ("TPU",    "one v5e chip of 8",     0.47,   "#009E73"),   # B-09, green
+]
+CPU_S = ROWS[0][2]
+TPU_OVER_GPU = 27.84  # B-11
 
-# Pairwise speedups already in canonical_results.md (B-10, B-11) plus the
-# TPU-over-CPU figure quoted in the paper text (derived, not a separate
-# canonical row: 212.113 / 0.47).
-SPEEDUP_GPU_OVER_CPU = 16.21   # B-10
-SPEEDUP_TPU_OVER_GPU = 27.84   # B-11
-SPEEDUP_TPU_OVER_CPU = 212.113 / 0.47
+INK, MUTED, RULE = "#1F2328", "#6B7280", "#D9DCE1"
 
-# Okabe-Ito colorblind-safe palette, fixed categorical order (never cycled).
-COLORS = ["#0072B2", "#E69F00", "#009E73"]      # blue, orange, green
-HATCHES = ["", "///", "xxx"]                     # grayscale/print safety
+plt.rcParams.update({
+    "font.family": "serif",
+    "font.serif": ["Times New Roman", "Times", "Nimbus Roman", "STIXGeneral",
+                   "DejaVu Serif"],
+    "mathtext.fontset": "stix",
+    "font.size": 9,
+    "axes.linewidth": 0.6,
+    "pdf.fonttype": 42,
+})
+
+
+def fmt_seconds(s):
+    return f"{s:,.3f} s" if s >= 1 else f"{s:.2f} s"
+
 
 def main():
-    fig, ax = plt.subplots(figsize=(5.5, 4.2))
+    fig, ax = plt.subplots(figsize=(5.2, 3.3))
 
-    x = range(len(BACKENDS))
-    bars = ax.bar(
-        x, STEADY_STATE_S,
-        color=COLORS, hatch=HATCHES,
-        edgecolor="black", linewidth=0.8, width=0.6,
-    )
+    xs = range(len(ROWS))
+    ax.bar(xs, [r[2] for r in ROWS], color=[r[3] for r in ROWS],
+           width=0.56, zorder=3)
 
+    for x, (label, detail, s, color) in zip(xs, ROWS):
+        # measured value, right above the bar
+        ax.annotate(fmt_seconds(s), xy=(x, s), xytext=(0, 4),
+                    textcoords="offset points", ha="center", va="bottom",
+                    fontsize=9.5, color=INK, fontweight="bold")
+        # speedup over the CPU baseline, one line higher
+        if label == "CPU":
+            note = "baseline"
+        else:
+            r = CPU_S / s
+            note = f"{r:.1f}$\\times$ faster than CPU" if r < 100 \
+                else f"{r:.0f}$\\times$ faster than CPU"
+        ax.annotate(note, xy=(x, s), xytext=(0, 17),
+                    textcoords="offset points", ha="center", va="bottom",
+                    fontsize=8, color=MUTED)
+        # x labels: backend in ink, hardware detail muted
+        ax.text(x, -0.06, label, transform=ax.get_xaxis_transform(),
+                ha="center", va="top", fontsize=10, color=INK,
+                fontweight="bold")
+        ax.text(x, -0.14, detail, transform=ax.get_xaxis_transform(),
+                ha="center", va="top", fontsize=7.5, color=MUTED)
+
+    # the second ratio quoted in the text (B-11), under the TPU bar
+    ax.text(2, -0.23, f"{TPU_OVER_GPU:.1f}$\\times$ faster than GPU",
+            transform=ax.get_xaxis_transform(), ha="center", va="top",
+            fontsize=7.5, color=ROWS[2][3])
+
+    # y axis: log, plain-number ticks
     ax.set_yscale("log")
-    ax.set_ylabel("Steady-state time per call (s, log scale)")
-    ax.set_xticks(list(x))
-    ax.set_xticklabels(BACKENDS)
-    ax.yaxis.set_major_formatter(mticker.ScalarFormatter())
-    ax.yaxis.set_minor_formatter(mticker.NullFormatter())
-
-    # Direct value labels on each bar (selective, not a number-everywhere
-    # chart: exactly one label per bar, the mark's own value).
-    for rect, val in zip(bars, STEADY_STATE_S):
-        ax.annotate(
-            f"{val:g} s",
-            xy=(rect.get_x() + rect.get_width() / 2, val),
-            xytext=(0, 4), textcoords="offset points",
-            ha="center", va="bottom", fontsize=9,
-        )
-
-    # Pairwise speedup annotations as bracketed callouts above the bars,
-    # so the ratios in the text (Section results_hardware) are visible
-    # on the figure itself rather than only in prose. Heights are chosen
-    # first, then the y-limit is set to clear the highest one - no LaTeX
-    # \ref or \cite here, matplotlib cannot resolve those; cross-references
-    # belong in the \caption in results_hardware.tex, not in the image.
-    def bracket(x0, x1, y, label):
-        ax.plot([x0, x0, x1, x1], [y * 0.85, y, y, y * 0.85],
-                 color="0.35", linewidth=0.9)
-        ax.text((x0 + x1) / 2, y * 1.1, label,
-                 ha="center", va="bottom", fontsize=8.5, color="0.25")
-
-    top_bracket_y = STEADY_STATE_S[0] * 9.0
-    bracket(0, 1, STEADY_STATE_S[0] * 1.6, f"{SPEEDUP_GPU_OVER_CPU:.1f}$\\times$")
-    bracket(1, 2, STEADY_STATE_S[0] * 3.4, f"{SPEEDUP_TPU_OVER_GPU:.1f}$\\times$")
-    bracket(0, 2, top_bracket_y, f"{SPEEDUP_TPU_OVER_CPU:.0f}$\\times$")
-    ax.set_ylim(top=top_bracket_y * 1.6)
-
-    ax.set_title(
-        "AlphaFold2 steady-state inference, single call",
-        fontsize=10,
-    )
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.grid(axis="y", which="major", linewidth=0.4, alpha=0.4)
+    ax.set_ylim(0.1, 3000)
+    ticks = [0.1, 1, 10, 100, 1000]
+    ax.yaxis.set_major_locator(FixedLocator(ticks))
+    ax.yaxis.set_major_formatter(FixedFormatter(["0.1", "1", "10", "100",
+                                                 "1000"]))
+    ax.yaxis.set_minor_locator(NullLocator())
+    ax.set_ylabel("Steady-state time per call (s, log scale)",
+                  fontsize=8.5, color=MUTED)
+    ax.tick_params(axis="y", colors=MUTED, labelsize=8, length=3, width=0.6)
+    ax.set_xticks([])
+    ax.set_xlim(-0.6, 2.6)
+    ax.grid(axis="y", color=RULE, linewidth=0.5, zorder=0)
     ax.set_axisbelow(True)
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    for side in ("left", "bottom"):
+        ax.spines[side].set_color(MUTED)
 
-    fig.tight_layout()
+    fig.subplots_adjust(left=0.14, right=0.98, top=0.95, bottom=0.26)
 
-    out_dir = os.path.join(os.path.dirname(__file__), "..", "figures")
+    out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                           "figures")
     os.makedirs(out_dir, exist_ok=True)
-    fig.savefig(os.path.join(out_dir, "speedup_hardware.pdf"))
-    fig.savefig(os.path.join(out_dir, "speedup_hardware.png"), dpi=200)
-    print("Wrote figures/speedup_hardware.pdf and .png")
+    out = os.path.join(out_dir, "speedup_hardware.pdf")
+    fig.savefig(out)
+    print(f"Wrote {os.path.relpath(out)}")
+
 
 if __name__ == "__main__":
     main()
