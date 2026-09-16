@@ -38,15 +38,15 @@ recomputed from those raw values, not copied from the prose write-ups.
 | B-03 | Baseline CPU | 2nd predict (steady state) | 212.113 s | M | `results/result_cpu-colab.json → second_predict_steady_state_seconds` | |
 | B-04 | Baseline GPU | init_params | 109.16 s | M | `results/result_gpu-t4.json → init_params_seconds` | GPU init is 2.60× slower than CPU init |
 | B-05 | Baseline GPU | 1st predict (compile + run) | 97.62 s | M | `results/result_gpu-t4.json → first_predict_compile_and_run_seconds` | |
-| B-06 | Baseline GPU | 2nd predict (steady state) | 13.086 s | M | `results/result_gpu-t4.json → second_predict_steady_state_seconds` | |
+| B-06 | Baseline GPU | 2nd predict (steady state) | 13.086 s | M | `results/result_gpu-t4.json → second_predict_steady_state_seconds` | See discrepancy 16 and "GPU session variability (Colab)": the 2026-09-15 rerun differs, gap unexplained |
 | B-07 | Baseline TPU | init_params | 36.6 s | M | `results/result_tpu-v5e-podslice.json → init_params_seconds` | |
 | B-08 | Baseline TPU | 1st predict (compile + run) | 27.78 s | M | `results/result_tpu-v5e-podslice.json → first_predict_compile_and_run_seconds` | |
 | B-09 | Baseline TPU | 2nd predict (steady state) | 0.47 s | M | `results/result_tpu-v5e-podslice.json → second_predict_steady_state_seconds` | Runs on 1 of 8 chips, see CV-09 |
-| B-10 | Baseline speedup | **GPU over CPU** (steady state) | **16.21×** | D | `t_CPU / t_GPU` = B-03 / B-06 = 212.113 / 13.086 | Matches `results/comparison.md:32` (16.2x). The GPU is 16.2× faster than the CPU. |
-| B-11 | Baseline speedup | **TPU over GPU** (steady state) | **27.84×** | D | `t_GPU / t_TPU` = B-06 / B-09 = 13.086 / 0.47 | Matches `results/comparison.md:36` (27.8x). The TPU is 27.8× faster than the T4. |
+| B-10 | Baseline speedup | **GPU over CPU** (steady state) | **16.21×** | D | `t_CPU / t_GPU` = B-03 / B-06 = 212.113 / 13.086 | Matches `results/comparison.md:32` (16.2x). The GPU is 16.2× faster than the CPU. Uses B-06: see discrepancy 16 and "GPU session variability (Colab)". |
+| B-11 | Baseline speedup | **TPU over GPU** (steady state) | **27.84×** | D | `t_GPU / t_TPU` = B-06 / B-09 = 13.086 / 0.47 | Matches `results/comparison.md:36` (27.8x). The TPU is 27.8× faster than the T4. Uses B-06: see discrepancy 16 and "GPU session variability (Colab)". |
 | B-12 | Baseline speedup | **TPU over CPU** (steady state) | **451.3×** | D | `t_CPU / t_TPU` = B-03 / B-09 = 212.113 / 0.47 | Matches `results/comparison.md:33` (451x). Consistency check: 16.21 × 27.84 = 451.3 |
 | B-13 | Baseline ratio | CPU 1st predict / steady state | 1.28× | D | B-02 / B-03 | `results/comparison.md:46` |
-| B-14 | Baseline ratio | GPU 1st predict / steady state | 7.46× | D | B-05 / B-06 | `results/comparison.md:47` |
+| B-14 | Baseline ratio | GPU 1st predict / steady state | 7.46× | D | B-05 / B-06 | `results/comparison.md:47`. Uses B-06: see discrepancy 16 and "GPU session variability (Colab)". |
 | B-15 | Baseline ratio | TPU 1st predict / steady state | 59.1× | D | B-08 / B-09 | `results/comparison.md:48` |
 | **C** | **Cost analysis** | | | | | |
 | C-01 | Cost | TPU v5e price | $1.20 / chip-hour | I | `results/cost_analysis.md:5` | Google Cloud on-demand, Aug 2026 |
@@ -516,6 +516,40 @@ result (VM) that runs on one chip. Keep them apart in the paper.
         `num_recycle = 10`, or both models at 1. It would also need warm timing that
         excludes compilation (e.g. a second fold job in the same process) and a stated
         normalisation, per call or per structure.
+16. **The Colab T4 steady state halved between the 2026-08-08 baseline and the 2026-09-15
+    rerun, and nothing in the repo explains why.**
+    - **The gap.** B-06 (2026-08-08) is 13.086 s, a single call. The 2026-09-15 rerun gives
+      6.5672 ± 0.0574 s over 5 calls
+      (`results/repro/2026-09-15_gpu-t4/result_gpu-t4-repro_model_3_len118_recycle0_float32_noprofile.json
+      → steady_state_mean_seconds, steady_state_stdev_seconds`). 13.086 / 6.5672 = 1.99×.
+      The same session's profiler-on run gives 6.9673 s (n = 1,
+      `result_gpu-t4-repro_model_3_len118_recycle0_float32.json → steady_state_mean_seconds`),
+      and the August steady-state call ran without the profiler (discrepancy 11), so the
+      profiler setting does not account for the gap.
+    - **What is recorded as the same.** Both runs report a Tesla T4 with 15,360 MiB,
+      driver 580.82.07 and compute capability 7.5. August: `nvidia-smi` for GPU, memory and
+      driver, the TensorFlow device log for compute capability
+      (`paper/sections/methodology.md:36-38`, from the notebook at `faeaa4b`). September:
+      `environment_gpu-t4-repro.json → hardware.nvidia_smi`. Configuration
+      (`model_3`, 118 residues, recycle 0, float32) is the same.
+    - **What is known to differ, with no measured effect.**
+      - Script: August ran the uncommitted copy embedded in the notebook; September ran
+        `src/spike_tpu_forward_pass.py` at `86fca03` (`environment_gpu-t4-repro.json →
+        repo_commit`). Discrepancy 12 states the timing structure of the two is the same.
+      - Software: August installed JAX unpinned and its resolved version is not in the repo
+        (`paper/sections/methodology.md:97-98`); September used `jax` / `jax-cuda12-plugin`
+        0.10.2 (`environment_gpu-t4-repro.json → package_versions`). `numpy` was 2.5.1 in
+        August (`paper/sections/methodology.md:100`) and 2.1.3 in September (same key).
+      - Host: the August host CPU and RAM were not recorded
+        (`paper/sections/methodology.md:40`); September's is `Intel(R) Xeon(R) CPU @ 2.00GHz`,
+        2 logical CPUs (`environment_gpu-t4-repro.json → hardware.cpu_model, logical_cpus`).
+    - **Why it is open.** None of these differences has been isolated by a run that changes
+      one of them. The repo therefore contains no verifiable cause, and it cannot say which
+      of the two values is representative. August is n = 1; September is one session.
+    - **Consequence.** B-06 stays the August baseline in the master table. B-10, B-11 and
+      B-14 are computed from B-06 and carry this open gap; cite them with it.
+
+    **APERTO (not resolved):** see "GPU session variability (Colab)" below.
 
 ## Speedup direction check (summary)
 
@@ -559,3 +593,29 @@ those files: CPU model, cores and commit from `environment.json`, timings from
 6. First and last log lines of `log_cpu-colab-repro_noprofile.txt` (`I0915 18:04:00.904643` → `I0915 18:40:30.876429`), i.e. the timed profiler-off run. The log timestamps carry no timezone. They are read as UTC because the last line of `log_cpu-colab-repro_profile.txt` (18:54:33) falls 5 s before `recorded_at_utc` (18:54:38 UTC); this is an inference, not a recorded value.
 7. Not recorded. Searched `environment_cpu-colab-repro.json`, both logs, `pip_freeze_cpu-colab-repro.txt`, both result JSONs and `alphafold_cpu_benchmark.executed.ipynb` (including its `metadata`) for "tier", "Colab Pro", "compute unit", "High-RAM", "machine_shape". The only match is the notebook's own title, "(free Colab)", which describes the intended runtime, not the one used.
 8. `results/repro/2026-09-15_cpu-colab/result_cpu-colab-repro_model_3_len118_recycle0_float32_noprofile.json` → `init_params_seconds`, `first_predict_compile_and_run_seconds`, `steady_state_mean_seconds`, `steady_state_stdev_seconds`, `num_steady_state_runs`; `profile_first_predict` is `false`. The profiler-on run in the same folder (`result_cpu-colab-repro_model_3_len118_recycle0_float32.json`) is not used.
+
+## GPU session variability (Colab)
+
+Workload as in the master table (`model_3`, 118 residues, `num_recycle=0`, float32), on
+the Colab T4 runtime. Row 1 is the August baseline from the master table. Row 2 is the
+2026-09-15 rerun from `notebooks/alphafold_gpu_benchmark.ipynb`; its files are in
+`results/repro/2026-09-15_gpu-t4/`. Fill further rows only from each run's files: GPU,
+host and commit from the environment file, timings from
+`result_gpu-t4-repro_model_3_len118_recycle0_float32_noprofile.json`.
+
+| Run | Date | Time (UTC) | Colab tier | GPU | Host CPU / cores | Commit | init_params (s) | First predict (s) | Steady state mean ± std (s) | n repeats |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 (original) | 2026-08-08 ¹ | | | NVIDIA Tesla T4, 15 GB VRAM ² | ³ | none ⁴ | 109.16 (B-04) | 97.62 (B-05) ⁵ | 13.086 (B-06), no std | 1 |
+| 2 (2026-09-15) | 2026-09-15 ⁶ | 19:01–19:04 ⁷ | ⁸ | Tesla T4, 15360 MiB, driver 580.82.07, compute capability 7.5 ⁶ | Intel(R) Xeon(R) CPU @ 2.00GHz, 2 logical (1 core × 2 threads) ⁶ | `86fca03` ⁶ | 102.6 ⁹ | 39.59 ⁹ | 6.5672 ± 0.0574 ⁹ | 5 ⁹ |
+
+1. The date of commit `2755250`, which added the results (discrepancy 12). No time with a timezone is recorded in this file; `paper/sections/methodology.md:41` gives a log-clock window without timezone.
+2. HW-02, status R (`results/comparison.md:10,17-18`). The result JSON records `devices: ["cuda:0"]`.
+3. Not recorded (`paper/sections/methodology.md:40`).
+4. The run used a copy of the script embedded in the notebook, not a committed script (discrepancy 12).
+5. Includes `jax.profiler.trace` finalisation inside the timer, 42.02 s by the log (discrepancy 11). Not comparable with profiler-off first predicts.
+6. `results/repro/2026-09-15_gpu-t4/environment_gpu-t4-repro.json`: `recorded_at_utc` (2026-09-15T19:07:25+00:00, written at step 7), `hardware.nvidia_smi`, `hardware.cpu_model`, `hardware.logical_cpus` (2), `hardware.lscpu` (`Socket(s): 1`, `Core(s) per socket: 1`, `Thread(s) per core: 2`), `repo_commit` (`86fca03bb0c9dde7f93b2c1e54a407d6dad6054e`). This run predates the notebook's `environment.json` / `pip_freeze.txt` cell, so those two files do not exist here.
+7. First and last log lines of `log_gpu-t4-repro_noprofile.txt` (`I0915 19:01:18.881451` → `I0915 19:04:14.812504`), i.e. the timed profiler-off run. The log timestamps carry no timezone. They are read as UTC because the last line of `log_gpu-t4-repro_profile.txt` (19:07:22) falls 3 s before `recorded_at_utc` (19:07:25 UTC); this is an inference, not a recorded value.
+8. Not recorded. Searched `environment_gpu-t4-repro.json`, both logs, `pip_freeze_gpu-t4-repro.txt`, both result JSONs and `alphafold_gpu_benchmark.executed.ipynb` (including its `metadata`) for "tier", "Colab Pro", "compute unit", "High-RAM", "machine_shape". The notebook metadata records only `accelerator: GPU` and `gpuType: T4`; the title's "(free Colab)" describes the intended runtime, not the one used.
+9. `results/repro/2026-09-15_gpu-t4/result_gpu-t4-repro_model_3_len118_recycle0_float32_noprofile.json` → `init_params_seconds`, `first_predict_compile_and_run_seconds`, `steady_state_mean_seconds`, `steady_state_stdev_seconds`, `num_steady_state_runs`; `profile_first_predict` is `false`. The profiler-on run in the same folder (`result_gpu-t4-repro_model_3_len118_recycle0_float32.json`) is not used.
+10. **Steady-state gap:** row 1 is 13.086 s and row 2 is 6.5672 ± 0.0574 s, a factor of 13.086 / 6.5672 = 1.99×, i.e. almost 2×.
+11. **The gap is not explained.** The repo contains no verifiable cause: both runs report the same GPU, memory, driver and compute capability (discrepancy 16 lists the sources), and no run isolates any of the known differences (script copy vs `86fca03`, unrecorded August JAX version, unrecorded August host). Discrepancy 16 tracks it as open.
