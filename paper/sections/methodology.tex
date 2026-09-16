@@ -1,0 +1,672 @@
+% Body of the Methodology section; \section{} is in main.tex.
+% Converted from paper/sections/methodology.md.
+% Requires: booktabs, tabularx, array (loaded by tabularx).
+\providecommand{\TODO}[1]{\textbf{[#1]}}
+
+This section documents how every number in \texttt{paper/\allowbreak{}data/\allowbreak{}canonical\_\allowbreak{}results.md}
+was produced. Every statement below is backed by a file in this repository; the
+source is cited inline. Anything the repository does not record is marked
+\TODO{NOT IN REPO} instead of being filled in. Section~\ref{sec:meth-gaps} lists all of those gaps.
+
+Evidence rules used here:
+\begin{itemize}
+  \item \textbf{Code or config:} what a script or Job file says it does (\texttt{file:line}).
+  \item \textbf{Log:} what a run actually printed. The only raw run logs in the repo are
+    the Colab notebook outputs and \texttt{results/\allowbreak{}sweep/\allowbreak{}af3\_\allowbreak{}tpu\_\allowbreak{}attempt.log}.
+  \item \textbf{AF2 notebooks:} every citation of \texttt{alphafold\_\allowbreak{}cpu\_\allowbreak{}benchmark.ipynb} or
+    \texttt{alphafold\_\allowbreak{}gpu\_\allowbreak{}benchmark.ipynb} (cell numbers, embedded script, run logs) refers to
+    those notebooks \textbf{at commit \texttt{faeaa4b}}, the versions that produced the 2026-08-08
+    baselines. The current notebooks were rewritten to regenerate the baselines from the
+    committed script, and they no longer contain those outputs.
+  \item \textbf{Prose:} claims that appear only in a \texttt{.md} write-up. These are flagged
+    whenever they are the only source.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\subsection{Hardware}
+\label{sec:meth-hardware}
+
+\subsubsection{CPU baseline (Google Colab)}
+\label{sec:meth-hw-cpu}
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.2\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
+\toprule
+Item & Value & Source \\
+\midrule
+Platform & Google Colab, CPU runtime (no accelerator) & \texttt{notebooks/\allowbreak{}alphafold\_\allowbreak{}cpu\_\allowbreak{}benchmark.ipynb} cell 0; the \texttt{nvidia-smi} check in cell 2 finds no GPU (\texttt{nvidia-smi: command not found}, printed by the AF3 CPU notebook's version of the same check) \\
+JAX devices & \texttt{[CpuDevice(id=0)]}, backend \texttt{cpu} & Log, \texttt{alphafold\_\allowbreak{}cpu\_\allowbreak{}benchmark.ipynb} cell 10 \\
+Architecture & \texttt{x86\_64} & \texttt{results/\allowbreak{}result\_\allowbreak{}cpu-colab.json} $\rightarrow$ \texttt{host\_\allowbreak{}processor, host\_\allowbreak{}machine} \\
+CPU model, vCPU count, RAM & \TODO{NOT IN REPO} as a measurement & ``Intel Xeon, 2 vCPU, 13.6 GB RAM'' appears only in prose (\texttt{results/\allowbreak{}comparison.md:9,17-18}). No notebook runs \texttt{lscpu}, \texttt{nproc} or \texttt{free}. \\
+Run date & 2026-08-08, $\sim$05:19--05:28 (log clock) & Log timestamps, cell 10 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{GPU baseline (Google Colab)}
+\label{sec:meth-hw-gpu}
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.2\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
+\toprule
+Item & Value & Source \\
+\midrule
+GPU & NVIDIA Tesla T4, 15,360 MiB & \texttt{nvidia-smi} output, \texttt{alphafold\_\allowbreak{}gpu\_\allowbreak{}benchmark.ipynb} cell 2 \\
+Compute capability & 7.5 & TensorFlow device log, cell 10 (13,749 MB made available to TF) \\
+NVIDIA driver / CUDA version reported by the driver & 580.82.07 / 13.0 & \texttt{nvidia-smi} output, cell 2 \\
+JAX devices & \texttt{[CudaDevice(id=0)]}, backend \texttt{gpu} & Log, cell 10 \\
+Host CPU model, vCPU count, host RAM & \TODO{NOT IN REPO} & Not printed by any notebook \\
+Run date & 2026-08-08, $\sim$04:49--04:54 (log clock) & \texttt{nvidia-smi} timestamp and log, cells 2 and 10 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{TPU (Stanford GKE)}
+\label{sec:meth-hw-tpu}
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.2\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
+\toprule
+Item & Value & Source \\
+\midrule
+Cluster / region / project & \texttt{class-tpu-cluster-west4} / \texttt{us-west4} / \texttt{soe-hpccenter} & \texttt{scripts/\allowbreak{}run\_\allowbreak{}spike.sh:6}, \texttt{README.md:173-174} \\
+Accelerator & \texttt{tpu-v5-lite-podslice}, topology \texttt{2x4} & \texttt{nodeSelector} in every Job, e.g.\ \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}job.yaml:13-14} \\
+Chips requested & 8 (\texttt{google.com/tpu: "8"}, request and limit) & e.g.\ \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}job.yaml:40,43} \\
+Container memory & 32 Gi request, 64 Gi limit & e.g.\ \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}job.yaml:41,44} \\
+Scheduling & Kubernetes Job, admitted via Kueue queue \texttt{student-queue}, \texttt{backoffLimit: 0} & Label in every Job file; \texttt{README.md:176} \\
+JAX devices & 8 devices, \texttt{TPU\_0} \ldots{} \texttt{TPU\_7}, with 2$\times$4 coordinates & \texttt{results/\allowbreak{}result\_\allowbreak{}tpu-v5e-podslice.json} $\rightarrow$ \texttt{devices} \\
+HBM limit per chip & 16,909,000,000 bytes & \texttt{results/\allowbreak{}sweep/\allowbreak{}chip\_\allowbreak{}visibility\_\allowbreak{}sweep.json} $\rightarrow$ \texttt{bytes\_limit} \\
+Host CPU model, host vCPU, host RAM, node machine type & \TODO{NOT IN REPO} & \\
+libtpu / TPU runtime / firmware version & \TODO{NOT IN REPO} & \\
+Whether all Jobs landed on the same physical node & \TODO{NOT IN REPO} & Node names were not recorded \\
+Run dates & \TODO{NOT IN REPO} & Git only gives upper bounds (see Section~\ref{sec:meth-provenance}) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Only one chip does work in the default single-query path: \texttt{TPU\_1}--\texttt{TPU\_7}
+report 0 bytes in use (\texttt{chip\_\allowbreak{}visibility\_\allowbreak{}sweep.json}). Single-query TPU timings
+therefore measure one v5e chip, even though 8 are allocated.
+
+\subsubsection{AlphaFold3 runs}
+\label{sec:meth-hw-af3}
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.18\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.28\linewidth}}
+\toprule
+Run & Hardware & Source \\
+\midrule
+AF3, Colab CPU & Colab CPU runtime, \texttt{CpuDevice(id=0)} & \texttt{notebooks/\allowbreak{}af3\_\allowbreak{}cpu\_\allowbreak{}colab.ipynb} cells 2 and 14 \\
+AF3, Colab GPU & Tesla T4, 15,360 MiB, driver 580.82.07; run on 2026-08-12 & \texttt{notebooks/\allowbreak{}af3\_\allowbreak{}gpu\_\allowbreak{}colab.ipynb} cells 2 and 14 \\
+AF3, Stanford CPU & \TODO{NOT IN REPO}. No Job file, log or hardware description. Prose says it ran ``inside a Kubernetes Job on \texttt{hpcc-cluster-41}'s CPU allocation'' (\texttt{results/\allowbreak{}sweep/\allowbreak{}af3\_\allowbreak{}comparison.md:72-75}). & \\
+AF3, TPU attempt & Same TPU \texttt{nodeSelector} as above & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}af3\_\allowbreak{}tpu.yaml:22-23} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The two Colab AF2 runs (2026-08-08) and the two Colab AF3 runs (2026-08-12)
+used the same Colab runtime \emph{types}. Nothing in the repo shows they ran on the
+same physical machines.
+
+% ---------------------------------------------------------------------------
+\subsection{Software versions}
+\label{sec:meth-software}
+
+The repository has \textbf{no \texttt{requirements.txt}, lockfile or container digest}.
+Versions were recovered from Job files, notebook cells and notebook outputs.
+
+\subsubsection{AF2 on TPU (all Jobs in \texttt{configs/}, except the AF3 attempt)}
+\label{sec:meth-sw-af2-tpu}
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.22\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.28\linewidth}}
+\toprule
+Component & Version & Source \\
+\midrule
+Base image & \texttt{python:3.12-slim} (tag only, no digest) & e.g.\ \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}job.yaml:17} \\
+Python patch version & \TODO{NOT IN REPO} & The tag floats \\
+\texttt{jax[tpu]} & \texttt{==0.10.2} (pinned), from \texttt{libtpu\_releases.html} & e.g.\ \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}job.yaml:30} \\
+\texttt{dm-haiku}, \texttt{ml\_collections}, \texttt{absl-py}, \texttt{biopython}, \texttt{numpy} & \textbf{unpinned}. Resolved versions \TODO{NOT IN REPO} & e.g.\ \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}job.yaml:31} \\
+\texttt{tensorflow-cpu} & \texttt{>=2.18}. Resolved version \TODO{NOT IN REPO} & e.g.\ \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}job.yaml:31} \\
+\texttt{uv} & unpinned (\texttt{pip install uv}). Version \TODO{NOT IN REPO} & e.g.\ \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}job.yaml} install step \\
+AlphaFold2 source & \texttt{git clone -{}-depth 1} of the default branch of \texttt{google-deepmind/\allowbreak{}alphafold}. Commit \TODO{NOT IN REPO} & e.g.\ \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}job.yaml:34} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{AF2 on Colab CPU and GPU}
+\label{sec:meth-sw-af2-colab}
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.18\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.12\linewidth}}
+\toprule
+Component & CPU notebook & GPU notebook & Source \\
+\midrule
+JAX & \texttt{pip install -q -U jax} (unpinned) & \texttt{pip install -q -U "jax[cuda12]"} (unpinned) & cell 4 of each \\
+Resolved JAX / jaxlib version & \TODO{NOT IN REPO}: \texttt{-q} suppresses it & \TODO{NOT IN REPO} & \\
+\texttt{dm-haiku}, \texttt{ml\_collections}, \texttt{absl-py}, \texttt{biopython} & unpinned, versions \TODO{NOT IN REPO} & same & cell 4 \\
+\texttt{numpy} & 2.5.1 (from a pip dependency-conflict message) & 2.5.1 (same message) & cell 4 output \\
+TensorFlow & Colab's preinstalled build, version \TODO{NOT IN REPO} & same; \texttt{tensorflow-cpu} deliberately not installed & cell 4 \\
+CUDA / cuDNN libraries used by JAX & n/a & \TODO{NOT IN REPO} & \\
+Python version & \TODO{NOT IN REPO} & \TODO{NOT IN REPO} & Four days later the AF3 notebooks report CPython 3.12.13; this is indirect evidence only \\
+AlphaFold2 source & \texttt{git clone -{}-depth 1}, commit \TODO{NOT IN REPO} & same & cell 6 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{AF3 on Colab CPU and GPU}
+\label{sec:meth-sw-af3-colab}
+
+\texttt{uv sync} printed the full resolved environment: 70 packages, identical in the
+CPU and GPU notebooks (\texttt{notebooks/\allowbreak{}af3\_\allowbreak{}*\_\allowbreak{}colab.ipynb}, cell 8 output). The
+relevant versions:
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
+\toprule
+Component & Version \\
+\midrule
+\texttt{alphafold3} & \texttt{3.0.3.dev1+g29596b970} (source commit \texttt{29596b970}) \\
+\texttt{jax}, \texttt{jaxlib}, \texttt{jax-cuda12-pjrt}, \texttt{jax-cuda12-plugin} & 0.10.2 \\
+\texttt{dm-haiku} & 0.0.16 \\
+\texttt{numpy} & 2.4.1 \\
+\texttt{tokamax} & 0.0.12 \\
+\texttt{chex} / \texttt{flax} / \texttt{optax} & 0.1.91 / 0.12.2 / 0.2.6 \\
+\texttt{nvidia-cudnn-cu12} / \texttt{nvidia-cublas-cu12} / \texttt{nvidia-cuda-runtime-cu12} / \texttt{nvidia-nccl-cu12} & 9.17.1.4 / 12.9.1.4 / 12.9.79 / 2.29.2 \\
+\texttt{rdkit} & 2025.9.4 \\
+Python & CPython 3.12.13 (\texttt{uv sync} output) \\
+\texttt{uv} & 0.12.3 (installer output, cell 6) \\
+Weights & \texttt{af3.bin.zst}, 1,146,811,260 bytes (cell 10 output) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The CUDA wheels are installed in the CPU notebook as well; the lockfile does
+not distinguish backends. In both runs AF3 logs a \texttt{tokamax} gated-linear-unit
+kernel failing (``Not supported on cpu'' / ``Not supported on Tesla T4'') and
+falling back to another implementation (cell 14 output).
+
+\subsubsection{AF3 on TPU (attempt)}
+\label{sec:meth-sw-af3-tpu}
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.2\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
+\toprule
+Component & Version & Source \\
+\midrule
+AF3 source & \texttt{main} branch tarball, commit \TODO{NOT IN REPO} & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}af3\_\allowbreak{}tpu.yaml:47} \\
+\texttt{jax[tpu]} & \texttt{==0.10.2} & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}af3\_\allowbreak{}tpu.yaml:57} \\
+Everything else & resolved by \texttt{uv sync}, versions \TODO{NOT IN REPO} & \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{The Dockerfile was not used for any reported result}
+\label{sec:meth-sw-dockerfile}
+
+\texttt{Dockerfile} defines a \texttt{python:3.12-slim} image with \texttt{jax[...]} unpinned,
+\texttt{dm-haiku==0.0.12} and \texttt{tensorflow-cpu==2.16.1} (\texttt{Dockerfile:12,28-35,41-47}).
+Neither the TPU Jobs nor the Colab notebooks use it:
+\begin{itemize}
+  \item the Jobs run the stock \texttt{python:3.12-slim} image and install packages at
+    container start, with different pins (\texttt{jax[tpu]==0.10.2}, \texttt{tensorflow-cpu>=2.18},
+    unpinned \texttt{dm-haiku});
+  \item the notebooks \texttt{pip install} directly.
+\end{itemize}
+
+\texttt{Dockerfile:49} says AlphaFold is ``pinned to a fixed commit for
+reproducibility'', but line 50 is \texttt{git clone -{}-depth 1} with no commit. The
+Dockerfile therefore documents neither the environment that produced the
+results nor a pinned one.
+
+\subsubsection{Compatibility patch applied to AlphaFold2}
+\label{sec:meth-sw-patch}
+
+Every AF2 script monkey-patches \texttt{jax.numpy.clip} so that the \texttt{a\_min=}/\texttt{a\_max=}
+keyword arguments used by AlphaFold2's source map to the current \texttt{min=}/\texttt{max=}
+(\texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:46-54}). AlphaFold2's source itself is not modified.
+
+% ---------------------------------------------------------------------------
+\subsection{Workload and inputs}
+\label{sec:meth-workload}
+
+\subsubsection{AlphaFold2 model configuration}
+\label{sec:meth-af2-config}
+
+\begin{itemize}
+  \item \textbf{Model config:} \texttt{model\_3} by default; \texttt{model\_4} and \texttt{model\_5} only in the
+    model comparison (\texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}combined.yaml:35-38}). These three configs
+    have \texttt{use\_templates=False}; the script refuses \texttt{model\_1}/\texttt{model\_2}
+    (\texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:141-144}).
+  \item \textbf{Ensembling:} \texttt{num\_ensemble = 1} in every script (e.g.\
+    \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:147}). The ensemble experiment builds its 8
+    members outside AlphaFold instead (Section~\ref{sec:meth-seeds}).
+  \item \textbf{Recycling:} \texttt{num\_recycle = 0} except in the recycle sweep (1 and 3)
+    (\texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}job\_\allowbreak{}sweep.yaml:52-53}).
+  \item \textbf{Precision:} float32 by default. The bfloat16 run casts every float32
+    parameter leaf after \texttt{init\_params} (\texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:166-171}).
+    Input features are not cast.
+\end{itemize}
+
+\subsubsection{Sequences}
+\label{sec:meth-sequences}
+
+\begin{itemize}
+  \item \textbf{118 residues} in the single-query scripts: a fixed toy sequence
+    (\texttt{TOY\_SEQUENCE\_118}, \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:91-94}), also used by the
+    ensemble and GSPMD scripts and by the AF3 input (\texttt{src/\allowbreak{}make\_\allowbreak{}af3\_\allowbreak{}input.py:30}).
+    It is synthetic, not a real protein.
+  \item \textbf{Any other length:} the 20-letter alphabet \texttt{ACDEFGHIKLMNPQRSTVWY} repeated
+    and truncated (\texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:97-101}).
+    \begin{itemize}
+      \item The sequence-length sweep (60, 120, 250, 500) therefore uses only these
+        synthetic sequences; none of its points is the 118-residue toy sequence.
+    \end{itemize}
+  \item \textbf{\texttt{vmap} batching, \texttt{pmap} multi-query and the scaling grid:} every item uses
+    the repeated alphabet rotated by its batch index
+    (\texttt{src/\allowbreak{}spike\_\allowbreak{}batch\_\allowbreak{}forward\_\allowbreak{}pass.py:53-58}, \texttt{src/\allowbreak{}spike\_\allowbreak{}pmap\_\allowbreak{}forward\_\allowbreak{}pass.py:50-52}),
+    \textbf{including at 118 residues}. These experiments do not fold the toy sequence.
+\end{itemize}
+
+\subsubsection{MSA and features}
+\label{sec:meth-msa}
+
+\begin{itemize}
+  \item \textbf{MSA:} a single-sequence MSA containing only the query, built with
+    AlphaFold's own \texttt{parsers.Msa} and \texttt{pipeline.make\_\allowbreak{}msa\_\allowbreak{}features} (e.g.\
+    \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:111-118}). There is no genetic database search
+    and there are no templates.
+  \item \textbf{Feature processing:} \texttt{af\_\allowbreak{}features.np\_\allowbreak{}example\_\allowbreak{}to\_\allowbreak{}features(..., random\_\allowbreak{}seed=0)}
+    (\texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:153-155}). This step runs before any timer
+    starts, so it is not part of any reported time.
+  \item \textbf{Padded shapes:} the logged model inputs are \texttt{msa\_\allowbreak{}feat (1, 512, 118, 49)} and
+    \texttt{extra\_\allowbreak{}msa (1, 5120, 118)} (log, \texttt{alphafold\_\allowbreak{}*\_\allowbreak{}benchmark.ipynb} cell 10). The
+    MSA tensors are padded to 512 cluster rows and 5,120 extra rows, so the trivial
+    MSA does not shrink the MSA dimensions of the compiled graph.
+\end{itemize}
+
+\subsubsection{Seeds and experiment-specific settings}
+\label{sec:meth-seeds}
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.18\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
+\toprule
+Setting & Value & Source \\
+\midrule
+Feature seed & 0 (ensemble: member index \texttt{i}, 0--7) & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:154}; \texttt{src/\allowbreak{}spike\_\allowbreak{}ensemble\_\allowbreak{}shard\_\allowbreak{}forward\_\allowbreak{}pass.py:103} \\
+Parameter-init seed & 0 & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:162} \\
+\texttt{predict} seed / \texttt{apply} PRNG key & 0 / \texttt{PRNGKey(0)} & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:176,183}; \texttt{src/\allowbreak{}spike\_\allowbreak{}pmap\_\allowbreak{}forward\_\allowbreak{}pass.py:100} \\
+Compilation cache & \texttt{jax\_\allowbreak{}compilation\_\allowbreak{}cache\_\allowbreak{}dir=/\allowbreak{}tmp/\allowbreak{}jax\_\allowbreak{}cache}, min entry size $-1$, min compile time 0; two separate processes & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:122-126}; \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}combined.yaml:57-64} \\
+GSPMD mesh & \texttt{jax.make\_\allowbreak{}mesh((8, 1), ("fsdp", "tp"))}, both axes \texttt{AxisType.Auto}, under \texttt{jax.set\_mesh} & \texttt{src/\allowbreak{}spike\_\allowbreak{}meshshard\_\allowbreak{}forward\_\allowbreak{}pass.py:85-86} \\
+\texttt{pmap} multi-query & \texttt{jax.pmap(runner.apply, in\_\allowbreak{}axes=(None, None, 0))} & \texttt{src/\allowbreak{}spike\_\allowbreak{}pmap\_\allowbreak{}forward\_\allowbreak{}pass.py:101} \\
+\texttt{pmap} + \texttt{pmean} ensemble & \texttt{jax.pmap} over members, \texttt{jax.lax.pmean} of \texttt{predicted\_lddt} logits on axis \texttt{ensemble} & \texttt{src/\allowbreak{}spike\_\allowbreak{}ensemble\_\allowbreak{}shard\_\allowbreak{}forward\_\allowbreak{}pass.py:122,125} \\
+\texttt{vmap} batching & \texttt{jax.vmap(runner.apply, in\_\allowbreak{}axes=(None, None, 0))} on one device & \texttt{src/\allowbreak{}spike\_\allowbreak{}batch\_\allowbreak{}forward\_\allowbreak{}pass.py:117} \\
+Chip visibility & \texttt{TPU\_VISIBLE\_CHIPS} set to 1, 2, 4 or 8 chips; the 2- and 4-chip runs failed, and so did a retry with \texttt{LIBTPU\_INIT\_ARGS} & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}chipcount.yaml:39-43}; \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}chips\_\allowbreak{}retry.yaml} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{AlphaFold3 input}
+\label{sec:meth-af3-input}
+
+\begin{itemize}
+  \item \textbf{Input JSON:} one protein chain \texttt{A} with the same 118-residue toy sequence,
+    \texttt{unpairedMsa} and \texttt{pairedMsa} empty, no templates, \texttt{modelSeeds: [1]}
+    (\texttt{src/\allowbreak{}make\_\allowbreak{}af3\_\allowbreak{}input.py:36-59}; the same payload is written inline in each
+    Colab notebook, cell 12).
+  \item \textbf{Command:} \texttt{run\_alphafold.py -{}-norun\_data\_pipeline
+    -{}-flash\_attention\_implementation=xla -{}-jax\_backend=\{cpu,gpu\}} (cell 14).
+  \item \textbf{GPU flag:} the GPU run also sets
+    \texttt{XLA\_\allowbreak{}FLAGS=-{}-xla\_\allowbreak{}disable\_\allowbreak{}hlo\_\allowbreak{}passes=custom-kernel-fusion-rewriter}.
+  \item \textbf{Samples:} the number of diffusion samples is not set on the command line.
+    The run produced 5 (log: ``Extracting 5 inference samples''; 5 rows in each
+    \texttt{ranking\_scores.csv}).
+  \item \textbf{Weights:} AF3 uses the real, trained AF3 weights, unlike AF2 in this study
+    (Section~\ref{sec:meth-random-weights}).
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\subsection{Why AlphaFold2 uses random weights}
+\label{sec:meth-random-weights}
+
+AF2 is run with \texttt{RunModel(cfg, params=None)}, so Haiku initializes the
+parameters randomly (\texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:157-158}; log line
+\texttt{model.py:120] Initialized parameters randomly}). The repository gives this
+rationale (\texttt{README.md:180-183}, and the docstring of the script embedded in
+\texttt{alphafold\_\allowbreak{}*\_\allowbreak{}benchmark.ipynb} cell 8):
+
+\begin{enumerate}
+  \item The study asks a systems question: where time goes during compilation and
+    execution on each backend. It does not ask about prediction quality.
+  \item Trained weights (about 350 MB per model) are not needed to answer it.
+    Random init exercises ``the exact same JIT-compiled graph shapes and
+    accelerator ops as a real forward pass''.
+  \item For the same reason the genetic MSA search is replaced by a single-sequence MSA.
+\end{enumerate}
+
+Consequences and limits:
+\begin{itemize}
+  \item \textbf{Outputs are meaningless.} AF2 structures and pLDDT from these runs must not
+    be interpreted biologically.
+  \item \textbf{Timing equivalence is asserted, not tested.} No run with trained AF2
+    weights exists in the repo \TODO{NOT IN REPO}. Graph shapes do not depend on
+    weight values, but value-dependent effects on runtime (for example numerical
+    special cases on CPU) were not checked.
+  \item \textbf{AF3 is not random-init.} AF2-vs-AF3 comparisons differ in weights as well as
+    in model.
+  \item \textbf{The ``real protein'' exhibit is not AF2.} It uses ESMFold with trained weights
+    on human ubiquitin, run locally on Apple Silicon (\texttt{mps})
+    (\texttt{notebooks/\allowbreak{}real\_\allowbreak{}protein\_\allowbreak{}fold\_\allowbreak{}visualization.ipynb}, cells 0, 4, 8). It is not
+    part of the benchmark.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\subsection{Timing methodology}
+\label{sec:meth-timing}
+
+\subsubsection{Single-query AF2 scripts (\texttt{spike\_tpu\_forward\_pass.py}, \texttt{spike\_meshshard\_forward\_pass.py})}
+\label{sec:meth-timing-single}
+
+All timers use host wall-clock \texttt{time.time()}. Each process measures three
+consecutive regions:
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.15\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.18\linewidth}>{\raggedright\arraybackslash}p{0.22\linewidth}}
+\toprule
+Region & What is timed & Synchronization & Source \\
+\midrule
+\texttt{init\_params} & \texttt{runner.init\_\allowbreak{}params(...)}: Haiku \texttt{init}, including its own JIT trace, compilation and execution & none explicit & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:160-164} \\
+1st \texttt{predict} (compile + run) & \texttt{runner.predict(...)}, \textbf{inside \texttt{jax.profiler.trace(...)}} in \texttt{spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py}, without a profiler in the GSPMD script & \texttt{jax.block\_\allowbreak{}until\_\allowbreak{}ready(result)} & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:173-179}; \texttt{src/\allowbreak{}spike\_\allowbreak{}meshshard\_\allowbreak{}forward\_\allowbreak{}pass.py:108-113} \\
+2nd \texttt{predict} (steady state) & the identical call again, no profiler & \texttt{jax.block\_\allowbreak{}until\_\allowbreak{}ready(result2)} & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:181-186} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}
+  \item \textbf{Warm-up:} exactly one call. The first \texttt{predict} serves as warm-up and also
+    carries compilation. The steady-state figure is \textbf{one} subsequent call.
+  \item \textbf{No averaging:} there are no additional warm-up iterations, no repeated
+    steady-state calls within a process, no averaging and no outlier rejection.
+  \item \textbf{Rounding in JSON:} 2 decimals for \texttt{init\_params} and first predict, 3 for
+    steady state (\texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:219-221}).
+  \item \textbf{\texttt{predict} includes host-side work.} AlphaFold2's \texttt{RunModel.predict} also
+    computes confidence metrics after \texttt{apply}. This comes from upstream
+    \texttt{alphafold/\allowbreak{}model/\allowbreak{}model.py}, which is not vendored here, so its commit is
+    \TODO{NOT IN REPO}. The logs are consistent with it: \texttt{model.py:170} logs at entry
+    and \texttt{model.py:183} at exit, before the timer stops.
+\end{itemize}
+
+\paragraph{Version caveat for the CPU/GPU baselines.} The script in \texttt{src/} has a single
+commit (\texttt{2755250}, which also added all results), so git cannot show which
+version produced which result.
+\begin{itemize}
+  \item \textbf{CPU/GPU:} the Colab notebooks embed an older, uncommitted version (cell 8,
+    byte-identical in both notebooks). Their logs cite line numbers and messages
+    that exist only in that version, e.g.\ \texttt{spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:146} and
+    ``Run tag: \ldots''. It hard-codes \texttt{model\_3}, recycle 0 and the toy sequence, but its
+    timing structure is the same as above: profiler around the first call,
+    \texttt{block\_until\_ready} on both calls, \texttt{time.time()}.
+  \item \textbf{TPU:} the baseline JSON (\texttt{results/\allowbreak{}result\_\allowbreak{}tpu-v5e-podslice.json}) has a field
+    set that matches \textbf{neither} surviving version. It lacks \texttt{host\_processor}, which
+    both versions write. The script version that produced it is \TODO{NOT IN REPO}.
+\end{itemize}
+
+\subsubsection{Confound: the profiler adds time to the first \texttt{predict}}
+\label{sec:meth-timing-profiler}
+
+The Colab logs make it possible to split the first-call time. The measured
+intervals are:
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.1\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
+\toprule
+Backend & Timed first predict & Inside \texttt{predict()} (entry log $\rightarrow$ exit log) & After \texttt{predict()} returns, still inside the timer & Same interval, 2nd call (no profiler) \\
+\midrule
+CPU & 271.98~s & 235.98~s & \textbf{36.00~s} (13\% of the timed value) & 0.0004~s \\
+GPU (T4) & 97.62~s & 55.57~s & \textbf{42.02~s} (43\% of the timed value) & 0.0003~s \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The only code between \texttt{predict()} returning and the timer stopping is
+\texttt{jax.block\_\allowbreak{}until\_\allowbreak{}ready} followed by exiting the \texttt{jax.profiler.trace} context. The
+same \texttt{block\_until\_ready} takes under 1 ms in the second call, so the extra
+36--42~s is attributable to finalizing the profiler trace. (Timestamps are from
+\texttt{alphafold\_\allowbreak{}cpu\_\allowbreak{}benchmark.ipynb} and \texttt{alphafold\_\allowbreak{}gpu\_\allowbreak{}benchmark.ipynb}, cell 10.)
+
+Implications:
+\begin{itemize}
+  \item \textbf{Scope.} First-call times (``compile + run'') from \texttt{spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py}
+    and \texttt{spike\_\allowbreak{}batch\_\allowbreak{}forward\_\allowbreak{}pass.py} include profiler overhead. On CPU/GPU they
+    are not pure compile + execute times. Steady-state times are unaffected.
+  \item \textbf{TPU magnitude unknown.} No TPU run log is in the repo \TODO{NOT IN REPO}.
+  \item \textbf{Non-comparable first calls across scripts.} The \texttt{pmap}, ensemble and GSPMD
+    scripts time their first call without a profiler. Their first-call numbers
+    (e.g.\ GSPMD 14.76 / 14.46~s, ensemble 16.61~s) are not comparable with the
+    $\sim$27--29~s first predicts from \texttt{spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py}.
+  \item \textbf{Alternative explanation for GSPMD.} \texttt{results/\allowbreak{}sweep/\allowbreak{}sharding.md} attributes
+    the shorter GSPMD first call to a warm XLA cache ``carried over from earlier in
+    the same pod's Python process lifetime''. But \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}sharding.yaml:36-44}
+    launches the \texttt{pmap} and GSPMD scripts as separate \texttt{python3} processes, without
+    \texttt{-{}-cache\_dir}. The missing profiler is a simpler explanation consistent with the
+    CPU/GPU logs, but it is \textbf{not verified on TPU}.
+  \item \textbf{Trace window.} The same effect may explain why the profiler's traced
+    \texttt{apply\_fn} span (16.56~s, \texttt{profiling/\allowbreak{}trace\_\allowbreak{}analysis.md}) is shorter than the
+    measured TPU first predict (27.78~s). This is also not verified.
+\end{itemize}
+
+\subsubsection{Multi-chip and batching scripts}
+\label{sec:meth-timing-multichip}
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.2\linewidth}>{\raggedright\arraybackslash}p{0.06\linewidth}>{\raggedright\arraybackslash}p{0.16\linewidth}>{\raggedright\arraybackslash}p{0.08\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.18\linewidth}}
+\toprule
+Script & 1st call timed & 2nd call timed & Profiler on 1st call & Derived metrics & Source \\
+\midrule
+\texttt{spike\_\allowbreak{}batch\_\allowbreak{}forward\_\allowbreak{}pass.py} (\texttt{vmap}) & yes & yes, \texttt{block\_until\_ready} & \textbf{yes} & throughput = $B / t_2$; per protein = $t_2 / B$ & \texttt{src/\allowbreak{}spike\_\allowbreak{}batch\_\allowbreak{}forward\_\allowbreak{}pass.py:119-136} \\
+\texttt{spike\_\allowbreak{}pmap\_\allowbreak{}forward\_\allowbreak{}pass.py} & yes & yes, \texttt{block\_until\_ready} & no & same definitions & \texttt{src/\allowbreak{}spike\_\allowbreak{}pmap\_\allowbreak{}forward\_\allowbreak{}pass.py:103-118} \\
+\texttt{spike\_\allowbreak{}ensemble\_\allowbreak{}shard\_\allowbreak{}forward\_\allowbreak{}pass.py} & yes & yes, \texttt{block\_until\_ready} & no & none (one query) & \texttt{src/\allowbreak{}spike\_\allowbreak{}ensemble\_\allowbreak{}shard\_\allowbreak{}forward\_\allowbreak{}pass.py:128-140} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Neither script times \texttt{init\_params} or the \texttt{vmap} batching setup. Steady state is
+again a single call, rounded to 4 decimals. In both \texttt{pmap} scripts the
+parameters are passed with \texttt{in\_axes=None} on every call. Whether their
+replication to the 8 devices is inside the timed region was not measured
+separately \TODO{NOT IN REPO}.
+
+\subsubsection{Memory}
+\label{sec:meth-timing-memory}
+
+Per-device \texttt{bytes\_in\_use} and \texttt{peak\_bytes\_in\_use} come from JAX's
+\texttt{device.memory\_\allowbreak{}stats()}, read once after the second call (e.g.\
+\texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:192-204}).
+\begin{itemize}
+  \item \textbf{Peak:} the process-lifetime peak, not the peak of the steady-state call.
+  \item \textbf{\texttt{tpu-info}:} the sweep Jobs also ran \texttt{tpu-info} every 3~s
+    (\texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}job\_\allowbreak{}sweep.yaml:34-44}). It reported all metrics as N/A; the
+    write-up gives the missing runtime metrics ports as the cause
+    (\texttt{results/\allowbreak{}sweep/\allowbreak{}README.md:76-92}). No duty-cycle data exists.
+\end{itemize}
+
+\subsubsection{AlphaFold3}
+\label{sec:meth-timing-af3}
+
+Two timers are recorded in \texttt{results/\allowbreak{}result\_\allowbreak{}af3\_\allowbreak{}*.json}:
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.12\linewidth}>{\raggedright\arraybackslash}p{0.16\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
+\toprule
+Timer & JSON field & How it is measured & What it includes \\
+\midrule
+\textbf{Process wall-clock} & \texttt{wall\_\allowbreak{}clock\_\allowbreak{}total\_\allowbreak{}seconds} & \texttt{time.time()} around \texttt{subprocess.run(["uv", "run", "python3", "run\_\allowbreak{}alphafold.py", ...])} (\texttt{af3\_*\_colab.ipynb} cell 14) & \texttt{uv} start-up, model construction, parameter loading, featurisation, JIT compilation, inference for all samples, sample extraction, output writing \\
+\textbf{Model inference} & \texttt{model\_\allowbreak{}inference\_\allowbreak{}seconds} & AF3's own log line ``Running model inference with seed 1 took \ldots{} seconds'', printed in cell 14 and parsed by cell 16 & JIT compilation and inference for all samples. Compilation cannot be separated: it is the only model call in the process and there is no warm-up \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}
+  \item \textbf{Per-sample figure:} \texttt{seconds\_per\_sample} = model inference $\div$ number of
+    samples, where the sample count (5) is also parsed from AF3's log (cell 16).
+  \item \textbf{Old per-sample figure:} wall-clock $\div$ 5 is kept as \texttt{wall\_\allowbreak{}clock\_\allowbreak{}seconds\_\allowbreak{}per\_\allowbreak{}sample}.
+    Until 2026-09-15 that wall-clock figure \emph{was} the published \texttt{seconds\_per\_sample},
+    next to \texttt{total\_\allowbreak{}inference\_\allowbreak{}seconds}, the old name of \texttt{wall\_\allowbreak{}clock\_\allowbreak{}total\_\allowbreak{}seconds}.
+  \item \textbf{Notebook state:}
+    \begin{itemize}
+      \item \textbf{Code:} cell 16 was rewritten on 2026-09-15 to produce the current schema and
+        was not re-executed.
+      \item \textbf{Saved outputs:} those of cells 16 and 18 still come from the original runs
+        (2026-08-12). They show the old schema, and their confidence fields are \texttt{null}
+        because the old code searched for \texttt{summary\_\allowbreak{}confidences.json} instead of AF3's
+        \texttt{\textless{}job\textgreater{}\_\allowbreak{}summary\_\allowbreak{}confidences.json}.
+      \item \textbf{Check:} the new log parsing was run against the saved cell 14 output and
+        reproduces every timing field in the committed JSON files.
+    \end{itemize}
+  \item \textbf{Warm-up and repeats:} none. There is no warm-up call and one run per backend.
+  \item \textbf{Validity guards:} cell 14 asserts exit code 0 and a wall-clock above 30~s;
+    cell 16 asserts that the three AF3 timing log lines are present.
+\end{itemize}
+
+Breakdown from AF3's log (cell 14 output). Every row except ``everything else'' is a
+field in \texttt{results/\allowbreak{}result\_\allowbreak{}af3\_\allowbreak{}*.json}:
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.18\linewidth}>{\raggedright\arraybackslash}p{0.18\linewidth}}
+\toprule
+ & Colab CPU & Colab GPU (T4) \\
+\midrule
+Process wall-clock (\texttt{wall\_\allowbreak{}clock\_\allowbreak{}total\_\allowbreak{}seconds}) & 2,453.99~s & 114.12~s \\
+Featurisation, 1 seed (\texttt{featurisation\_\allowbreak{}seconds}) & 12.92~s & 11.09~s \\
+Model inference, seed 1, 5 samples, incl.\ JIT compilation (\texttt{model\_\allowbreak{}inference\_\allowbreak{}seconds}) & 2,401.38~s & 86.21~s \\
+Sample extraction (\texttt{sample\_\allowbreak{}extraction\_\allowbreak{}seconds}) & 0.33~s & 0.18~s \\
+Everything else: start-up, model build, parameter load, output writing (derived here) & 39.36~s & 16.64~s \\
+Non-inference overhead, total / per sample (\texttt{non\_\allowbreak{}inference\_\allowbreak{}overhead\_\allowbreak{}*}) & 52.61~s / 10.52~s & 27.91~s / 5.58~s \\
+\textbf{\texttt{seconds\_per\_sample}} (model inference $\div$ 5) & \textbf{480.28~s} & \textbf{17.24~s} \\
+\texttt{wall\_\allowbreak{}clock\_\allowbreak{}seconds\_\allowbreak{}per\_\allowbreak{}sample} (published until 2026-09-15) & 490.80~s & 22.82~s \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}
+  \item \textbf{AF3 and AF2 timings are not comparable, and no AF3/AF2 ratio is reported.}
+    The nominal per-sample ratios (2.26$\times$ on CPU, 1.32$\times$ on GPU) exist only as
+    arithmetic. Three differences make them impossible to interpret:
+    \begin{itemize}
+      \item \textbf{Recycles:} the notebooks do not pass \texttt{-{}-num\_recycles}, so AF3 used its
+        default of 10, i.e.\ 11 trunk passes (\texttt{run\_\allowbreak{}alphafold.py:372-377},
+        \texttt{src/\allowbreak{}alphafold3/\allowbreak{}model/\allowbreak{}model.py:317-319}, AF3 commit \texttt{29596b970}). AF2 ran
+        \texttt{num\_recycle = 0}, one pass (Section~\ref{sec:meth-af2-config}). The flag has \texttt{lower\_bound=1}, so AF3 cannot
+        run at AF2's setting.
+      \item \textbf{Compilation:} included in AF3's single model call, excluded from AF2's warm
+        second call (Section~\ref{sec:meth-timing-single}).
+      \item \textbf{Samples:} one AF3 call produces 5 samples from one trunk run, so the $\div$ 5
+        per-sample figure charges each sample only a fifth of the trunk.
+      \item \textbf{The direction is not robust:} scaling AF2 to AF3's recycle count with the
+        measured recycle sweep (RD-03/06/09) already puts the per-sample ratios below 1.
+        They become 0.58$\times$ (CPU) and 0.34$\times$ (GPU) at the measured 3 recycles, and about
+        0.21$\times$ and 0.12$\times$ extrapolated to 10.
+      \item \textbf{See:} \texttt{paper/\allowbreak{}data/\allowbreak{}canonical\_\allowbreak{}results.md}, discrepancies 6 and 15.
+    \end{itemize}
+  \item \textbf{Still valid:} AF3's own GPU-over-CPU ratio, 27.9$\times$ (2,401.38~s / 86.21~s,
+    A3-10), because both sides use identical AF3 settings. It is not comparable with
+    AF2's 16.2$\times$ GPU-over-CPU speedup.
+  \item \textbf{Stanford CPU run:} only prose reports it (78.43 s/sample,
+    \texttt{results/\allowbreak{}sweep/\allowbreak{}af3\_\allowbreak{}comparison.md:176-177}); no log or config is in the repo
+    \TODO{NOT IN REPO}. The notebooks' guard message mentions an existing CPU result
+    of ``$\sim$392s'', which is consistent with 5 $\times$ 78.43~s.
+  \item \textbf{TPU attempt:} it stopped at flag validation after 5.588~s real time
+    (\texttt{results/\allowbreak{}sweep/\allowbreak{}af3\_\allowbreak{}tpu\_\allowbreak{}attempt.log:32-37}), so no inference was timed.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\subsection{Repetitions per experiment}
+\label{sec:meth-repetitions}
+
+``Processes'' is the number of independent \texttt{python3} launches per configuration
+point. Every process times exactly one steady-state call.
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.17\linewidth}>{\raggedright\arraybackslash}p{0.22\linewidth}>{\raggedright\arraybackslash}p{0.17\linewidth}>{\raggedright\arraybackslash}p{0.08\linewidth}>{\raggedright\arraybackslash}X}
+\toprule
+Experiment & Launcher & Script & Processes per point & Notes \\
+\midrule
+Backend baseline, CPU & \texttt{alphafold\_\allowbreak{}cpu\_\allowbreak{}benchmark.ipynb} & notebook-embedded version & 1 & \\
+Backend baseline, GPU & \texttt{alphafold\_\allowbreak{}gpu\_\allowbreak{}benchmark.ipynb} & notebook-embedded version & 1 & \\
+Backend baseline, TPU & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}job.yaml:37} & unknown version (Section~\ref{sec:meth-timing-single}) & 1 & \\
+Sequence length (60, 120, 250, 500) & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}job\_\allowbreak{}sweep.yaml:47-48} & \texttt{spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py} & 1 & \\
+Recycle depth (0, 1, 3) & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}job\_\allowbreak{}sweep.yaml:52-53} & same & 1 & Recycle 3 was also launched alone (\texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}recycle3\_\allowbreak{}only.yaml:40}). Which of the two runs produced the reported value is \TODO{NOT IN REPO}. \\
+Chip visibility (1, 8; 2 and 4 failed) & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}chipcount.yaml:39-43}, \texttt{af\_\allowbreak{}spike\_\allowbreak{}chips\_\allowbreak{}retry.yaml} & same & 1 & \\
+Precision (float32, bfloat16) & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}precision.yaml:32-35} & same & 1 & \\
+Model comparison (model\_3/4/5) & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}combined.yaml:35-38} & same & 1 & \\
+\textbf{Repeated runs} & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}combined.yaml:45-48} & same & \textbf{3} & The only experiment with repeats; all 3 ran sequentially in one pod \\
+Compilation cache & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}combined.yaml:57-64} & same & 1 cold + 1 warm & Same pod as the two rows above \\
+Profiler trace capture & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}trace\_\allowbreak{}capture.yaml:32-33} & same & 1 & Raw trace not in repo \\
+\texttt{vmap} batching (B = 1, 2, 4, 8) & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}batch.yaml:32-35} & \texttt{spike\_\allowbreak{}batch\_\allowbreak{}forward\_\allowbreak{}pass.py} & 1 & \\
+\texttt{pmap} multi-query (8 proteins) & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}sharding.yaml:36-37} & \texttt{spike\_\allowbreak{}pmap\_\allowbreak{}forward\_\allowbreak{}pass.py} & 1 & \\
+GSPMD auto-mesh & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}sharding.yaml:43-44} & \texttt{spike\_\allowbreak{}meshshard\_\allowbreak{}forward\_\allowbreak{}pass.py} & \textbf{2} & \texttt{sharding.json} has \texttt{run\_1} and \texttt{run\_2}, but the Job launches the script once. How the second run was launched is \TODO{NOT IN REPO}. \\
+\texttt{pmap} + \texttt{pmean} ensemble & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}ensemble\_\allowbreak{}shard.yaml:32-33} & \texttt{spike\_\allowbreak{}ensemble\_\allowbreak{}shard\_\allowbreak{}forward\_\allowbreak{}pass.py} & 1 & \\
+Scaling grid (4 $\times$ 4 points) & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}scaling\_\allowbreak{}grid.yaml:34-41} & \texttt{spike\_\allowbreak{}pmap\_\allowbreak{}forward\_\allowbreak{}pass.py} & 1 & 16 processes in total, one per point \\
+AF3, Colab CPU / Colab GPU & \texttt{af3\_*\_colab.ipynb} & \texttt{run\_alphafold.py} & 1 each & \\
+AF3, Stanford CPU & \TODO{NOT IN REPO} & \texttt{run\_alphafold.py} & 1 (per prose) & \\
+AF3, TPU & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}af3\_\allowbreak{}tpu.yaml} & \texttt{run\_alphafold.py} & 1 (failed) & \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+What this implies for the paper:
+\begin{itemize}
+  \item \textbf{Noise estimate.} The only one is from the 3 repeated TPU runs: CV 0.12\%
+    steady state, 0.82\% \texttt{init\_params}, 1.00\% first predict. It applies to the TPU
+    setup only; there is no noise estimate for the shared Colab CPU/GPU runtimes.
+  \item \textbf{n = 1.} Every other comparison, including the headline CPU/GPU/TPU
+    speedups, rests on a single process with a single steady-state call.
+  \item \textbf{Uncontrolled ordering.} Experiments sharing a Job run back to back in one
+    pod (e.g.\ model comparison $\rightarrow$ repeats $\rightarrow$ cache). Their order was not randomized,
+    and different Jobs may have run on different nodes \TODO{NOT IN REPO}.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\subsection{Data provenance}
+\label{sec:meth-provenance}
+
+\begin{itemize}
+  \item \textbf{Per-run JSONs.} The scripts write one \texttt{result\_\textless{}run\_id\textgreater{}.json} per process
+    (e.g.\ \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:227-229}). Apart from the three baseline
+    files and the two AF3 Colab files, those per-run JSONs are \TODO{NOT IN REPO}.
+  \item \textbf{Sweep files.} \texttt{results/sweep/*.json} use a different, aggregated schema.
+    The aggregation step (script or manual) is \TODO{NOT IN REPO}.
+  \item \textbf{Logs.} No TPU Job logs are in the repo \TODO{NOT IN REPO}. The only raw TPU
+    artifact is \texttt{results/\allowbreak{}sweep/\allowbreak{}af3\_\allowbreak{}tpu\_\allowbreak{}attempt.log}.
+  \item \textbf{Dates.} Git cannot date the runs. Most results first appear in commit
+    \texttt{2755250} (2026-08-08); the pieces added later are:
+    \begin{itemize}
+      \item \texttt{scaling\_\allowbreak{}law\_\allowbreak{}data.json} in \texttt{cccd446} (2026-08-08);
+      \item \texttt{ensemble\_shard.json} in \texttt{625c5dd} (2026-08-11);
+      \item \texttt{result\_\allowbreak{}af3\_\allowbreak{}cpu-colab.json} in \texttt{9c11e5b} (2026-08-12).
+    \end{itemize}
+    These are upper bounds on the TPU run dates. The Colab dates come from the
+    notebook logs.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\subsection{Information not found in the repository}
+\label{sec:meth-gaps}
+
+\begin{enumerate}
+  \item CPU model, vCPU count and RAM of the Colab CPU runtime (only prose).
+  \item Host CPU and RAM of the Colab GPU runtime.
+  \item TPU node: host CPU, vCPU, RAM, machine type, node identity; libtpu / TPU runtime version.
+  \item Hardware and launcher of the AF3 Stanford CPU run.
+  \item Resolved versions of all unpinned packages on TPU (\texttt{dm-haiku}, \texttt{numpy}, \texttt{absl-py}, \texttt{biopython}, \texttt{ml\_collections}, \texttt{tensorflow-cpu}, \texttt{uv}) and the Python patch version.
+  \item Resolved JAX / jaxlib / CUDA library versions, TensorFlow version and Python version for the AF2 Colab runs.
+  \item AlphaFold2 commit (all runs) and AlphaFold3 commit for the TPU attempt.
+  \item The script version that produced \texttt{results/\allowbreak{}result\_\allowbreak{}tpu-v5e-podslice.json}.
+  \item Raw per-run JSONs and Job logs for every TPU experiment, and how they were aggregated into \texttt{results/sweep/*.json}.
+  \item Which run supplied the recycle = 3 value (sweep Job or the recycle-3-only Job).
+  \item How the second GSPMD run was launched.
+  \item Size of the profiler overhead on TPU first-call timings.
+  \item Whether AF2 timings with trained weights match the random-init timings.
+  \item Run dates of all TPU experiments.
+  \item The raw profiler trace analysed in \texttt{profiling/\allowbreak{}trace\_\allowbreak{}analysis.md}.
+\end{enumerate}
