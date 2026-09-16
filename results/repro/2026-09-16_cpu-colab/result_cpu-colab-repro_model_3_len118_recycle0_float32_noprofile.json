@@ -1,0 +1,36 @@
+{
+  "run_tag": "cpu-colab-repro",
+  "run_id": "cpu-colab-repro_model_3_len118_recycle0_float32_noprofile",
+  "backend": "cpu",
+  "devices": [
+    "cpu:0"
+  ],
+  "num_devices": 1,
+  "host_processor": "x86_64",
+  "host_machine": "x86_64",
+  "num_residues": 118,
+  "num_recycle": 0,
+  "model_name": "model_3",
+  "precision": "float32",
+  "cache_dir": null,
+  "profile_first_predict": false,
+  "init_params_seconds": 59.87,
+  "first_predict_compile_and_run_seconds": 373.24,
+  "second_predict_steady_state_seconds": 349.386,
+  "num_steady_state_runs": 5,
+  "steady_state_runs_seconds": [
+    349.3856,
+    349.2577,
+    359.3287,
+    351.9388,
+    349.5428
+  ],
+  "steady_state_mean_seconds": 351.8907,
+  "steady_state_stdev_seconds": 4.3025,
+  "memory_stats_per_device": [],
+  "output_final_atom_positions_shape": [
+    118,
+    37,
+    3
+  ]
+}

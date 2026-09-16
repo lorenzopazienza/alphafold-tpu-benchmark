@@ -1,0 +1,67 @@
+2026-09-16 12:37:45.740680: E external/local_xla/xla/stream_executor/cuda/cuda_platform.cc:51] failed call to cuInit: INTERNAL: CUDA error: Failed call to cuInit: UNKNOWN ERROR (303)
+I0916 12:37:45.799718 134524266172544 xla_bridge.py:849] Unable to initialize backend 'tpu': INTERNAL: Failed to open libtpu.so: libtpu.so: cannot open shared object file: No such file or directory
+I0916 12:37:45.800860 134524266172544 spike_tpu_forward_pass.py:155] JAX backend: cpu
+I0916 12:37:45.801287 134524266172544 spike_tpu_forward_pass.py:156] JAX devices: [CpuDevice(id=0)]
+I0916 12:37:45.801688 134524266172544 spike_tpu_forward_pass.py:157] Run: cpu-colab-repro_model_3_len118_recycle0_float32_noprofile (num_residues=118, num_recycle=0)
+I0916 12:37:45.805868 134524266172544 spike_tpu_forward_pass.py:123] Building sequence features for a 118-residue sequence...
+I0916 12:37:45.806429 134524266172544 spike_tpu_forward_pass.py:170] Running TF feature-processing pipeline...
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1789562266.420062    3635 mlir_graph_optimization_pass.cc:437] MLIR V1 optimization pass is not enabled
+I0916 12:37:46.679775 134524266172544 spike_tpu_forward_pass.py:175] Constructing RunModel (no trained params -> random init)...
+I0916 12:37:46.680791 134524266172544 spike_tpu_forward_pass.py:178] Calling init_params (first JIT trace)...
+W0916 12:38:46.548655 134524266172544 model.py:120] Initialized parameters randomly
+I0916 12:38:46.548911 134524266172544 spike_tpu_forward_pass.py:182] init_params done in 59.9s
+I0916 12:38:46.549024 134524266172544 spike_tpu_forward_pass.py:194] First predict() call -- XLA COMPILE + run (profiler off)...
+I0916 12:38:46.549170 134524266172544 model.py:170] Running predict with shape(feat) = {'aatype': (1, 118), 'atom14_atom_exists': (1, 118, 14), 'atom37_atom_exists': (1, 118, 37), 'bert_mask': (1, 512, 118), 'extra_deletion_value': (1, 5120, 118), 'extra_has_deletion': (1, 5120, 118), 'extra_msa': (1, 5120, 118), 'extra_msa_mask': (1, 5120, 118), 'extra_msa_row_mask': (1, 5120), 'msa_feat': (1, 512, 118, 49), 'msa_mask': (1, 512, 118), 'msa_row_mask': (1, 512), 'random_crop_to_size_seed': (1, 2), 'residue_index': (1, 118), 'residx_atom14_to_atom37': (1, 118, 14), 'residx_atom37_to_atom14': (1, 118, 37), 'seq_length': (1,), 'seq_mask': (1, 118), 'target_feat': (1, 118, 22), 'true_msa': (1, 512, 118)}
+I0916 12:44:59.790925 134524266172544 model.py:183] Output shape was {'distogram': {'bin_edges': (63,), 'logits': (118, 118, 64)}, 'experimentally_resolved': {'logits': (118, 37)}, 'masked_msa': {'logits': (512, 118, 23)}, 'plddt': (118,), 'predicted_lddt': {'logits': (118, 50)}, 'ranking_confidence': (), 'structure_module': {'final_atom_mask': (118, 37), 'final_atom_positions': (118, 37, 3)}}
+I0916 12:44:59.793949 134524266172544 spike_tpu_forward_pass.py:201] First predict() done in 373.2s (compile + execute)
+I0916 12:44:59.794116 134524266172544 spike_tpu_forward_pass.py:208] Steady-state predict() call 1/5 (already compiled)...
+I0916 12:44:59.794267 134524266172544 model.py:170] Running predict with shape(feat) = {'aatype': (1, 118), 'atom14_atom_exists': (1, 118, 14), 'atom37_atom_exists': (1, 118, 37), 'bert_mask': (1, 512, 118), 'extra_deletion_value': (1, 5120, 118), 'extra_has_deletion': (1, 5120, 118), 'extra_msa': (1, 5120, 118), 'extra_msa_mask': (1, 5120, 118), 'extra_msa_row_mask': (1, 5120), 'msa_feat': (1, 512, 118, 49), 'msa_mask': (1, 512, 118), 'msa_row_mask': (1, 512), 'random_crop_to_size_seed': (1, 2), 'residue_index': (1, 118), 'residx_atom14_to_atom37': (1, 118, 14), 'residx_atom37_to_atom14': (1, 118, 37), 'seq_length': (1,), 'seq_mask': (1, 118), 'target_feat': (1, 118, 22), 'true_msa': (1, 512, 118)}
+I0916 12:50:49.179150 134524266172544 model.py:183] Output shape was {'distogram': {'bin_edges': (63,), 'logits': (118, 118, 64)}, 'experimentally_resolved': {'logits': (118, 37)}, 'masked_msa': {'logits': (512, 118, 23)}, 'plddt': (118,), 'predicted_lddt': {'logits': (118, 50)}, 'ranking_confidence': (), 'structure_module': {'final_atom_mask': (118, 37), 'final_atom_positions': (118, 37, 3)}}
+I0916 12:50:49.179795 134524266172544 spike_tpu_forward_pass.py:214] Steady-state predict() 1/5 done in 349.39s
+I0916 12:50:49.179961 134524266172544 spike_tpu_forward_pass.py:208] Steady-state predict() call 2/5 (already compiled)...
+I0916 12:50:49.180131 134524266172544 model.py:170] Running predict with shape(feat) = {'aatype': (1, 118), 'atom14_atom_exists': (1, 118, 14), 'atom37_atom_exists': (1, 118, 37), 'bert_mask': (1, 512, 118), 'extra_deletion_value': (1, 5120, 118), 'extra_has_deletion': (1, 5120, 118), 'extra_msa': (1, 5120, 118), 'extra_msa_mask': (1, 5120, 118), 'extra_msa_row_mask': (1, 5120), 'msa_feat': (1, 512, 118, 49), 'msa_mask': (1, 512, 118), 'msa_row_mask': (1, 512), 'random_crop_to_size_seed': (1, 2), 'residue_index': (1, 118), 'residx_atom14_to_atom37': (1, 118, 14), 'residx_atom37_to_atom14': (1, 118, 37), 'seq_length': (1,), 'seq_mask': (1, 118), 'target_feat': (1, 118, 22), 'true_msa': (1, 512, 118)}
+I0916 12:56:38.437031 134524266172544 model.py:183] Output shape was {'distogram': {'bin_edges': (63,), 'logits': (118, 118, 64)}, 'experimentally_resolved': {'logits': (118, 37)}, 'masked_msa': {'logits': (512, 118, 23)}, 'plddt': (118,), 'predicted_lddt': {'logits': (118, 50)}, 'ranking_confidence': (), 'structure_module': {'final_atom_mask': (118, 37), 'final_atom_positions': (118, 37, 3)}}
+I0916 12:56:38.437771 134524266172544 spike_tpu_forward_pass.py:214] Steady-state predict() 2/5 done in 349.26s
+I0916 12:56:38.437927 134524266172544 spike_tpu_forward_pass.py:208] Steady-state predict() call 3/5 (already compiled)...
+I0916 12:56:38.438226 134524266172544 model.py:170] Running predict with shape(feat) = {'aatype': (1, 118), 'atom14_atom_exists': (1, 118, 14), 'atom37_atom_exists': (1, 118, 37), 'bert_mask': (1, 512, 118), 'extra_deletion_value': (1, 5120, 118), 'extra_has_deletion': (1, 5120, 118), 'extra_msa': (1, 5120, 118), 'extra_msa_mask': (1, 5120, 118), 'extra_msa_row_mask': (1, 5120), 'msa_feat': (1, 512, 118, 49), 'msa_mask': (1, 512, 118), 'msa_row_mask': (1, 512), 'random_crop_to_size_seed': (1, 2), 'residue_index': (1, 118), 'residx_atom14_to_atom37': (1, 118, 14), 'residx_atom37_to_atom14': (1, 118, 37), 'seq_length': (1,), 'seq_mask': (1, 118), 'target_feat': (1, 118, 22), 'true_msa': (1, 512, 118)}
+I0916 13:02:37.765298 134524266172544 model.py:183] Output shape was {'distogram': {'bin_edges': (63,), 'logits': (118, 118, 64)}, 'experimentally_resolved': {'logits': (118, 37)}, 'masked_msa': {'logits': (512, 118, 23)}, 'plddt': (118,), 'predicted_lddt': {'logits': (118, 50)}, 'ranking_confidence': (), 'structure_module': {'final_atom_mask': (118, 37), 'final_atom_positions': (118, 37, 3)}}
+I0916 13:02:37.766794 134524266172544 spike_tpu_forward_pass.py:214] Steady-state predict() 3/5 done in 359.33s
+I0916 13:02:37.766964 134524266172544 spike_tpu_forward_pass.py:208] Steady-state predict() call 4/5 (already compiled)...
+I0916 13:02:37.767169 134524266172544 model.py:170] Running predict with shape(feat) = {'aatype': (1, 118), 'atom14_atom_exists': (1, 118, 14), 'atom37_atom_exists': (1, 118, 37), 'bert_mask': (1, 512, 118), 'extra_deletion_value': (1, 5120, 118), 'extra_has_deletion': (1, 5120, 118), 'extra_msa': (1, 5120, 118), 'extra_msa_mask': (1, 5120, 118), 'extra_msa_row_mask': (1, 5120), 'msa_feat': (1, 512, 118, 49), 'msa_mask': (1, 512, 118), 'msa_row_mask': (1, 512), 'random_crop_to_size_seed': (1, 2), 'residue_index': (1, 118), 'residx_atom14_to_atom37': (1, 118, 14), 'residx_atom37_to_atom14': (1, 118, 37), 'seq_length': (1,), 'seq_mask': (1, 118), 'target_feat': (1, 118, 22), 'true_msa': (1, 512, 118)}
+I0916 13:08:29.705236 134524266172544 model.py:183] Output shape was {'distogram': {'bin_edges': (63,), 'logits': (118, 118, 64)}, 'experimentally_resolved': {'logits': (118, 37)}, 'masked_msa': {'logits': (512, 118, 23)}, 'plddt': (118,), 'predicted_lddt': {'logits': (118, 50)}, 'ranking_confidence': (), 'structure_module': {'final_atom_mask': (118, 37), 'final_atom_positions': (118, 37, 3)}}
+I0916 13:08:29.705919 134524266172544 spike_tpu_forward_pass.py:214] Steady-state predict() 4/5 done in 351.94s
+I0916 13:08:29.706066 134524266172544 spike_tpu_forward_pass.py:208] Steady-state predict() call 5/5 (already compiled)...
+I0916 13:08:29.706289 134524266172544 model.py:170] Running predict with shape(feat) = {'aatype': (1, 118), 'atom14_atom_exists': (1, 118, 14), 'atom37_atom_exists': (1, 118, 37), 'bert_mask': (1, 512, 118), 'extra_deletion_value': (1, 5120, 118), 'extra_has_deletion': (1, 5120, 118), 'extra_msa': (1, 5120, 118), 'extra_msa_mask': (1, 5120, 118), 'extra_msa_row_mask': (1, 5120), 'msa_feat': (1, 512, 118, 49), 'msa_mask': (1, 512, 118), 'msa_row_mask': (1, 512), 'random_crop_to_size_seed': (1, 2), 'residue_index': (1, 118), 'residx_atom14_to_atom37': (1, 118, 14), 'residx_atom37_to_atom14': (1, 118, 37), 'seq_length': (1,), 'seq_mask': (1, 118), 'target_feat': (1, 118, 22), 'true_msa': (1, 512, 118)}
+I0916 13:14:19.248273 134524266172544 model.py:183] Output shape was {'distogram': {'bin_edges': (63,), 'logits': (118, 118, 64)}, 'experimentally_resolved': {'logits': (118, 37)}, 'masked_msa': {'logits': (512, 118, 23)}, 'plddt': (118,), 'predicted_lddt': {'logits': (118, 50)}, 'ranking_confidence': (), 'structure_module': {'final_atom_mask': (118, 37), 'final_atom_positions': (118, 37, 3)}}
+I0916 13:14:19.248941 134524266172544 spike_tpu_forward_pass.py:214] Steady-state predict() 5/5 done in 349.54s
+
+============================================================
+SPIKE RESULT
+============================================================
+  run_tag                               : cpu-colab-repro
+  run_id                                : cpu-colab-repro_model_3_len118_recycle0_float32_noprofile
+  backend                               : cpu
+  devices                               : ['cpu:0']
+  num_devices                           : 1
+  host_processor                        : x86_64
+  host_machine                          : x86_64
+  num_residues                          : 118
+  num_recycle                           : 0
+  model_name                            : model_3
+  precision                             : float32
+  cache_dir                             : None
+  profile_first_predict                 : False
+  init_params_seconds                   : 59.87
+  first_predict_compile_and_run_seconds : 373.24
+  second_predict_steady_state_seconds   : 349.386
+  num_steady_state_runs                 : 5
+  steady_state_runs_seconds             : [349.3856, 349.2577, 359.3287, 351.9388, 349.5428]
+  steady_state_mean_seconds             : 351.8907
+  steady_state_stdev_seconds            : 4.3025
+  output_final_atom_positions_shape     : [118, 37, 3]
+  results JSON                          : /content/bench/results/repro/2026-09-16_cpu-colab/result_cpu-colab-repro_model_3_len118_recycle0_float32_noprofile.json
+  profiler trace                        : (disabled)
+------------------------------------------------------------
+  Per-device HBM memory:
+============================================================
