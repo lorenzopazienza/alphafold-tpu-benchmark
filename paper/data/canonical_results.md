@@ -582,7 +582,7 @@ those files: CPU model, cores and commit from `environment.json`, timings from
 |---|---|---|---|---|---|---|---|---|---|---|
 | 1 (original) | 2026-08-08 ¹ | | | Intel Xeon ² | 2 vCPU ² | none ³ | 41.99 (B-01) | 271.98 (B-02) ⁴ | 212.113 (B-03), no std | 1 |
 | 2 (2026-09-15) | 2026-09-15 ⁵ | 18:04–18:40 ⁶ | ⁷ | Intel(R) Xeon(R) CPU @ 2.20GHz ⁵ | 2 logical (1 core × 2 threads) ⁵ | `86fca03` ⁵ | 59.02 ⁸ | 385.48 ⁸ | 348.861 ± 4.6903 ⁸ | 5 ⁸ |
-| 3 (B3 rerun 1) | | | | | | | | | | |
+| 3 (B3 rerun 1) | 2026-09-16 ⁹ | 12:37–13:14 ¹⁰ | ¹¹ | Intel(R) Xeon(R) CPU @ 2.20GHz ⁹ | 2 logical (1 core × 2 threads) ⁹ | `9e1a07e` ⁹ | 59.87 ¹² | 373.24 ¹² | 351.8907 ± 4.3025 ¹² | 5 ¹² |
 | 4 (B3 rerun 2) | | | | | | | | | | |
 
 1. The date of commit `2755250`, which added the results (discrepancy 12). The run date and time are not recorded.
@@ -593,6 +593,10 @@ those files: CPU model, cores and commit from `environment.json`, timings from
 6. First and last log lines of `log_cpu-colab-repro_noprofile.txt` (`I0915 18:04:00.904643` → `I0915 18:40:30.876429`), i.e. the timed profiler-off run. The log timestamps carry no timezone. They are read as UTC because the last line of `log_cpu-colab-repro_profile.txt` (18:54:33) falls 5 s before `recorded_at_utc` (18:54:38 UTC); this is an inference, not a recorded value.
 7. Not recorded. Searched `environment_cpu-colab-repro.json`, both logs, `pip_freeze_cpu-colab-repro.txt`, both result JSONs and `alphafold_cpu_benchmark.executed.ipynb` (including its `metadata`) for "tier", "Colab Pro", "compute unit", "High-RAM", "machine_shape". The only match is the notebook's own title, "(free Colab)", which describes the intended runtime, not the one used.
 8. `results/repro/2026-09-15_cpu-colab/result_cpu-colab-repro_model_3_len118_recycle0_float32_noprofile.json` → `init_params_seconds`, `first_predict_compile_and_run_seconds`, `steady_state_mean_seconds`, `steady_state_stdev_seconds`, `num_steady_state_runs`; `profile_first_predict` is `false`. The profiler-on run in the same folder (`result_cpu-colab-repro_model_3_len118_recycle0_float32.json`) is not used.
+9. `results/repro/2026-09-16_cpu-colab/environment.json`, written by the notebook's step 4b right after the clone: `recorded_at_utc` (2026-09-16T12:37:30+00:00), `cpu_model`, `logical_cpus` (2), `sockets` (1), `cores_per_socket` (1), `threads_per_core` (2), `git_rev_parse_head` (`9e1a07e453df4d77af15ee695c2cadc1cca73f07`, equal to `repo_ref`, as the step 4b assert requires).
+10. First and last log lines of `log_cpu-colab-repro_noprofile.txt` (`I0916 12:37:45.799718` → `I0916 13:14:19.248941`), i.e. the timed profiler-off run. The log timestamps carry no timezone. They are read as UTC because the first line falls 15 s after `environment.json → recorded_at_utc` (12:37:30 UTC), and the last line of `log_cpu-colab-repro_profile.txt` (13:28:22) falls 3 s before `environment_cpu-colab-repro.json → recorded_at_utc` (13:28:25 UTC); this is an inference, not a recorded value.
+11. Not recorded. Searched `environment.json`, `environment_cpu-colab-repro.json`, both logs, `pip_freeze.txt`, `pip_freeze_cpu-colab-repro.txt`, both result JSONs and `2026-09-16_alphafold_cpu_benchmark.ipynb` (including its `metadata`) for "tier", "Colab Pro", "compute unit", "High-RAM", "machine_shape". The only match is the notebook's own title, "(free Colab)", which describes the intended runtime, not the one used.
+12. `results/repro/2026-09-16_cpu-colab/result_cpu-colab-repro_model_3_len118_recycle0_float32_noprofile.json` → `init_params_seconds`, `first_predict_compile_and_run_seconds`, `steady_state_mean_seconds`, `steady_state_stdev_seconds`, `num_steady_state_runs`; `profile_first_predict` is `false`. The profiler-on run in the same folder (`result_cpu-colab-repro_model_3_len118_recycle0_float32.json`) is not used.
 
 ## GPU session variability (Colab)
 
