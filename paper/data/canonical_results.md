@@ -534,3 +534,28 @@ The repo's other copies of these ratios (`README.md`, `website/index.html`,
 `website/src/data/experiments.js`, `results/comparison.md`,
 `results/sweep/af3_comparison.md`) were grepped. All of them use the directions
 above; none has the GPU-over-CPU and TPU-over-GPU ratios swapped.
+
+## B3 — CPU session variability (Colab)
+
+Workload as in the master table (`model_3`, 118 residues, `num_recycle=0`, float32).
+Rows 3 and 4 are the two B3 reruns, on different days, from
+`notebooks/alphafold_cpu_benchmark.ipynb` with `REPO_REF` set to a commit hash. Each
+run's files go in `results/repro/<YYYY-MM-DD>_cpu-colab/`. Fill the rows only from
+those files: CPU model, cores and commit from `environment.json`, timings from
+`result_cpu-colab-repro_model_3_len118_recycle0_float32_noprofile.json`.
+
+| Run | Date | Time (UTC) | Colab tier | CPU model | Cores | Commit | init_params (s) | First predict (s) | Steady state mean ± std (s) | n repeats |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 (original) | 2026-08-08 ¹ | | | Intel Xeon ² | 2 vCPU ² | none ³ | 41.99 (B-01) | 271.98 (B-02) ⁴ | 212.113 (B-03), no std | 1 |
+| 2 (2026-09-15) | 2026-09-15 ⁵ | 18:04–18:40 ⁶ | ⁷ | Intel(R) Xeon(R) CPU @ 2.20GHz ⁵ | 2 logical (1 core × 2 threads) ⁵ | `86fca03` ⁵ | 59.02 ⁸ | 385.48 ⁸ | 348.861 ± 4.6903 ⁸ | 5 ⁸ |
+| 3 (B3 rerun 1) | | | | | | | | | | |
+| 4 (B3 rerun 2) | | | | | | | | | | |
+
+1. The date of commit `2755250`, which added the results (discrepancy 12). The run date and time are not recorded.
+2. HW-01, status R (`results/comparison.md:9,17-18`). The result JSON records only `host_processor: x86_64`.
+3. The run used a copy of the script embedded in the notebook, not a committed script (discrepancy 12).
+4. Includes `jax.profiler.trace` finalisation inside the timer, 36.00 s by the log (discrepancy 11). Not comparable with profiler-off first predicts.
+5. `results/repro/2026-09-15_cpu-colab/environment_cpu-colab-repro.json`: `recorded_at_utc` (2026-09-15T18:54:38+00:00, written at step 7), `hardware.cpu_model`, `hardware.logical_cpus` (2), `hardware.lscpu` (`Socket(s): 1`, `Core(s) per socket: 1`, `Thread(s) per core: 2`), `repo_commit` (`86fca03bb0c9dde7f93b2c1e54a407d6dad6054e`). This run predates the notebook's `environment.json` / `pip_freeze.txt` cell, so those two files do not exist here.
+6. First and last log lines of `log_cpu-colab-repro_noprofile.txt` (`I0915 18:04:00.904643` → `I0915 18:40:30.876429`), i.e. the timed profiler-off run. The log timestamps carry no timezone. They are read as UTC because the last line of `log_cpu-colab-repro_profile.txt` (18:54:33) falls 5 s before `recorded_at_utc` (18:54:38 UTC); this is an inference, not a recorded value.
+7. Not recorded. Searched `environment_cpu-colab-repro.json`, both logs, `pip_freeze_cpu-colab-repro.txt`, both result JSONs and `alphafold_cpu_benchmark.executed.ipynb` (including its `metadata`) for "tier", "Colab Pro", "compute unit", "High-RAM", "machine_shape". The only match is the notebook's own title, "(free Colab)", which describes the intended runtime, not the one used.
+8. `results/repro/2026-09-15_cpu-colab/result_cpu-colab-repro_model_3_len118_recycle0_float32_noprofile.json` → `init_params_seconds`, `first_predict_compile_and_run_seconds`, `steady_state_mean_seconds`, `steady_state_stdev_seconds`, `num_steady_state_runs`; `profile_first_predict` is `false`. The profiler-on run in the same folder (`result_cpu-colab-repro_model_3_len118_recycle0_float32.json`) is not used.
