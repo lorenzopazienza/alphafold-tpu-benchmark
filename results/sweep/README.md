@@ -112,9 +112,11 @@ finding than a flat "bfloat16 is faster" claim.
 
 ## 5. Multi-query batching experiment (jax.vmap)
 
-See `batching.md` for the full writeup. Short version: batching made
-per-protein throughput *worse*, not better, confirmed by memory data
-showing only one of the 8 chips is ever used, regardless of batch size.
+See `batching.md` for the full writeup. Short version: throughput never
+exceeds the batch=1 baseline (0.94x, 0.73x and 0.74x at B = 2, 4, 8), and
+the memory data shows only one of the 8 chips in use at every batch size
+(the sweep JSON stores only TPU_0's HBM; the other chips' values come from
+run output not kept in the repo).
 `vmap` vectorizes within a chip; it doesn't distribute across chips. Real
 multi-chip speedup would need explicit sharding (`pmap`/`pjit`), a clear
 scoped-out next step.
@@ -145,21 +147,23 @@ achieves genuine multi-chip data parallelism: **6.92x throughput speedup**
 footprints. A separate attempt at GSPMD auto-sharding (splitting one
 protein's own computation across chips, using the same mesh pattern the
 course's own Lab 2 Tunix script uses) did **not** achieve real sharding:
-reproduced twice, every chip held an identical full-size 463MB copy
-(replication, not a split), confirmed via honest, reproduced measurement
+reproduced twice, the run recorded 463MB per chip, the same as the single-chip
+footprint (replication, not a split; the per-device list was not saved), a reproduced measurement
 rather than trusting the naive "nonzero memory" heuristic. See
 `sharding.md`.
 
 ## 10. Real single-query sharding: ensemble averaging via pmap + pmean
 
-Direct follow-up to the auto-mesh failure above, found the exact
-source-level reason it failed (AlphaFold's own ensembling is a sequential
-`hk.while_loop`, nothing for GSPMD to distribute), then built a version
-that actually works: AlphaFold's source is completely untouched, but the
+Direct follow-up to the auto-mesh failure above, which replicated because
+AlphaFold's Haiku modules carry no sharding annotations (`sharding.md`).
+AlphaFold's own ensembling is a sequential `hk.while_loop`, so sharding cannot
+split it across chips either; this experiment works around that instead
+(the auto-mesh run used `num_ensemble = 1`, so ensembling was not its cause):
+AlphaFold's source is completely untouched, but the
 ensemble average is re-implemented via `jax.pmap` + a real `jax.lax.pmean`
 collective reduction across chips. **8/8 chips used, verified-correct
 cross-device reduction, distinct per-chip memory** (427-624MB, not the
-flat 463MB-everywhere signature that gave away replication before).
+single 463MB-per-chip, single-chip-sized figure that indicated replication before).
 Honestly scoped: this is real distributed computation for one query's
 ensembling, not full internal tensor sharding of the Evoformer, that
 remains future work. See `ensemble_shard.md`.
@@ -181,10 +185,10 @@ got **AlphaFold3** - a separate, newer, diffusion-based DeepMind codebase,
 not a version of AlphaFold2 - running on the same 118-residue toy
 sequence across all three backends this project tests AF2 on: **Google Colab Intel Xeon CPU (2 vCPU), Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips)**. CPU and GPU produced full,
 real, measured results. TPU did not - not an infrastructure failure on
-our side, but a confirmed finding that **AlphaFold3's public release does
-not support TPU inference at all** (`--jax_backend`'s valid values are
-`cpu`/`gpu`/`mps` only, verified both by a real attempt on the Stanford GKE TPU v5e-8 (2×4 lite)
-slice and by AlphaFold3's own official docs, which require an NVIDIA
+our side: **`run_alphafold.py` in the main-branch tarball we tested (commit
+not recorded) rejects `--jax_backend=tpu`**; accepted values are `cpu`, `gpu`
+and `mps` (seen in a real attempt on the Stanford GKE TPU v5e-8 (2×4 lite)
+slice; AlphaFold3's official docs, not tested further, list an NVIDIA
 GPU or CPU).
 
 `af3_comparison.md` is the full write-up: an architecture/characteristics
@@ -199,5 +203,5 @@ hardware/backend combinations (near-identical across machines on the same
 backend; substantially different across backends - CPU vs. GPU differs
 by up to 32% per sample, plausibly explained by a numerical issue
 AlphaFold3's own issue tracker documents for GPUs below compute
-capability 8.0), and the full TPU-unsupported finding with log evidence.
+capability 8.0), and the TPU flag-rejection result with log evidence.
 

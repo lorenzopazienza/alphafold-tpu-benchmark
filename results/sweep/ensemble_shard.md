@@ -5,8 +5,8 @@
 `sharding.md` showed that neither `jax.vmap` nor GSPMD auto-mesh sharding
 achieve real distributed computation for a *single* AlphaFold query, both
 either stayed on one chip (`vmap`) or silently replicated the full
-computation on every chip instead of splitting it (auto-mesh, confirmed
-via identical per-chip memory). This experiment investigates why, and
+computation on every chip instead of splitting it (auto-mesh: 463 MB per chip, the single-chip footprint;
+the run stores one per-chip figure, not the per-device list). This experiment investigates why, and
 builds a version that actually works.
 
 ## Why the earlier attempts failed
@@ -17,9 +17,9 @@ protein) is implemented internally as a **sequential** `hk.while_loop`
 (`modules.py`, `AlphaFoldIteration`): each ensemble member's Evoformer
 pass runs one after another, accumulating a running sum. A sequential
 loop with a carried accumulator has nothing independent for XLA's
-auto-partitioner to distribute across chips, this is the concrete,
-source-level reason GSPMD auto-mesh sharding defaulted to full
-replication rather than splitting anything.
+auto-partitioner to distribute, so AlphaFold's own ensembling cannot be split across chips by sharding; this motivates the pmap + pmean workaround below.
+It is not the cause of the GSPMD replication in `sharding.md`: that run used `num_ensemble = 1` (`src/spike_meshshard_forward_pass.py:92`)
+and replicated because AlphaFold's Haiku modules carry no sharding annotations (`sharding.md:70-73`).
 
 ## What this experiment does instead
 
@@ -59,8 +59,8 @@ the human-readable conversion for after the pmapped call returns.
 | Cross-device `pmean` verified consistent | **True** |
 
 Per-chip memory (confirms genuine per-chip work, not replication, compare
-to the identical 463MB-on-every-chip signature from the failed auto-mesh
-attempt):
+to the failed auto-mesh attempt, which recorded 463 MB per chip, the
+single-chip footprint that signals replication):
 
 | Chip | In use | Peak |
 |---|---|---|

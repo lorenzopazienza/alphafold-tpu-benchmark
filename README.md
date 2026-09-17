@@ -14,7 +14,7 @@
 
 **The problem.** Biology often needs a protein’s 3D shape; that structure drives function, disease, and drug discovery. Google DeepMind’s [AlphaFold 2](https://github.com/google-deepmind/alphafold) made high-accuracy prediction practical with a large JAX/Haiku network (attention-heavy Evoformer). Running that inference at useful scale is expensive and opaque across hardware: cold XLA compiles, underused multi-chip TPU pods, and unclear CPU vs GPU vs TPU cost/latency trade-offs.
 
-**What we did.** We treated AlphaFold 2’s real forward pass as the system under test - **same model, same script, same input shape** on Google Colab Intel Xeon CPU (2 vCPU), Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips) - then measured, profiled, and mitigated the bottlenecks. Systems question: **where does this workload spend time, and how does that change per backend?** As a follow-up (see [AlphaFold3 side-investigation](#alphafold3-side-investigation) below), we also brought up [AlphaFold 3](https://github.com/google-deepmind/alphafold3) - DeepMind's separate, newer, diffusion-based codebase, not a version of AlphaFold 2 - on the same CPU/GPU backends, with real measured performance and reproducibility results, plus a confirmed finding that AlphaFold 3's public release does not support TPU inference at all. Orchestration, telemetry, and comparisons in this repo are ours; the models themselves are DeepMind’s.
+**What we did.** We treated AlphaFold 2’s real forward pass as the system under test - **same model, same script, same input shape** on Google Colab Intel Xeon CPU (2 vCPU), Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips) - then measured, profiled, and mitigated the bottlenecks. Systems question: **where does this workload spend time, and how does that change per backend?** As a follow-up (see [AlphaFold3 side-investigation](#alphafold3-side-investigation) below), we also brought up [AlphaFold 3](https://github.com/google-deepmind/alphafold3) - DeepMind's separate, newer, diffusion-based codebase, not a version of AlphaFold 2 - on the same CPU/GPU backends, with real measured performance and reproducibility results, plus a TPU result: `run_alphafold.py` in the main-branch tarball we tested (commit not recorded) rejects `--jax_backend=tpu` (accepted values: `cpu`, `gpu`, `mps`). Orchestration, telemetry, and comparisons in this repo are ours; the models themselves are DeepMind’s.
 
 | Tooling matrix (course requirement: ≥3 stack elements) | Choice |
 |---|---|
@@ -44,7 +44,7 @@ alphafold-tpu-benchmark/
 │   ├── af_spike_scaling_grid.yaml     # Chips × length grid
 │   ├── af_spike_sharding.yaml         # pmap / shard experiments
 │   ├── af_spike_trace_capture.yaml    # Profiler trace export window
-│   └── af_spike_af3_tpu.yaml          # AlphaFold3 TPU attempt -- confirmed unsupported, kept as documentation
+│   └── af_spike_af3_tpu.yaml          # AlphaFold3 TPU attempt -- --jax_backend=tpu rejected (tested commit not recorded), kept as documentation
 ├── Dockerfile                 # Multi-backend image (JAX_VARIANT=cpu|cuda12|tpu)
 ├── figures/                   # Charts + structure stills for README / site
 │   ├── batching_chart.png
@@ -76,7 +76,7 @@ alphafold-tpu-benchmark/
 │   │   ├── ensemble_shard.md · precision.md · README.md
 │   │   ├── scaling_law.md · sharding.md · *.json
 │   │   ├── af3_comparison.md          # AlphaFold2 vs AlphaFold3: full comparison, all 3 backends
-│   │   ├── af3_tpu_attempt.log        # TPU attempt log -- confirmed unsupported by AF3's public CLI
+│   │   ├── af3_tpu_attempt.log        # TPU attempt log -- run_alphafold.py rejected --jax_backend=tpu (tested commit not recorded)
 │   │   ├── af3_toy_test_summary_confidences.json · af3_toy_test_ranking_scores.csv        # Stanford CPU
 │   │   ├── af3_toy_test_cpu-colab_summary_confidences.json · af3_toy_test_cpu-colab_ranking_scores.csv  # Google Colab Intel Xeon CPU (2 vCPU)
 │   │   ├── af3_toy_test_gpu-t4_summary_confidences.json · af3_toy_test_gpu-t4_ranking_scores.csv        # Google Colab NVIDIA Tesla T4
@@ -212,10 +212,10 @@ Twelve further experiments on the Stanford GKE TPU v5e-8 (2×4 lite) slice (`res
 | Recycle depth 0 → 3 | Steady-state **~0.46s per extra recycle** (linear); compile jumps once then flat |
 | Chip visibility 1 vs 8 | **No** single-query speedup - default path uses 1 chip |
 | Precision float32 → bfloat16 | Steady-state HBM **−40%**; wall-clock ≈ unchanged at this size |
-| `jax.vmap` batch 1/2/4/8 | Throughput **worse** as batch grew (single-chip only) |
+| `jax.vmap` batch 1/2/4/8 | Throughput never exceeds batch=1: **0.94× / 0.73× / 0.74×** at B = 2 / 4 / 8 (single-chip only) |
 | Compilation cache (warm restart) | **6.8×** faster `init_params`, **1.9×** faster first predict |
 | `jax.pmap` 8 proteins / 8 chips | **6.92×** throughput (2.13 → 14.72 proteins/s) |
-| GSPMD auto-mesh (1 protein) | **Replicated**, not sharded - 463MB on every chip, reproduced twice |
+| GSPMD auto-mesh (1 protein) | **Replicated**, not sharded - 463MB per chip, the single-chip footprint (one recorded figure), reproduced twice |
 | Ensemble shard: `pmap` + `pmean` | Fixed the auto-mesh failure - **8/8 chips**, verified-correct cross-device reduction |
 | Scaling law (16-point grid) | `throughput ≈ 4527.77 · chips^0.963 · length^−1.572` (R² **0.981**) |
 
@@ -240,7 +240,7 @@ Evidence from the captured profiler trace ([`profiling/trace_analysis.md`](profi
 **Secondary bottleneck (baseline multi-chip utilization): 1-of-8 chip occupancy.**
 
 - HBM activity stays on `TPU_0`; chips 1–7 ≈ 0 MB → ~**87%** of the paid pod idle for a single query.
-- `jax.vmap` does **not** fix this - it vectorizes inside one chip and *reduced* proteins/sec as batch grew.
+- `jax.vmap` does **not** fix this - it vectorizes inside one chip, and throughput never exceeds batch=1 (0.94× / 0.73× / 0.74× at B = 2 / 4 / 8).
 - List-price TPU vs T4 cost per 1k predictions therefore lands almost equal ($1.25 vs $1.27) despite a 28× wall-clock gap ([`results/cost_analysis.md`](results/cost_analysis.md)).
 
 **Bottleneck shifts by backend:**
@@ -264,7 +264,7 @@ Architectural adjustments measured or recommended against the bottlenecks above:
 | **bfloat16 precision** | `--precision bfloat16` vs float32 | HBM **−40%**; little speed gain at 118 residues (still useful for larger sequences / packing) |
 | **Batch size via `vmap`** | Batches 1/2/4/8 | **Negative** for this graph - do not treat as multi-chip scaling |
 | **Recycle / length policy** | Swept recycles and lengths | Recycles scale linearly at runtime; length is super-linear (attention) - size SLOs accordingly |
-| **GSPMD auto-mesh** | Course Tunix-style auto sharding of one protein | **Did not** shard tensors (full replica per chip) - root cause: AlphaFold's own ensembling is a sequential `hk.while_loop`, nothing for GSPMD to distribute |
+| **GSPMD auto-mesh** | Course Tunix-style auto sharding of one protein | **Did not** shard tensors (full replica per chip) - AlphaFold's Haiku modules carry no sharding annotations, so GSPMD replicated the model instead of partitioning it |
 | **Ensemble shard (`pmap` + `pmean`)** | Re-implemented AlphaFold's own ensemble-average as a `pmap`+collective reduction instead, zero changes to AlphaFold's source | **Fixed it** - 8/8 chips genuinely used, cross-device reduction verified correct |
 | **Recommended ops practice** | Keep serving process warm; pad to shared shapes; choose chip count for latency/throughput SLO, not unit $/pred | Matches Lab 1/3 vLLM `VLLM_XLA_CACHE_PATH` lesson; cost/prediction ~flat in chip count after `pmap` |
 
@@ -343,12 +343,12 @@ backends (CPU vs. GPU differs by up to 32% per sample) - plausibly
 explained by a numerical issue AlphaFold3's own issue tracker documents
 for GPUs below compute capability 8.0 (the Google Colab T4 is 7.5).
 
-**TPU: a confirmed, documented negative result.** Every infrastructure
+**TPU: a documented negative result for the version we tested.** Every infrastructure
 step succeeded (native C++ build, Chemical Component Dictionary,
 weights, `jax[tpu]` install) - the wall was AlphaFold3's own CLI:
-`--jax_backend`'s valid values are `cpu`/`gpu`/`mps` only, no `tpu`
-option exists. This matches AlphaFold3's official documentation, which
-requires an NVIDIA GPU (compute capability ≥7.0) or CPU.
+`run_alphafold.py` in the main-branch tarball we tested (commit not recorded) rejects
+`--jax_backend=tpu`; accepted values are `cpu`, `gpu` and `mps`. AlphaFold3's official
+documentation, which we did not test further, lists an NVIDIA GPU (compute capability ≥7.0) or CPU.
 
 Full analysis, all tables, and the full TPU attempt log:
 [`results/sweep/af3_comparison.md`](results/sweep/af3_comparison.md).

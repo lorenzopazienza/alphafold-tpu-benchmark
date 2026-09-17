@@ -63,7 +63,7 @@ recomputed from those raw values, not copied from the prose write-ups.
 | C-12 | Cost | GPU cost / TPU 1-chip cost | 8.12× | D | C-09 / C-11 | md: "about 8x cheaper" (`cost_analysis.md:45`) |
 | C-13 | Cost | Pod hourly price / GPU hourly price | 27.4× | D | C-02 / C-03 | md: "27x" (`cost_analysis.md:27`) |
 | C-14 | Cost | Idle pod fraction (baseline workload) | 87.5% (7/8 chips) | D | from CV-10 | md: "~87%" (`cost_analysis.md:50`) |
-| C-15 | Cost | Pod cost / 1,000 with pmap multi-query | $0.181 | D | C-02 / (MQ-05 × 3600) × 1000 | **Not stated in any source file** (`sharding.md:48-49` says only "roughly 7x" lower) |
+| C-15 | Cost | Pod cost / 1,000 with pmap multi-query | $0.181 | D | C-02 / (MQ-05 × 3600) × 1000 | **Not stated in any source file** (`sharding.md:45-46` says only "roughly 7x" lower) |
 | **SL** | **Sequence-length sweep (TPU, recycle=0)** | | | | | |
 | SL-01 | Seq length 60 | init_params | 36.12 s | M | `results/sweep/sequence_length_sweep.json → [0].init_params_seconds` | |
 | SL-02 | Seq length 60 | 1st predict | 25.95 s | M | `… → [0].first_predict_seconds` | |
@@ -164,9 +164,9 @@ recomputed from those raw values, not copied from the prose write-ups.
 | MQ-08 | pmap multi-query | HBM per chip, TPU_0 … TPU_7 | 644, 452, 445, 447, 447, 446, 454, 469 MB | M | `… → memory_per_chip_mb` | Range 445–644 MB (TPU_0 = 644). See discrepancy 1 |
 | **GS** | **Multi-chip experiment 2: GSPMD auto-mesh, single protein (replication, not sharding)** | | | | | |
 | GS-01 | Auto-mesh run 1 | init / 1st predict / steady | 37.56 / 14.76 / 0.472 s | M | `results/sweep/sharding.json → mesh_auto_sharding.run_1` | |
-| GS-02 | Auto-mesh run 1 | HBM per chip | 463 MB (all 8 identical) | M | `… → run_1.memory_per_chip_mb` | = single-chip baseline (`single_chip_baseline_mb` = 463) |
+| GS-02 | Auto-mesh run 1 | HBM per chip | 463 MB | M | `… → run_1.memory_per_chip_mb` | = single-chip baseline (`single_chip_baseline_mb` = 463). One scalar per run; the per-device list was not saved. "All 8 identical", as earlier write-ups put it, was prose only (R): no per-chip list backs it |
 | GS-03 | Auto-mesh run 2 | init / 1st predict / steady | 36.81 / 14.46 / 0.473 s | M | `… → mesh_auto_sharding.run_2` | |
-| GS-04 | Auto-mesh run 2 | HBM per chip | 463 MB (all 8 identical) | M | `… → run_2.memory_per_chip_mb` | |
+| GS-04 | Auto-mesh run 2 | HBM per chip | 463 MB | M | `… → run_2.memory_per_chip_mb` | One scalar per run; the per-device list was not saved. "All 8 identical" was prose only (R) |
 | **EN** | **Multi-chip experiment 3: `jax.pmap` + `jax.lax.pmean` ENSEMBLE. 8 ensemble members of ONE query, one per chip** | | | | | |
 | EN-01 | pmap+pmean ensemble | query length / ensemble members / devices | 118 res / 8 / 8 | M | `results/sweep/ensemble_shard.json → num_residues, num_ensemble, num_devices` | |
 | EN-02 | pmap+pmean ensemble | 1st call (compile + run) | 16.61 s | M | `… → first_compile_and_run_seconds` | |
@@ -239,7 +239,7 @@ result (VM) that runs on one chip. Keep them apart in the paper.
   The metric is **throughput**: 14.72 proteins/s against 2.13 for the baseline,
   a **6.92×** speedup. HBM per chip is 445–644 MB. No `pmean` is involved.
 - **Experiment 2: GSPMD auto-mesh (GS-01…GS-04).** One protein under an Auto mesh.
-  Every chip holds an identical 463 MB copy, so this is **replication, not sharding**.
+  The run records 463 MB per chip, the single-chip footprint (one figure; the per-device list was not saved), so this is **replication, not sharding**.
   Steady state (0.472 / 0.473 s) is unchanged from single-chip.
 - **Experiment 3: pmap + pmean ensemble (EN-01…EN-09).** **One** query whose 8
   ensemble members (different `random_seed`s) run one per chip and are averaged
@@ -261,9 +261,9 @@ result (VM) that runs on one chip. Keep them apart in the paper.
 
    **RISOLTO:** fixed in `results/sweep/sharding.md`. The diagram (lines 10-15) now shows
    the real per-chip values (chip 0 = 644 MB, chip 1 = 452 MB, chips 2-6 = 445-454 MB,
-   chip 7 = 469 MB) and labels each chip as running its own forward pass. Line 38 now says
+   chip 7 = 469 MB) and labels each chip as running its own forward pass. Line 35 now says
    445-469 MB on chips 1-7 and 644 MB on `TPU_0`, stressing that the values differ per chip
-   rather than repeating GSPMD's identical 463 MB. A new paragraph at line 40 states that
+   rather than matching GSPMD's single 463 MB per-chip figure. A new paragraph at line 37 states that
    the data does not establish why chip 0 holds more memory, and gives one plausible,
    unmeasured contributor (`init_params` and `jnp.stack` run outside `pmap` on the JAX
    default device). The line numbers in the problem text above refer to the pre-fix
@@ -298,7 +298,7 @@ result (VM) that runs on one chip. Keep them apart in the paper.
    XLA binaries while a fresh process still re-traces to a jaxpr. The raw trace file is
    still not in the repo. The line numbers in the problem text above (70-74) refer to the
    pre-fix version at commit `96a2186`.
-4. **`sweep/sharding.md:77-80` calls auto-mesh timings "statistically indistinguishable"
+4. **`sweep/sharding.md:74-77` calls auto-mesh timings "statistically indistinguishable"
    from baseline.** First predict was 14.76 / 14.46 s (GS-01/03), against ~27.4 s
    single-chip (CV-06), a 1.9× difference. The md attributes this to a warm XLA cache.
    That is a plausible explanation, not a measurement.
@@ -361,7 +361,7 @@ result (VM) that runs on one chip. Keep them apart in the paper.
 11. **`jax.profiler.trace` inflates first-call times in the scripts that use it.**
     In `spike_tpu_forward_pass.py` and `spike_batch_forward_pass.py` the first call
     runs inside `jax.profiler.trace(...)`, and the timer stops only after the profiler
-    context exits (`src/spike_tpu_forward_pass.py:174-178`). The Colab logs
+    context exits (`src/spike_tpu_forward_pass.py:195-200`). The Colab logs
     (`notebooks/alphafold_{cpu,gpu}_benchmark.ipynb` at commit `faeaa4b`, cell 10) show how much of the
     timed value comes after `predict()` has already returned (`model.py:183` exit log →
     script's "First predict() done" log):
@@ -375,6 +375,14 @@ result (VM) that runs on one chip. Keep them apart in the paper.
     context. `block_until_ready` takes under 1 ms in the second call, so the extra time
     is profiler-trace finalisation, not compilation. **43% of B-05 is profiler overhead.**
 
+    *Script version.* The description above is the script as it produced the August
+    and TPU results. Since commit `86fca03` the profiler is optional
+    (`--profile_first_predict`, default `True`, so it is still on unless
+    `--noprofile_first_predict` is passed) and the steady-state call repeats
+    `--num_steady_state_runs` times (default `1`). The September reruns in
+    `results/repro/` time 5 steady-state calls with the profiler off; each folder also
+    holds one profiler-on run with a single steady-state call.
+
     Effect on the first-call / steady-state ratios:
     - **B-13 (CPU):** 1.28× → **~1.11×** ((271.98 − 36.00) / 212.113).
     - **B-14 (GPU):** 7.46× → **~4.25×** ((97.62 − 42.02) / 13.086).
@@ -387,7 +395,7 @@ result (VM) that runs on one chip. Keep them apart in the paper.
     16.61 s) are therefore **not comparable** with the ~27–29 s first predicts of CV,
     PR, MC, RR, CC and B-08.
     - This offers an alternative to the "warm XLA cache" explanation in
-      `sweep/sharding.md:77-80`: `configs/af_spike_sharding.yaml` runs the `pmap` and
+      `sweep/sharding.md:74-77`: `configs/af_spike_sharding.yaml` runs the `pmap` and
       GSPMD scripts as separate processes without a cache directory.
     - It may also explain why the traced span TR-01 (16.56 s) is shorter than B-08
       (27.78 s).
@@ -575,12 +583,13 @@ Workload as in the master table (`model_3`, 118 residues, `num_recycle=0`, float
 Rows 3 and 4 are the two B3 reruns, on different days, from
 `notebooks/alphafold_cpu_benchmark.ipynb` with `REPO_REF` set to a commit hash. Each
 run's files go in `results/repro/<YYYY-MM-DD>_cpu-colab/`. Fill the rows only from
-those files: host CPU, cores and repo commit from `environment.json`, timings from
+those files: host CPU, cores and repo commit from `environment.json` (for 2026-09-15, from
+`environment_cpu-colab-repro.json`, since that run has no `environment.json`), timings from
 `result_cpu-colab-repro_model_3_len118_recycle0_float32_noprofile.json`.
 
 | Run | Date | Time (UTC) | Colab tier | Host CPU | Cores | Repo commit | init_params (s) | First predict (s) | Steady state mean ± std (s) | n repeats |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 (original) | 2026-08-08 ¹ | | | not recorded ² | 2 vCPU ² | not recorded ³ | 41.99 (B-01) | 271.98 (B-02) ⁴ | 212.113 (B-03), no std | 1 |
+| 1 (original) | 2026-08-08 ¹ | | | not recorded ² | 2 vCPU (prose only, not a recorded field) ² | not recorded ³ | 41.99 (B-01) | 271.98 (B-02) ⁴ | 212.113 (B-03), no std | 1 |
 | 2 (2026-09-15) | 2026-09-15 ⁵ | 18:04–18:40 ⁶ | ⁷ | Intel(R) Xeon(R) CPU @ 2.20GHz (family 6, model 79) ⁵ | 2 logical (1 core × 2 threads) ⁵ | `86fca03` ⁵ | 59.02 ⁸ | 385.48 ⁸ | 348.861 ± 4.6903 ⁸ | 5 ⁸ |
 | 3 (B3 rerun 1) | 2026-09-16 ⁹ | 12:37–13:14 ¹⁰ | ¹¹ | Intel(R) Xeon(R) CPU @ 2.20GHz (family 6, model 79) ⁹ | 2 logical (1 core × 2 threads) ⁹ | `9e1a07e` ⁹ | 59.87 ¹² | 373.24 ¹² | 351.8907 ± 4.3025 ¹² | 5 ¹² |
 | 4 (B3 rerun 2) | 2026-09-17 ¹³ | 08:52–09:30 ¹⁴ | ¹⁵ | Intel(R) Xeon(R) CPU @ 2.20GHz (family 6, model 79) ¹³ | 2 logical (1 core × 2 threads) ¹³ | `9e1a07e` ¹³ | 60.3 ¹⁶ | 394.69 ¹⁶ | 359.2726 ± 2.7874 ¹⁶ | 5 ¹⁶ |
@@ -615,7 +624,7 @@ host and commit from the environment file, timings from
 
 | Run | Date | Time (UTC) | Colab tier | GPU | Host CPU / cores | Commit | init_params (s) | First predict (s) | Steady state mean ± std (s) | n repeats |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 (original) | 2026-08-08 ¹ | | | NVIDIA Tesla T4, 15 GB VRAM ² | ³ | none ⁴ | 109.16 (B-04) | 97.62 (B-05) ⁵ | 13.086 (B-06), no std | 1 |
+| 1 (original) | 2026-08-08 ¹ | | | NVIDIA Tesla T4, 15 GB VRAM ² | ³ | not recorded ⁴ | 109.16 (B-04) | 97.62 (B-05) ⁵ | 13.086 (B-06), no std | 1 |
 | 2 (2026-09-15) | 2026-09-15 ⁶ | 19:01–19:04 ⁷ | ⁸ | Tesla T4, 15360 MiB, driver 580.82.07, compute capability 7.5 ⁶ | Intel(R) Xeon(R) CPU @ 2.00GHz, 2 logical (1 core × 2 threads) ⁶ | `86fca03` ⁶ | 102.6 ⁹ | 39.59 ⁹ | 6.5672 ± 0.0574 ⁹ | 5 ⁹ |
 
 1. The date of commit `2755250`, which added the results (discrepancy 12). No time with a timezone is recorded in this file; `paper/sections/methodology.md:41` gives a log-clock window without timezone.

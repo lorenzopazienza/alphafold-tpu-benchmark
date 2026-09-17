@@ -28,14 +28,16 @@ internal ensemble-dimension semantics.
 
 ## Honest finding: batching made things worse, not better
 
-Throughput (proteins/sec) **never exceeds** the batch=1 baseline, and
-per-protein cost **increases** as batch size grows (0.49s to 0.66s). Total
+Throughput (proteins/sec) **never exceeds** the batch=1 baseline: 0.94x, 0.73x and 0.74x at B = 2, 4, 8.
+Per-protein cost is **higher** than at batch=1 at every batch size (0.52s, 0.67s and 0.66s vs 0.49s). Total
 wall-clock time scales almost exactly **linearly** with batch size, the
 signature of *no* parallel speedup at all.
 
 **Root cause, confirmed by the memory data:** across every batch size,
 **only `TPU_0` ever shows nonzero HBM usage**; chips 1 through 7 stay at
-0 MB regardless of batch size. `jax.vmap` vectorizes the computation
+0 MB regardless of batch size (the sweep JSON, `batching_sweep.json`, stores
+only TPU_0's HBM, so the other chips' values come from run output not kept in
+the repo). `jax.vmap` vectorizes the computation
 *within* a single chip's compiled program; it does not distribute work
 across the TPU slice's 8 physical chips. Stacking more proteins into one
 vmapped call just means one chip does more sequential-equivalent work,

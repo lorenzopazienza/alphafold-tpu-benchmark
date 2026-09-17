@@ -16,10 +16,7 @@ flowchart LR
     end
     subgraph GS["GSPMD auto-mesh: replication, not sharding"]
         direction TB
-        G0["Chip 0: full copy<br/>463 MB"]
-        G1["Chip 1: full copy<br/>463 MB"]
-        Gd["... 6 more chips ..."]
-        G7["Chip 7: full copy<br/>463 MB"]
+        G0["8 chips: 463 MB per chip, same as the<br/>single-chip footprint (one recorded figure)"]
     end
 ```
 
@@ -35,7 +32,7 @@ flowchart LR
 | Throughput | 2.13 proteins/sec | **14.72 proteins/sec** |
 | **Speedup** | n/a | **6.92x** |
 
-**Confirmed real, not replication:** memory per chip is 445-469 MB on chips 1-7 and 644 MB on chip 0 (`TPU_0`). What matters is that the values differ from chip to chip instead of showing the identical 463 MB copy on every chip that gives away replication in section B below; this is consistent with 8 independent single-protein computations running in parallel.
+**Confirmed real, not replication:** memory per chip is 445-469 MB on chips 1-7 and 644 MB on chip 0 (`TPU_0`). What matters is that the values differ from chip to chip instead of the single 463 MB per-chip figure, equal to the single-chip footprint, that indicates replication in section B below; this is consistent with 8 independent single-protein computations running in parallel.
 
 **Why chip 0 holds more memory is not established by our data:** the run records only the final per-chip totals, with no breakdown.
 One plausible but unmeasured contributor: `TPU_0` is JAX's default device, and `src/spike_pmap_forward_pass.py` runs `init_params` and stacks the 8 input feature sets (`jnp.stack`) outside `pmap`, so those arrays sit on `TPU_0` on top of its own per-chip work.
@@ -62,15 +59,15 @@ Reproduced twice for reliability:
 
 | Run | init_params (s) | first predict (s) | steady-state (s) | memory per chip |
 |---|---|---|---|---|
-| 1 | 37.56 | 14.76 | 0.472 | 463 MB (all 8, identical) |
-| 2 | 36.81 | 14.46 | 0.473 | 463 MB (all 8, identical) |
+| 1 | 37.56 | 14.76 | 0.472 | 463 MB (one per-chip figure; per-device list not saved) |
+| 2 | 36.81 | 14.46 | 0.473 | 463 MB (one per-chip figure; per-device list not saved) |
 
 **Verdict: this did NOT achieve real sharding, it's replication.**
 
-The tell is the memory: every chip holds **exactly 463 MB**, matching the
-single-chip baseline (`chip_visibility.md`) to the byte. If the
+The tell is the memory: the run records **463 MB per chip**, the same as the
+single-chip footprint (`chip_visibility.md`); it stores one per-chip figure, not the per-device list. If the
 computation had genuinely been split, each chip would hold a *fraction* of
-that total, not an identical full copy. What actually happened: GSPMD
+that total, not the full single-chip footprint. What actually happened: GSPMD
 found zero sharding hints anywhere in AlphaFold's unannotated Haiku
 modules, so it made the conservative choice: run the complete, unmodified
 computation redundantly on all 8 chips rather than split it. Timing
@@ -81,7 +78,7 @@ compilation-cache pattern from a warm XLA cache carried over from earlier
 in the same pod's Python process lifetime, not sharding).
 
 **Why we're confident in this negative result rather than treating it as
-inconclusive:** it reproduced identically across two separate runs, and
+inconclusive:** it reproduced across two separate runs (463 MB per chip both times), and
 the mechanism is well understood. GSPMD's automatic partitioner needs
 either explicit `PartitionSpec` sharding constraints on the model's
 weights/activations, or code written with sharding-aware primitives

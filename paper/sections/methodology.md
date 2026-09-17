@@ -155,7 +155,7 @@ results nor a pinned one.
 
 Every AF2 script monkey-patches `jax.numpy.clip` so that the `a_min=`/`a_max=`
 keyword arguments used by AlphaFold2's source map to the current `min=`/`max=`
-(`src/spike_tpu_forward_pass.py:46-54`). AlphaFold2's source itself is not modified.
+(`src/spike_tpu_forward_pass.py:49-57`). AlphaFold2's source itself is not modified.
 
 ## 3. Workload and inputs
 
@@ -164,24 +164,24 @@ keyword arguments used by AlphaFold2's source map to the current `min=`/`max=`
 - **Model config:** `model_3` by default; `model_4` and `model_5` only in the
   model comparison (`configs/af_spike_combined.yaml:35-38`). These three configs
   have `use_templates=False`; the script refuses `model_1`/`model_2`
-  (`src/spike_tpu_forward_pass.py:141-144`).
+  (`src/spike_tpu_forward_pass.py:159-162`).
 - **Ensembling:** `num_ensemble = 1` in every script (e.g.
-  `src/spike_tpu_forward_pass.py:147`). The ensemble experiment builds its 8
+  `src/spike_tpu_forward_pass.py:165`). The ensemble experiment builds its 8
   members outside AlphaFold instead (Section 3.4).
 - **Recycling:** `num_recycle = 0` except in the recycle sweep (1 and 3)
   (`configs/af_spike_job_sweep.yaml:52-53`).
 - **Precision:** float32 by default. The bfloat16 run casts every float32
-  parameter leaf after `init_params` (`src/spike_tpu_forward_pass.py:166-171`).
+  parameter leaf after `init_params` (`src/spike_tpu_forward_pass.py:184-189`).
   Input features are not cast.
 
 ### 3.2 Sequences
 
 - **118 residues** in the single-query scripts: a fixed toy sequence
-  (`TOY_SEQUENCE_118`, `src/spike_tpu_forward_pass.py:91-94`), also used by the
+  (`TOY_SEQUENCE_118`, `src/spike_tpu_forward_pass.py:107-110`), also used by the
   ensemble and GSPMD scripts and by the AF3 input (`src/make_af3_input.py:30`).
   It is synthetic, not a real protein.
 - **Any other length:** the 20-letter alphabet `ACDEFGHIKLMNPQRSTVWY` repeated
-  and truncated (`src/spike_tpu_forward_pass.py:97-101`).
+  and truncated (`src/spike_tpu_forward_pass.py:113-117`).
   - The sequence-length sweep (60, 120, 250, 500) therefore uses only these
     synthetic sequences; none of its points is the 118-residue toy sequence.
 - **`vmap` batching, `pmap` multi-query and the scaling grid:** every item uses
@@ -193,10 +193,10 @@ keyword arguments used by AlphaFold2's source map to the current `min=`/`max=`
 
 - **MSA:** a single-sequence MSA containing only the query, built with
   AlphaFold's own `parsers.Msa` and `pipeline.make_msa_features` (e.g.
-  `src/spike_tpu_forward_pass.py:111-118`). There is no genetic database search
+  `src/spike_tpu_forward_pass.py:127-134`). There is no genetic database search
   and there are no templates.
 - **Feature processing:** `af_features.np_example_to_features(..., random_seed=0)`
-  (`src/spike_tpu_forward_pass.py:153-155`). This step runs before any timer
+  (`src/spike_tpu_forward_pass.py:171-173`). This step runs before any timer
   starts, so it is not part of any reported time.
 - **Padded shapes:** the logged model inputs are `msa_feat (1, 512, 118, 49)` and
   `extra_msa (1, 5120, 118)` (log, `alphafold_*_benchmark.ipynb` cell 10). The
@@ -207,10 +207,10 @@ keyword arguments used by AlphaFold2's source map to the current `min=`/`max=`
 
 | Setting | Value | Source |
 |---|---|---|
-| Feature seed | 0 (ensemble: member index `i`, 0–7) | `src/spike_tpu_forward_pass.py:154`; `src/spike_ensemble_shard_forward_pass.py:103` |
-| Parameter-init seed | 0 | `src/spike_tpu_forward_pass.py:162` |
-| `predict` seed / `apply` PRNG key | 0 / `PRNGKey(0)` | `src/spike_tpu_forward_pass.py:176,183`; `src/spike_pmap_forward_pass.py:100` |
-| Compilation cache | `jax_compilation_cache_dir=/tmp/jax_cache`, min entry size −1, min compile time 0; two separate processes | `src/spike_tpu_forward_pass.py:122-126`; `configs/af_spike_combined.yaml:57-64` |
+| Feature seed | 0 (ensemble: member index `i`, 0–7) | `src/spike_tpu_forward_pass.py:172`; `src/spike_ensemble_shard_forward_pass.py:103` |
+| Parameter-init seed | 0 | `src/spike_tpu_forward_pass.py:180` |
+| `predict` seed / `apply` PRNG key | 0 / `PRNGKey(0)` | `src/spike_tpu_forward_pass.py:198,211`; `src/spike_pmap_forward_pass.py:100` |
+| Compilation cache | `jax_compilation_cache_dir=/tmp/jax_cache`, min entry size −1, min compile time 0; two separate processes | `src/spike_tpu_forward_pass.py:138-142`; `configs/af_spike_combined.yaml:57-64` |
 | GSPMD mesh | `jax.make_mesh((8, 1), ("fsdp", "tp"))`, both axes `AxisType.Auto`, under `jax.set_mesh` | `src/spike_meshshard_forward_pass.py:85-86` |
 | `pmap` multi-query | `jax.pmap(runner.apply, in_axes=(None, None, 0))` | `src/spike_pmap_forward_pass.py:101` |
 | `pmap` + `pmean` ensemble | `jax.pmap` over members, `jax.lax.pmean` of `predicted_lddt` logits on axis `ensemble` | `src/spike_ensemble_shard_forward_pass.py:122,125` |
@@ -236,7 +236,7 @@ keyword arguments used by AlphaFold2's source map to the current `min=`/`max=`
 ## 4. Why AlphaFold2 uses random weights
 
 AF2 is run with `RunModel(cfg, params=None)`, so Haiku initializes the
-parameters randomly (`src/spike_tpu_forward_pass.py:157-158`; log line
+parameters randomly (`src/spike_tpu_forward_pass.py:175-176`; log line
 `model.py:120] Initialized parameters randomly`). The repository gives this
 rationale (`README.md:180-183`, and the docstring of the script embedded in
 `alphafold_*_benchmark.ipynb` cell 8):
@@ -271,25 +271,36 @@ consecutive regions:
 
 | Region | What is timed | Synchronization | Source |
 |---|---|---|---|
-| `init_params` | `runner.init_params(...)`: Haiku `init`, including its own JIT trace, compilation and execution | none explicit | `src/spike_tpu_forward_pass.py:160-164` |
-| 1st `predict` (compile + run) | `runner.predict(...)`, **inside `jax.profiler.trace(...)`** in `spike_tpu_forward_pass.py`, without a profiler in the GSPMD script | `jax.block_until_ready(result)` | `src/spike_tpu_forward_pass.py:173-179`; `src/spike_meshshard_forward_pass.py:108-113` |
-| 2nd `predict` (steady state) | the identical call again, no profiler | `jax.block_until_ready(result2)` | `src/spike_tpu_forward_pass.py:181-186` |
+| `init_params` | `runner.init_params(...)`: Haiku `init`, including its own JIT trace, compilation and execution | none explicit | `src/spike_tpu_forward_pass.py:178-182` |
+| 1st `predict` (compile + run) | `runner.predict(...)`, **inside `jax.profiler.trace(...)`** in `spike_tpu_forward_pass.py`, without a profiler in the GSPMD script | `jax.block_until_ready(result)` | `src/spike_tpu_forward_pass.py:191-201`; `src/spike_meshshard_forward_pass.py:108-113` |
+| 2nd `predict` (steady state) | the identical call again, no profiler | `jax.block_until_ready(result2)` | `src/spike_tpu_forward_pass.py:203-216` |
+
+*Note on the script version.* The rows above and the bullets below describe the script
+as it produced the August CPU/GPU and the TPU results. Since commit `86fca03`,
+`src/spike_tpu_forward_pass.py` makes the first-call profiler optional
+(`--profile_first_predict`, default `True`) and repeats the steady-state call
+`--num_steady_state_runs` times (default `1`), which is why the cited lines differ from
+the description. The September reruns in `results/repro/` time 5 steady-state calls
+with the profiler off (`--noprofile_first_predict --num_steady_state_runs=5`); each
+run folder also holds one profiler-on run with a single steady-state call.
 
 - **Warm-up:** exactly one call. The first `predict` serves as warm-up and also
   carries compilation. The steady-state figure is **one** subsequent call.
 - **No averaging:** there are no additional warm-up iterations, no repeated
   steady-state calls within a process, no averaging and no outlier rejection.
 - **Rounding in JSON:** 2 decimals for `init_params` and first predict, 3 for
-  steady state (`src/spike_tpu_forward_pass.py:219-221`).
+  steady state (`src/spike_tpu_forward_pass.py:250-252`).
 - **`predict` includes host-side work.** AlphaFold2's `RunModel.predict` also
   computes confidence metrics after `apply`. This comes from upstream
   `alphafold/model/model.py`, which is not vendored here, so its commit is
   **[NOT IN REPO]**. The logs are consistent with it: `model.py:170` logs at entry
   and `model.py:183` at exit, before the timer stops.
 
-**Version caveat for the CPU/GPU baselines.** The script in `src/` has a single
-commit (`2755250`, which also added all results), so git cannot show which
-version produced which result.
+**Version caveat for the CPU/GPU baselines.** The script in `src/` and all original
+results were first committed together in `2755250`, so git cannot show which script
+version produced which of those results. The script was later changed in `86fca03`
+(optional profiler, repeated steady-state calls); that later version, unchanged in
+`9e1a07e`, is the one the September reruns (`results/repro/`) used.
 - **CPU/GPU:** the Colab notebooks embed an older, uncommitted version (cell 8,
   byte-identical in both notebooks). Their logs cite line numbers and messages
   that exist only in that version, e.g. `spike_tpu_forward_pass.py:146` and
@@ -353,7 +364,7 @@ separately **[NOT IN REPO]**.
 
 Per-device `bytes_in_use` and `peak_bytes_in_use` come from JAX's
 `device.memory_stats()`, read once after the second call (e.g.
-`src/spike_tpu_forward_pass.py:192-204`).
+`src/spike_tpu_forward_pass.py:222-234`).
 - **Peak:** the process-lifetime peak, not the peak of the steady-state call.
 - **`tpu-info`:** the sweep Jobs also ran `tpu-info` every 3 s
   (`configs/af_spike_job_sweep.yaml:34-44`). It reported all metrics as N/A; the
@@ -468,7 +479,7 @@ What this implies for the paper:
 ## 7. Data provenance
 
 - **Per-run JSONs.** The scripts write one `result_<run_id>.json` per process
-  (e.g. `src/spike_tpu_forward_pass.py:227-229`). Apart from the three baseline
+  (e.g. `src/spike_tpu_forward_pass.py:263-265`). Apart from the three baseline
   files and the two AF3 Colab files, those per-run JSONs are **[NOT IN REPO]**.
 - **Sweep files.** `results/sweep/*.json` use a different, aggregated schema.
   The aggregation step (script or manual) is **[NOT IN REPO]**.

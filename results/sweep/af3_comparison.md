@@ -10,8 +10,8 @@ diffusion-based codebase, not a version bump of AlphaFold2 - on the same
 118-residue toy sequence used throughout this project, across all three
 backends this project already tests AF2 on: **Google Colab Intel Xeon CPU (2 vCPU), Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips)**. CPU and GPU produced full, real,
 measured results. TPU did not - not because of an infrastructure failure
-on our side, but because **AlphaFold3's public release does not support
-TPU inference at all** (Section 3 below has the full evidence). All three
+on our side, but because **`run_alphafold.py` in the main-branch tarball we tested (commit not recorded)
+rejects `--jax_backend=tpu`** (Section 3 below has the full evidence). All three
 attempts, successful or not, are documented here with the actual numbers,
 not estimates.
 
@@ -35,7 +35,7 @@ alongside each section.
 | Confidence metric reported | pLDDT (per-residue, 0-100) | ptm / iptm / ranking_score (0-1, whole-structure) |
 | Ensembling | `num_ensemble` sequential `hk.while_loop` internally (see `ensemble_shard.md` for how we sharded this across chips) | Not applicable - diffusion sampling plays the analogous "generate several candidates" role |
 | Output format | PDB (`structure/ubiquitin_predicted.pdb`) | mmCIF |
-| Officially supported backends | CPU, GPU, **TPU** (JAX-native, no restriction) | **CPU or NVIDIA GPU (compute capability ≥7.0) only** - TPU is not a supported target of the public release (Section 3) |
+| Officially supported backends | CPU, GPU, **TPU** (JAX-native, no restriction) | **CPU or NVIDIA GPU (compute capability ≥7.0)** per AlphaFold3's documentation; the `run_alphafold.py` we tested rejects `--jax_backend=tpu` (Section 3) |
 
 **Reading this table honestly:** AF2 and AF3 don't just differ in speed,
 they differ in *what a single call even produces* - one structure vs. five
@@ -88,9 +88,9 @@ root cause - not one bug repeated four times.
 
 ---
 
-## 3. TPU: not a supported backend for AlphaFold3's public release
+## 3. TPU: `--jax_backend=tpu` rejected by the AlphaFold3 version we tested
 
-**This is a real, confirmed finding, not an unfinished task.** Every
+**This is a measured result for the version we tested, not an unfinished task.** Every
 infrastructure step this project's TPU workflow depends on worked
 correctly on the first real attempt: native C++ build, Chemical Component
 Dictionary build, weights download, `jax[tpu]` install, input JSON
@@ -107,9 +107,9 @@ Pass --helpshort or --helpfull to see help on flags.
 real    0m5.588s
 ```
 
-`--jax_backend`'s accepted values are `cpu`, `gpu`, and `mps` (Apple
-Silicon) - **`tpu` is not one of them.** This matches AlphaFold3's own
-official installation documentation, which states the requirement
+`run_alphafold.py` in the main-branch tarball we tested (commit not recorded) rejects
+`--jax_backend=tpu`; accepted values are `cpu`, `gpu`, and `mps` (Apple Silicon). AlphaFold3's
+official installation documentation (quoted, not something we tested) states the requirement
 plainly: *"An NVIDIA GPU with compute capability 7.0 or higher is
 required"* for inference, with CPU as the (much slower) fallback. Every
 third-party HPC-center guide checked for this project (UCL, Texas A&M,
@@ -146,10 +146,10 @@ byte-identical input JSON (`src/make_af3_input.py`) across every backend:**
 |---|---|---|
 | Setup step, CPU | `init_params`: 41.99s (Google Colab) | `featurising`: 12.92s (Google Colab; 6.66s on Stanford). Everything outside model inference (start-up, model build, parameter loading, featurising, sample extraction, output writing): 52.61s in total |
 | Setup step, GPU | `init_params`: 109.16s (T4, Google Colab) | `featurising`: 11.09s (Google Colab). Everything outside model inference: 27.91s in total |
-| Setup step, TPU | `init_params`: 36.6s (Stanford) | **not applicable - TPU unsupported (Section 3)** |
+| Setup step, TPU | `init_params`: 36.6s (Stanford) | **not applicable - `--jax_backend=tpu` rejected (Section 3)** |
 | Inference, CPU | steady-state: 212.113s (1 structure; `recycle=0`, warm 2nd call) | **480.28s/sample** (2401.38s model inference / 5, Google Colab; includes JIT compilation; default `--num_recycles 10` = 11 trunk passes, 5 samples per call). Previously reported: 490.80s/sample = 2453.99s process wall-clock / 5, which also counted the 52.61s (10.52s/sample) of non-inference work above |
 | Inference, GPU (Google Colab NVIDIA Tesla T4) | steady-state: 13.086s (1 structure; `recycle=0`, warm 2nd call) | **17.24s/sample** (86.21s model inference / 5, Google Colab; includes JIT compilation; default `--num_recycles 10` = 11 trunk passes, 5 samples per call). Previously reported: 22.82s/sample = 114.12s process wall-clock / 5, which also counted the 27.91s (5.58s/sample) of non-inference work above |
-| Inference, TPU (Stanford GKE v5e-8, 2×4 lite) | steady-state: 0.47s | **not applicable - TPU unsupported (Section 3)** |
+| Inference, TPU (Stanford GKE v5e-8, 2×4 lite) | steady-state: 0.47s | **not applicable - `--jax_backend=tpu` rejected (Section 3)** |
 
 **What this table does and does not show** (the AF2 and AF3 columns are measured, but they are not the same workload, see `paper/data/canonical_results.md`, discrepancy 15):
 
@@ -178,8 +178,8 @@ byte-identical input JSON (`src/make_af3_input.py`) across every backend:**
    vs. dedicated hardware, not to anything about the model itself.
 5. **AF3 has no TPU number to compare against AF2's 451x/16.2x/27.8x
    TPU speedups** (`results/comparison.md`) - not because it wasn't
-   measured, but because the comparison is structurally impossible for
-   this AlphaFold3 release (Section 3).
+   attempted, but because the `run_alphafold.py` we tested (commit not
+   recorded) rejects `--jax_backend=tpu` (Section 3).
 
 ---
 
@@ -326,12 +326,12 @@ counterpart of the numerical divergence documented in Section 5b.
   numerical issue on GPUs below capability 8.0 (the T4 is 7.5).
 
 **Real infrastructure finding:**
-- AlphaFold3's public release does not support TPU inference  - 
-  `--jax_backend`'s valid values are `cpu`, `gpu`, `mps` only, confirmed
-  both by a real attempt on the Stanford GKE TPU v5e-8 (2×4 lite) slice (failed in 5.6s at
-  flag validation, after every other infrastructure step succeeded) and
-  by AlphaFold3's own official documentation (NVIDIA GPU compute
-  capability ≥7.0, or CPU, required).
+- `run_alphafold.py` in the main-branch tarball we tested (commit not recorded)
+  rejects `--jax_backend=tpu`; accepted values are `cpu`, `gpu` and `mps`, seen
+  in a real attempt on the Stanford GKE TPU v5e-8 (2×4 lite) slice (failed in 5.6s at
+  flag validation, after every other infrastructure step succeeded).
+  AlphaFold3's official documentation, which we did not test further, lists an
+  NVIDIA GPU (compute capability ≥7.0) or CPU as requirements.
 
 **Engineering-effort finding:**
 - AF2's challenge in this project was multi-chip parallelism on hardware
@@ -344,5 +344,5 @@ counterpart of the numerical divergence documented in Section 5b.
 The honest framing for this whole comparison: **we got AlphaFold3 running
 successfully on two of the three backends this project tests, with real,
 measured performance and reproducibility data on both - and the third
-backend's absence is itself a confirmed, documented finding about
-AlphaFold3's public release, not a gap in this project's work.**
+backend's absence is itself a documented result for the version we tested
+(its `run_alphafold.py` rejects `--jax_backend=tpu`), not a gap in this project's work.**
