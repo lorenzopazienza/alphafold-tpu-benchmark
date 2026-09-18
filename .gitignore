@@ -7,3 +7,7 @@ dist/
 .vercel
 *_results.zip
 results/**/trace_*/
+
+# Working copies, not part of the repo
+Claude outputs/
+paper-sections/
