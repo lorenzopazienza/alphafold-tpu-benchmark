@@ -197,6 +197,7 @@ recomputed from those raw values, not copied from the prose write-ups.
 | SC-17 | Cost | $/1000 predictions, length 250, chips 1 / 2 / 4 / 8 | $0.386 / $0.394 / $0.399 / $0.413 | D | same | `scaling_law.md:49` |
 | SC-18 | Cost | $/1000 predictions, length 500, chips 1 / 2 / 4 / 8 | $1.004 / $1.012 / $1.019 / $1.036 | D | same | `scaling_law.md:50` |
 | SC-19 | Cost | $/1000 predictions, length 1000, chips 1 / 2 / 4 / 8 | $5.051 / $5.089 / $5.089 / $5.109 | D | same | `scaling_law.md:51`. Low precision: throughput at 1 chip has 2 significant figures (0.066) |
+| SC-20 | Parallel efficiency | 8 chips over 1 chip at length 100 / 250 / 500 / 1000 | 81.6% / 93.4% / 97.0% / 98.9% | D | SC-13 / 8 | Not stated in source. Distinct from MQ-07 (86.5%), which is MQ-06/8 at 118 residues: the two must not be swapped. |
 | **A3** | **AlphaFold3 side-investigation (118 res, seed 1, 5 diffusion samples, real weights, empty MSA)** | | | | | |
 | A3-01 | AF3 Colab CPU | process wall-clock total | 2453.99 s | M | `results/result_af3_cpu-colab.json → wall_clock_total_seconds` (formerly `total_inference_seconds`) | Includes start-up, model build, parameter loading, featurisation, JIT compilation, inference, extraction and output writing. Per sample: 490.80 s (`wall_clock_seconds_per_sample`), the previously reported value |
 | A3-02 | AF3 Colab CPU | **seconds per sample (model inference)** | **480.28 s** | M / D | `… → seconds_per_sample` = A3-25 / 5 | **Still includes JIT compilation.** Replaces 490.80 s (wall-clock / 5) |
