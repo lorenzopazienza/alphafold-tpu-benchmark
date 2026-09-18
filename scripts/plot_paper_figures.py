@@ -91,7 +91,7 @@ def fig_parallelism(repo, out_dir):
     rows = [
         ("Default, 1 query\n(CV-09)",
          [d["bytes_in_use"] / 1e6 for d in vis8["memory_stats_per_device"]], BLUE, None),
-        ("GSPMD auto-mesh,\n1 query (GS-02)",
+        ("Auto-mesh partitioning,\n1 query (GS-02)",
          None, PINK, gs["run_1"]["memory_per_chip_mb"]),
         ("pmap, 8 queries\n(MQ-08)",
          pm["memory_per_chip_mb"], GREEN, None),

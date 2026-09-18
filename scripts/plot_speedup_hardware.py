@@ -30,7 +30,7 @@ from matplotlib.ticker import FixedLocator, FixedFormatter, NullLocator
 # ---- canonical numbers ------------------------------------------------------
 ROWS = [
     # label,   detail,               seconds,  color (Okabe-Ito, colorblind-safe)
-    ("CPU",    "Colab, 2 vCPU",       212.113,  "#0072B2"),   # B-03, blue
+    ("CPU",    "Colab CPU runtime",   212.113,  "#0072B2"),   # B-03, blue (vCPU count is R-only, omitted)
     ("GPU",    "NVIDIA T4, Colab",     13.086,  "#E69F00"),   # B-06, orange
     ("TPU",    "one v5e chip of 8",     0.47,   "#009E73"),   # B-09, green
 ]
