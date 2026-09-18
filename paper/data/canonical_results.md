@@ -130,6 +130,7 @@ recomputed from those raw values, not copied from the prose write-ups.
 | CC-06 | Cache warm | steady state | 0.469 s | M | `… → warm.steady_state_seconds` | |
 | CC-07 | Cache | init_params speedup (warm over cold) | 6.81× | M / D | `… → speedup_init_params`; = CC-01 / CC-04 | |
 | CC-08 | Cache | 1st predict speedup (warm over cold) | 1.90× | M / D | `… → speedup_first_predict`; = CC-02 / CC-05 | |
+| CC-09 | Cache | combined start-up cost (init_params + 1st predict), cold / warm | 66.48 s / 20.72 s | D | CC-01 + CC-02 and CC-04 + CC-05 | Not stated in source. The reduction is 68.8%, which the paper rounds to 69%. Distinct from CC-08: the first predict alone falls only 47.3%, so "most" holds for the combined figure and not for the forward pass on its own. |
 | **TR** | **XLA profiler trace (TPU, first predict)** | | | | | |
 | TR-01 | Trace | `PjitFunction(apply_fn)` wall duration | 16.56 s | R | `profiling/trace_analysis.md:30` | Raw `.trace.json.gz` not in repo |
 | TR-02 | Trace | `PjitFunction(apply_fn)` self time | 440 ns | R | `profiling/trace_analysis.md:30` | |
