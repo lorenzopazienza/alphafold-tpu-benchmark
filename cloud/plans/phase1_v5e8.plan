@@ -1,0 +1,45 @@
+# Phase 1 on a v5e-8 (v5litepod-8): repeat the summer headline measurements
+# with n = 5 fresh processes each, interleaved. Same scripts, same arguments as
+# the summer jobs in configs/*.yaml; canonical row IDs in brackets.
+# 127 processes. Estimated 3-4 h of VM time (~$30-40 on demand, less on Spot).
+#
+# label                   | script                               | reps | args
+
+# Single query, default execution path [B-07..B-09, CV-09]
+base_len118               | spike_tpu_forward_pass.py            | 5    | --num_residues=118 --num_recycle=0 --noprofile_first_predict --num_steady_state_runs=10
+# Same, with the profiler on the first call, as in the summer run [B-08 comparability]
+base_len118_profiled      | spike_tpu_forward_pass.py            | 2    | --num_residues=118 --num_recycle=0 --num_steady_state_runs=10
+
+# vmap batching [VM-01..VM-05]
+vmap_b1                   | spike_batch_forward_pass.py          | 5    | --num_residues=118 --num_recycle=0 --batch_size=1
+vmap_b2                   | spike_batch_forward_pass.py          | 5    | --num_residues=118 --num_recycle=0 --batch_size=2
+vmap_b4                   | spike_batch_forward_pass.py          | 5    | --num_residues=118 --num_recycle=0 --batch_size=4
+vmap_b8                   | spike_batch_forward_pass.py          | 5    | --num_residues=118 --num_recycle=0 --batch_size=8
+
+# Experiment A: pmap multi-query, 8 independent queries on 8 chips [MQ-01..MQ-08]
+pmap_mq_b1                | spike_pmap_forward_pass.py           | 5    | --num_residues=118 --num_recycle=0 --batch_size=1
+pmap_mq_b8                | spike_pmap_forward_pass.py           | 5    | --num_residues=118 --num_recycle=0 --batch_size=8
+
+# GSPMD auto-mesh sharding [GS-01..GS-04]
+gspmd_auto                | spike_meshshard_forward_pass.py      | 5    | --num_residues=118 --num_recycle=0
+
+# Experiment B: pmap + pmean, ensemble members of ONE query across 8 chips [EN-01..EN-08]
+ensemble_pmean_e8         | spike_ensemble_shard_forward_pass.py | 5    | --num_residues=118 --num_ensemble=8
+
+# Scaling grid: chips x length, pmap, synthetic sequences [SC-01..SC-04]
+grid_c1_l100              | spike_pmap_forward_pass.py           | 5    | --num_residues=100  --num_recycle=0 --batch_size=1
+grid_c1_l250              | spike_pmap_forward_pass.py           | 5    | --num_residues=250  --num_recycle=0 --batch_size=1
+grid_c1_l500              | spike_pmap_forward_pass.py           | 5    | --num_residues=500  --num_recycle=0 --batch_size=1
+grid_c1_l1000             | spike_pmap_forward_pass.py           | 5    | --num_residues=1000 --num_recycle=0 --batch_size=1
+grid_c2_l100              | spike_pmap_forward_pass.py           | 5    | --num_residues=100  --num_recycle=0 --batch_size=2
+grid_c2_l250              | spike_pmap_forward_pass.py           | 5    | --num_residues=250  --num_recycle=0 --batch_size=2
+grid_c2_l500              | spike_pmap_forward_pass.py           | 5    | --num_residues=500  --num_recycle=0 --batch_size=2
+grid_c2_l1000             | spike_pmap_forward_pass.py           | 5    | --num_residues=1000 --num_recycle=0 --batch_size=2
+grid_c4_l100              | spike_pmap_forward_pass.py           | 5    | --num_residues=100  --num_recycle=0 --batch_size=4
+grid_c4_l250              | spike_pmap_forward_pass.py           | 5    | --num_residues=250  --num_recycle=0 --batch_size=4
+grid_c4_l500              | spike_pmap_forward_pass.py           | 5    | --num_residues=500  --num_recycle=0 --batch_size=4
+grid_c4_l1000             | spike_pmap_forward_pass.py           | 5    | --num_residues=1000 --num_recycle=0 --batch_size=4
+grid_c8_l100              | spike_pmap_forward_pass.py           | 5    | --num_residues=100  --num_recycle=0 --batch_size=8
+grid_c8_l250              | spike_pmap_forward_pass.py           | 5    | --num_residues=250  --num_recycle=0 --batch_size=8
+grid_c8_l500              | spike_pmap_forward_pass.py           | 5    | --num_residues=500  --num_recycle=0 --batch_size=8
+grid_c8_l1000             | spike_pmap_forward_pass.py           | 5    | --num_residues=1000 --num_recycle=0 --batch_size=8

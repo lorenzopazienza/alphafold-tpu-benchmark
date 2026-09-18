@@ -1,0 +1,11 @@
+# Known-good stack, validated end to end on CPU on 2026-09-18 with every
+# spike_*.py script. jax 0.10.2 is the version the summer TPU jobs pinned
+# (configs/*.yaml); the other packages were unpinned then, so their summer
+# versions are unknown. setup_vm.sh records the full `pip freeze` anyway.
+jax[tpu]==0.10.2
+dm-haiku==0.0.17
+ml-collections==1.1.0
+absl-py==2.5.0
+tensorflow-cpu==2.21.0
+biopython==1.88
+numpy==2.5.3

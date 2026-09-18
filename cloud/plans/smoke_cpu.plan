@@ -1,0 +1,9 @@
+# CPU smoke test: checks the runner, the installed stack and every spike
+# script end to end on a tiny input. Not a measurement.
+# Run with: --extra_env XLA_FLAGS=--xla_force_host_platform_device_count=8
+# label              | script                              | reps | args
+smoke_single         | spike_tpu_forward_pass.py           | 2    | --num_residues=16 --num_recycle=0 --noprofile_first_predict --num_steady_state_runs=2
+smoke_vmap_b2        | spike_batch_forward_pass.py         | 1    | --num_residues=16 --num_recycle=0 --batch_size=2
+smoke_pmap_b8        | spike_pmap_forward_pass.py          | 1    | --num_residues=16 --num_recycle=0 --batch_size=8
+smoke_gspmd          | spike_meshshard_forward_pass.py     | 1    | --num_residues=16 --num_recycle=0
+smoke_ensemble8      | spike_ensemble_shard_forward_pass.py | 1   | --num_residues=16 --num_ensemble=8
