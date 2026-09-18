@@ -64,7 +64,7 @@ recomputed from those raw values, not copied from the prose write-ups.
 | C-13 | Cost | Pod hourly price / GPU hourly price | 27.4× | D | C-02 / C-03 | md: "27x" (`cost_analysis.md:27`) |
 | C-14 | Cost | Idle pod fraction (baseline workload) | 87.5% (7/8 chips) | D | from CV-10 | md: "~87%" (`cost_analysis.md:50`) |
 | C-15 | Cost | Pod cost / 1,000 with pmap multi-query | $0.181 | D | C-02 / (MQ-05 × 3600) × 1000 | **Not stated in any source file** (`sharding.md:45-46` says only "roughly 7x" lower) |
-| C-16 | Cost | GPU cost / 1,000 predictions, September baseline | $0.639 | D | C-03 / (3600 / 6.5672) × 1000 = 0.6385 | Counterfactual to C-09, which uses the August B-06. Uses the 2026-09-15 GPU steady state (n=5); see discrepancy 16. The paper rounds to $0.64. |
+| C-16 | Cost | GPU cost / 1,000 predictions, September baseline | $0.638 | D | C-03 / (3600 / 6.5672) × 1000 = 0.63848 | Counterfactual to C-09, which uses the August B-06. Uses the 2026-09-15 GPU steady state (n=5); see discrepancy 16. The paper rounds to $0.64. Corrected 2026-09-18 from $0.639 (double rounding). |
 | **SL** | **Sequence-length sweep (TPU, recycle=0)** | | | | | |
 | SL-01 | Seq length 60 | init_params | 36.12 s | M | `results/sweep/sequence_length_sweep.json → [0].init_params_seconds` | |
 | SL-02 | Seq length 60 | 1st predict | 25.95 s | M | `… → [0].first_predict_seconds` | |
@@ -165,7 +165,8 @@ recomputed from those raw values, not copied from the prose write-ups.
 | MQ-06 | pmap multi-query | **throughput speedup (pmap 8 chips over 1-protein baseline)** | **6.92×** | M / D | `… → speedup_vs_single_protein_baseline`; = MQ-05 / MQ-04 = 6.918 | |
 | MQ-07 | pmap multi-query | parallel efficiency | 86.5% | D | MQ-06 / 8 | Not stated in source |
 | MQ-08 | pmap multi-query | HBM per chip, TPU_0 … TPU_7 | 644, 452, 445, 447, 447, 446, 454, 469 MB | M | `… → memory_per_chip_mb` | Range 445–644 MB (TPU_0 = 644). See discrepancy 1 |
-| **GS** | **Multi-chip experiment 2: GSPMD auto-mesh, single protein (replication, not sharding)** | | | | | |
+| **GS** | **Multi-chip experiment 2: auto-mesh partitioning, single protein (replication, not sharding)** | | | | | |
+| **Note** | The description field in `sharding.json` says "GSPMD" but is hand-written, not recorded; the pinned `jax[tpu]==0.10.2` defaults to Shardy (verified against the jax-v0.10.2 source, `jax/_src/config.py`, and the JAX Shardy migration guide, 2026-09-18) and no artifact records the effective partitioner. This header was corrected 2026-09-18. | | | | | |
 | GS-01 | Auto-mesh run 1 | init / 1st predict / steady | 37.56 / 14.76 / 0.472 s | M | `results/sweep/sharding.json → mesh_auto_sharding.run_1` | |
 | GS-02 | Auto-mesh run 1 | HBM per chip | 463 MB | M | `… → run_1.memory_per_chip_mb` | = single-chip baseline (`single_chip_baseline_mb` = 463). One scalar per run; the per-device list was not saved. "All 8 identical", as earlier write-ups put it, was prose only (R): no per-chip list backs it |
 | GS-03 | Auto-mesh run 2 | init / 1st predict / steady | 36.81 / 14.46 / 0.473 s | M | `… → mesh_auto_sharding.run_2` | |
@@ -200,7 +201,7 @@ recomputed from those raw values, not copied from the prose write-ups.
 | SC-17 | Cost | $/1000 predictions, length 250, chips 1 / 2 / 4 / 8 | $0.386 / $0.394 / $0.399 / $0.413 | D | same | `scaling_law.md:49` |
 | SC-18 | Cost | $/1000 predictions, length 500, chips 1 / 2 / 4 / 8 | $1.004 / $1.012 / $1.019 / $1.036 | D | same | `scaling_law.md:50` |
 | SC-19 | Cost | $/1000 predictions, length 1000, chips 1 / 2 / 4 / 8 | $5.051 / $5.089 / $5.089 / $5.109 | D | same | `scaling_law.md:51`. Low precision: throughput at 1 chip has 2 significant figures (0.066) |
-| SC-20 | Parallel efficiency | 8 chips over 1 chip at length 100 / 250 / 500 / 1000 | 81.6% / 93.4% / 97.0% / 98.9% | D | SC-13 / 8 | Not stated in source. Distinct from MQ-07 (86.5%), which is MQ-06/8 at 118 residues: the two must not be swapped. |
+| SC-20 | Parallel efficiency | 8 chips over 1 chip at length 100 / 250 / 500 / 1000 | 81.6% / 93.3% / 97.0% / 98.9% | D | SC-04 / SC-01 / 8 (raw throughputs, not the rounded SC-13) | Not stated in source. Distinct from MQ-07 (86.5%), which is MQ-06/8 at 118 residues: the two must not be swapped. 250-residue value corrected 2026-09-18 from 93.4% (was computed from the rounded 7.47× instead of the raw throughputs). |
 | **A3** | **AlphaFold3 side-investigation (118 res, seed 1, 5 diffusion samples, real weights, empty MSA)** | | | | | |
 | A3-01 | AF3 Colab CPU | process wall-clock total | 2453.99 s | M | `results/result_af3_cpu-colab.json → wall_clock_total_seconds` (formerly `total_inference_seconds`) | Includes start-up, model build, parameter loading, featurisation, JIT compilation, inference, extraction and output writing. Per sample: 490.80 s (`wall_clock_seconds_per_sample`), the previously reported value |
 | A3-02 | AF3 Colab CPU | **seconds per sample (model inference)** | **480.28 s** | M / D | `… → seconds_per_sample` = A3-25 / 5 | **Still includes JIT compilation.** Replaces 490.80 s (wall-clock / 5) |
@@ -600,7 +601,7 @@ those files: host CPU, cores and repo commit from `environment.json` (for 2026-0
 
 The 2026-09-15 and 2026-09-16 runs used different commits (`86fca03`, `9e1a07e`; `src/` is identical at both, only the notebook differs) yet agree within 1% (351.8907 / 348.861 = 1.009); the three September sessions span 348.861–359.2726 s (359.2726 / 348.861 = 1.030, i.e. 3%), all 1.64–1.69× the August value (348.861 / 212.113 = 1.645; 359.2726 / 212.113 = 1.694).
 
-1. The date of commit `2755250`, which added the results (discrepancy 12). The run date and time are not recorded.
+1. The date of commit `2755250`, which added the results (discrepancy 12). The result JSON records no timestamp, but the archived notebook output at commit `faeaa4b` has, as the first log line of its saved cell output, the timestamp 2026-08-08 05:19:35 (notebook clock, timezone not recorded; nbformat stores no execution metadata).
 2. HW-01, status R (`results/comparison.md:9,17-18`). The result JSON records only `host_processor: x86_64`.
 3. The run used a copy of the script embedded in the notebook, not a committed script (discrepancy 12).
 4. Includes `jax.profiler.trace` finalisation inside the timer, 36.00 s by the log (discrepancy 11). Not comparable with profiler-off first predicts.
