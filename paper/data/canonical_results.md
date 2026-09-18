@@ -64,6 +64,7 @@ recomputed from those raw values, not copied from the prose write-ups.
 | C-13 | Cost | Pod hourly price / GPU hourly price | 27.4× | D | C-02 / C-03 | md: "27x" (`cost_analysis.md:27`) |
 | C-14 | Cost | Idle pod fraction (baseline workload) | 87.5% (7/8 chips) | D | from CV-10 | md: "~87%" (`cost_analysis.md:50`) |
 | C-15 | Cost | Pod cost / 1,000 with pmap multi-query | $0.181 | D | C-02 / (MQ-05 × 3600) × 1000 | **Not stated in any source file** (`sharding.md:45-46` says only "roughly 7x" lower) |
+| C-16 | Cost | GPU cost / 1,000 predictions, September baseline | $0.639 | D | C-03 / (3600 / 6.5672) × 1000 = 0.6385 | Counterfactual to C-09, which uses the August B-06. Uses the 2026-09-15 GPU steady state (n=5); see discrepancy 16. The paper rounds to $0.64. |
 | **SL** | **Sequence-length sweep (TPU, recycle=0)** | | | | | |
 | SL-01 | Seq length 60 | init_params | 36.12 s | M | `results/sweep/sequence_length_sweep.json → [0].init_params_seconds` | |
 | SL-02 | Seq length 60 | 1st predict | 25.95 s | M | `… → [0].first_predict_seconds` | |
@@ -153,6 +154,7 @@ recomputed from those raw values, not copied from the prose write-ups.
 | VM-03 | vmap B=4 | steady / proteins·s⁻¹ / s per protein / HBM TPU_0 | 2.6905 s / 1.487 / 0.6726 s / 630 MB | M | `… → [2]` | |
 | VM-04 | vmap B=8 | steady / proteins·s⁻¹ / s per protein / HBM TPU_0 | 5.3053 s / 1.508 / 0.6632 s / 821 MB | M | `… → [3]` | |
 | VM-05 | vmap | throughput B=8 relative to B=1 | 0.735× | D | VM-04 / VM-01 throughput | Batching lowers throughput. Only TPU_0 used (`batching.md:36-38`, R) |
+| VM-06 | vmap | throughput B=2 and B=4 relative to B=1 | 0.940× / 0.725× | D | VM-02 / VM-01 and VM-03 / VM-01 throughput | Not stated in source. The paper rounds these to 0.94× and 0.73×. B=8 is VM-05. Only TPU_0 recorded (`batching.md:36-38`, R) |
 | **MQ** | **Multi-chip experiment 1: `jax.pmap` MULTI-QUERY. 8 independent proteins, one per chip** | | | | | |
 | MQ-01 | pmap multi-query | single-protein baseline, steady state | 0.470 s | M | `results/sweep/sharding.json → pmap_data_parallelism.single_protein_baseline_seconds` | Same value as CV-07; the file does not say which run it comes from |
 | MQ-02 | pmap multi-query | 8 proteins / 8 chips, steady state (whole call) | 0.5435 s | M | `… → pmap_8chips_steady_state_seconds` | No compile time recorded for this experiment |
