@@ -112,24 +112,24 @@ export const EXPERIMENTS = [
   {
     id: 'autoshard',
     phase: 'multichip',
-    title: 'Auto-sharding (GSPMD)',
+    title: 'Auto-sharding (auto-mesh)',
     finding:
-      'GSPMD auto-mesh left a full ~463 MB copy on every chip (no split).',
-    stat: '0×',
-    statLabel: 'tensor split',
+      'Auto-mesh left the per-chip footprint unchanged at ~463 MB, the single-chip figure.',
+    stat: '463 MB',
+    statLabel: 'per chip, unchanged',
     tone: 'negative',
-    body: 'We reused the auto-mesh pattern from the course Tunix lab on a single protein. Reproduced twice. Root cause: AlphaFold’s own ensembling is a sequential hk.while_loop, so nothing independent for GSPMD to distribute, and the partitioner replicated a full ~463 MB copy on every chip.',
+    body: 'We reused the auto-mesh pattern from the course Tunix lab on a single protein. Reproduced twice, recording one per-chip figure per run rather than a per-device list. The footprint is consistent with replication. Our best explanation is that AlphaFold’s Haiku modules carry no sharding annotations for the partitioner to propagate from; we state that as a hypothesis, since no compiler trace, array layout or ablation was retained. Which partitioner actually ran is not recorded either: the Job pins jax[tpu]==0.10.2, which defaults to Shardy, and sets no flag.',
   },
   {
     id: 'ensemble-shard',
     phase: 'multichip',
-    title: 'Real single-query sharding',
+    title: 'External ensemble across chips',
     finding:
-      'Re-implemented AlphaFold’s ensemble average with pmap + cross-device pmean; 8/8 chips used, reduction verified.',
+      'Built an ensemble outside the model with pmap + cross-device pmean; all 8 chips report nonzero memory.',
     stat: '8/8',
-    statLabel: 'chips genuinely used',
+    statLabel: 'chips with nonzero memory',
     tone: 'default',
-    body: 'Left AlphaFold’s source untouched. Built 8 ensemble members externally (own random seeds), one per chip via pmap, averaged with a real jax.lax.pmean on raw predicted_lddt logits. Steady-state 0.54s. Per-chip HBM varied 427–624 MB (not the flat 463 MB replication signature). Honest scope: distributed ensembling for one query, not full Evoformer tensor sharding.',
+    body: 'Left AlphaFold’s source untouched. Built 8 ensemble members externally (own random seeds), one per chip via pmap, averaged with a real jax.lax.pmean on raw predicted_lddt logits. Steady-state 0.54s. Per-chip HBM varied 427–624 MB (not the flat 463 MB replication signature). An allclose check on the first and last returned replicas passes. Honest scope: it shows that an ensemble can be distributed for one query, not that AlphaFold’s internal ensembling can, and not full Evoformer tensor sharding.',
   },
   {
     id: 'scaling-law',

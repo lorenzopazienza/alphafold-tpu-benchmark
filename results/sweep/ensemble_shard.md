@@ -2,7 +2,7 @@
 
 ## Motivation
 
-`sharding.md` showed that neither `jax.vmap` nor GSPMD auto-mesh sharding
+`sharding.md` showed that neither `jax.vmap` nor auto-mesh automatic sharding
 achieve real distributed computation for a *single* AlphaFold query, both
 either stayed on one chip (`vmap`) or silently replicated the full
 computation on every chip instead of splitting it (auto-mesh: 463 MB per chip, the single-chip footprint;
@@ -18,13 +18,13 @@ protein) is implemented internally as a **sequential** `hk.while_loop`
 pass runs one after another, accumulating a running sum. A sequential
 loop with a carried accumulator has nothing independent for XLA's
 auto-partitioner to distribute, so AlphaFold's own ensembling cannot be split across chips by sharding; this motivates the pmap + pmean workaround below.
-It is not the cause of the GSPMD replication in `sharding.md`: that run used `num_ensemble = 1` (`src/spike_meshshard_forward_pass.py:92`)
+It is not the cause of the auto-mesh replication in `sharding.md`: that run used `num_ensemble = 1` (`src/spike_meshshard_forward_pass.py:97`)
 and replicated because AlphaFold's Haiku modules carry no sharding annotations (`sharding.md:70-73`).
 
 ## What this experiment does instead
 
-Re-implements the same mathematical operation, average N independent
-forward passes of one query, using real distributed hardware:
+Builds an ensemble outside the model, averaging N independent
+forward passes of one query across real distributed hardware:
 
 - AlphaFold's own source code is **completely unmodified**
   (`num_ensemble` stays 1 internally; no monkey-patching of Haiku
@@ -56,7 +56,14 @@ the human-readable conversion for after the pmapped call returns.
 | Compile + first run | 16.61s |
 | Steady-state | 0.538s |
 | Chips with nonzero memory | **8 / 8** |
-| Cross-device `pmean` verified consistent | **True** |
+| `jnp.allclose(averaged[0], averaged[-1])` | **True** |
+
+The consistency check compares the first and last returned replicas only
+(`src/spike_ensemble_shard_forward_pass.py:160`). It is not a comparison
+across all eight, and no independent expected mean is computed. The JSON
+field that records it is named `pmean_reduction_consistent_across_chips`,
+which promises more than the check measures; the field name is left
+unchanged because it is recorded data in result files already committed.
 
 Per-chip memory (confirms genuine per-chip work, not replication, compare
 to the failed auto-mesh attempt, which recorded 463 MB per chip, the

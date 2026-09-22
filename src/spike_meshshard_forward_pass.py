@@ -2,7 +2,7 @@
 
 Attempts to shard ONE protein's computation across all 8 physical chips
 (not multiple proteins across chips like pmap -- one protein's own
-internal tensors split across chips). Uses the same GSPMD auto-sharding
+internal tensors split across chips). Uses the same automatic-sharding
 pattern the course's own Lab 2 Tunix training script uses:
   mesh = jax.make_mesh(..., axis_types=(jax.sharding.AxisType.Auto,)*N)
   with jax.set_mesh(mesh): ...
@@ -13,6 +13,11 @@ a beneficial way to split the computation -- we check this empirically via
 per-chip memory usage after the run (if sharding worked, HBM should be
 spread across multiple chips instead of concentrated on one, unlike every
 other experiment in this project).
+
+Which partitioner actually executes this is not recorded anywhere: the
+Job pins jax[tpu]==0.10.2, which defaults to Shardy, and sets no
+partitioner flag. The "GSPMD" string in the description field of
+results/sweep/sharding.json is hand-written, not a recorded value.
 
 Usage:
     python3 spike_meshshard_forward_pass.py --run_tag=tpu-v5e --num_residues=118

@@ -14,7 +14,7 @@ flowchart LR
         Pd["Chips 2-6: proteins 3-7, own forward passes<br/>445-454 MB"]
         P7["Chip 7: protein 8, own forward pass<br/>469 MB"]
     end
-    subgraph GS["GSPMD auto-mesh: replication, not sharding"]
+    subgraph GS["Auto-mesh: replication, not sharding"]
         direction TB
         G0["8 chips: 463 MB per chip, same as the<br/>single-chip footprint (one recorded figure)"]
     end
@@ -46,14 +46,17 @@ instead of 2.13, the same TPU pod's real cost-per-prediction would drop
 roughly 7x, finally reflecting the hardware's true speed advantage instead
 of being masked by 87% idle capacity.
 
-## B. GSPMD auto-mesh sharding, attempted, did not achieve sharding (honest negative result)
+## B. Auto-mesh sharding, attempted, did not achieve sharding (honest negative result)
 
 Wrapped a **single** protein's computation in a
 `jax.make_mesh(..., axis_types=(jax.sharding.AxisType.Auto,)*2)` +
 `jax.set_mesh(mesh)` context, the same automatic-partitioning pattern the
-course's own Lab 2 Tunix training script uses, to see if XLA's GSPMD
+course's own Lab 2 Tunix training script uses, to see if XLA's automatic
 partitioner would split one protein's tensors across the 8 chips without
-any manual sharding annotations in AlphaFold's code.
+any manual sharding annotations in AlphaFold's code. Which partitioner
+actually ran is not recorded: the Job pins `jax[tpu]==0.10.2`, which
+defaults to Shardy, and sets no partitioner flag; the "GSPMD" string in
+`sharding.json`'s description field is hand-written.
 
 Reproduced twice for reliability:
 
@@ -67,19 +70,23 @@ Reproduced twice for reliability:
 The tell is the memory: the run records **463 MB per chip**, the same as the
 single-chip footprint (`chip_visibility.md`); it stores one per-chip figure, not the per-device list. If the
 computation had genuinely been split, each chip would hold a *fraction* of
-that total, not the full single-chip footprint. What actually happened: GSPMD
-found zero sharding hints anywhere in AlphaFold's unannotated Haiku
-modules, so it made the conservative choice: run the complete, unmodified
-computation redundantly on all 8 chips rather than split it. Timing
+that total, not the full single-chip footprint. Our best explanation is
+that the partitioner found zero sharding hints anywhere in AlphaFold's
+unannotated Haiku modules and fell back to replication rather than a
+split. We state that as a hypothesis, not a measurement: no compiler
+trace, no retained array layouts and no annotation ablation are in this
+repository, and equal per-chip memory does not by itself establish that
+every chip executed an identical full computation. Timing
 confirms this too, `init_params` and `first predict` are statistically
 indistinguishable from the single-chip baseline (~36s / ~27s there vs
 ~37s / ~15s here; the drop in "first predict" specifically matches the
 compilation-cache pattern from a warm XLA cache carried over from earlier
 in the same pod's Python process lifetime, not sharding).
 
-**Why we're confident in this negative result rather than treating it as
+**Why we report this negative result rather than treating it as
 inconclusive:** it reproduced across two separate runs (463 MB per chip both times), and
-the mechanism is well understood. GSPMD's automatic partitioner needs
+the documented design of these partitioners is consistent with it. An
+automatic partitioner of this kind needs
 either explicit `PartitionSpec` sharding constraints on the model's
 weights/activations, or code written with sharding-aware primitives
 (`shard_map`, explicit `psum`/collectives). AlphaFold's original codebase

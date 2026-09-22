@@ -512,14 +512,16 @@
           chips).
         </li>
         <li>
-          <strong>Auto-sharding GSPMD - 0×</strong> tensor split (negative);
-          ~463 MB copy on every chip (AlphaFold ensemble is a sequential
-          <code>hk.while_loop</code>).
+          <strong>Auto-sharding (auto-mesh) - 463 MB per chip, unchanged</strong>
+          (negative); consistent with replication. Best explanation: no sharding
+          annotations for the partitioner to propagate from, stated as a
+          hypothesis.
         </li>
         <li>
-          <strong>Ensemble shard - 8/8 chips</strong> via
-          <code>pmap</code> + <code>pmean</code> on one query’s ensemble
-          average; reduction verified; HBM 427–624 MB/chip.
+          <strong>External ensemble - 8/8 chips</strong> with nonzero memory via
+          <code>pmap</code> + <code>pmean</code> on an ensemble built outside the
+          model; an allclose check on the first and last replicas passes;
+          HBM 427–624 MB/chip.
         </li>
       </ol>
 

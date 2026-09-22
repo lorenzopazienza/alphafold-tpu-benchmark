@@ -23,7 +23,7 @@
 | **Compilation layer** | JAX/XLA (JIT, compile cache, `vmap` / `pmap`) |
 | **Telemetry** | `jax.profiler` traces · TensorBoard Profile · in-process HBM / `tpu-info` |
 
-**Headline result:** steady-state TPU inference is **451×** faster than CPU and **27.8×** faster than Google Colab NVIDIA Tesla T4 (0.47s vs 212s / 13s). Cold TPU calls are dominated by host-side XLA compilation (~76% in `pjit` `cache_miss`). Default single-query path uses **1 of 8 chips**; multi-query `jax.pmap` recovers **6.92×** throughput; ensemble `pmap`+`pmean` fills **8/8 chips** for one query’s averaging (GSPMD auto-mesh only replicated).
+**Headline result:** steady-state TPU inference is **451×** faster than CPU and **27.8×** faster than Google Colab NVIDIA Tesla T4 (0.47s vs 212s / 13s). Cold TPU calls are dominated by host-side XLA compilation (~76% in `pjit` `cache_miss`). Default single-query path uses **1 of 8 chips**; multi-query `jax.pmap` gives eight chips **6.53–7.91×** the throughput of one on a matched chip-count grid (**6.92×** against the single-query baseline, which uses a different input family); an ensemble built **outside** the model with `pmap`+`pmean` occupies **8/8 chips**; automatic sharding left the per-chip footprint unchanged, consistent with replication.
 
 ![Human ubiquitin · ESMFold · pLDDT coloring](figures/ubiquitin_structure.png)
 
@@ -87,7 +87,7 @@ alphafold-tpu-benchmark/
 ├── src/                       # Benchmark entrypoints (same path, all backends)
 │   ├── spike_batch_forward_pass.py          # jax.vmap multi-query batching
 │   ├── spike_ensemble_shard_forward_pass.py # Real single-query sharding (pmap + pmean)
-│   ├── spike_meshshard_forward_pass.py      # GSPMD auto-mesh attempt
+│   ├── spike_meshshard_forward_pass.py      # auto-mesh automatic-sharding attempt
 │   ├── spike_pmap_forward_pass.py           # Multi-chip data parallel
 │   ├── spike_tpu_forward_pass.py            # Baseline: init / cold / steady-state
 │   └── make_af3_input.py                    # Shared AF3 input builder (Google Colab + TPU Job)
@@ -215,8 +215,8 @@ Twelve further experiments on the Stanford GKE TPU v5e-8 (2×4 lite) slice (`res
 | `jax.vmap` batch 1/2/4/8 | Throughput never exceeds batch=1: **0.94× / 0.73× / 0.74×** at B = 2 / 4 / 8 (single-chip only) |
 | Compilation cache (warm restart) | **6.8×** faster `init_params`, **1.9×** faster first predict |
 | `jax.pmap` 8 proteins / 8 chips | **6.92×** throughput (2.13 → 14.72 proteins/s) |
-| GSPMD auto-mesh (1 protein) | **Replicated**, not sharded - 463MB per chip, the single-chip footprint (one recorded figure), reproduced twice |
-| Ensemble shard: `pmap` + `pmean` | Fixed the auto-mesh failure - **8/8 chips**, verified-correct cross-device reduction |
+| Auto-mesh automatic sharding (1 protein) | Per-chip footprint **unchanged** at 463MB, the single-chip figure (one recorded scalar per run, not a per-device list), in both runs - consistent with replication |
+| Ensemble shard: `pmap` + `pmean` | External 8-member ensemble across **8/8 chips** (all report nonzero HBM); an `allclose` check on the first and last returned replicas passes. Does not repair the auto-mesh result |
 | Scaling law (16-point grid) | `throughput ≈ 4527.77 · chips^0.963 · length^−1.572` (R² **0.981**) |
 
 ![Sequence length and recycle depth scaling](figures/scaling_charts.png)
@@ -264,8 +264,8 @@ Architectural adjustments measured or recommended against the bottlenecks above:
 | **bfloat16 precision** | `--precision bfloat16` vs float32 | HBM **−40%**; little speed gain at 118 residues (still useful for larger sequences / packing) |
 | **Batch size via `vmap`** | Batches 1/2/4/8 | **Negative** for this graph - do not treat as multi-chip scaling |
 | **Recycle / length policy** | Swept recycles and lengths | Recycles scale linearly at runtime; length is super-linear (attention) - size SLOs accordingly |
-| **GSPMD auto-mesh** | Course Tunix-style auto sharding of one protein | **Did not** shard tensors (full replica per chip) - AlphaFold's Haiku modules carry no sharding annotations, so GSPMD replicated the model instead of partitioning it |
-| **Ensemble shard (`pmap` + `pmean`)** | Re-implemented AlphaFold's own ensemble-average as a `pmap`+collective reduction instead, zero changes to AlphaFold's source | **Fixed it** - 8/8 chips genuinely used, cross-device reduction verified correct |
+| **Auto-mesh (automatic sharding)** | Course Tunix-style auto sharding of one protein | Per-chip footprint unchanged at 463MB, the single-chip figure - consistent with replication, with no evidence of any reduction. Our best explanation is that AlphaFold's Haiku modules carry no sharding annotations for the partitioner to propagate from, but we did not retain the compiler evidence to confirm it, and no artifact records which partitioner ran (the pinned `jax[tpu]==0.10.2` defaults to Shardy; the "GSPMD" label in `sharding.json` is hand-written) |
+| **Ensemble shard (`pmap` + `pmean`)** | Built an ensemble **outside** the model - eight differently seeded featurizations, one per chip under `pmap`, averaged with `jax.lax.pmean` - zero changes to AlphaFold's source. AlphaFold's own ensembling stays at `num_ensemble = 1` and is never exercised | All 8 chips report nonzero HBM; an `allclose` check on the first and last returned replicas passes. Shows that *an* ensemble can be distributed, not that AlphaFold's internal one can, and does not repair the auto-mesh result |
 | **Recommended ops practice** | Keep serving process warm; pad to shared shapes; choose chip count for latency/throughput SLO, not unit $/pred | Matches Lab 1/3 vLLM `VLLM_XLA_CACHE_PATH` lesson; cost/prediction ~flat in chip count after `pmap` |
 
 ---
@@ -340,8 +340,10 @@ hardware/backend combinations found near-identical output across
 different machines on the *same* backend (Stanford vs. Google Colab Intel Xeon CPU (2 vCPU), <0.1%
 difference on 4/5 samples), but substantially different output *across*
 backends (CPU vs. GPU differs by up to 32% per sample) - plausibly
-explained by a numerical issue AlphaFold3's own issue tracker documents
-for GPUs below compute capability 8.0 (the Google Colab T4 is 7.5).
+explained by a numerical issue AlphaFold3's own performance
+documentation (`docs/performance.md`) reports for CUDA Capability 7.x
+devices (the Google Colab T4 is 7.5). We did not isolate the operation
+responsible, so we report this as a plausible cause, not a confirmed one.
 
 **TPU: a documented negative result for the version we tested.** Every infrastructure
 step succeeded (native C++ build, Chemical Component Dictionary,

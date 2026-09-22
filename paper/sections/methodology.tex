@@ -254,7 +254,7 @@ keyword arguments used by AlphaFold2's source map to the current \texttt{min=}/\
 \begin{itemize}
   \item \textbf{118 residues} in the single-query scripts: a fixed toy sequence
     (\texttt{TOY\_SEQUENCE\_118}, \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:107-110}), also used by the
-    ensemble and GSPMD scripts and by the AF3 input (\texttt{src/\allowbreak{}make\_\allowbreak{}af3\_\allowbreak{}input.py:30}).
+    ensemble and auto-mesh scripts and by the AF3 input (\texttt{src/\allowbreak{}make\_\allowbreak{}af3\_\allowbreak{}input.py:30}).
     It is synthetic, not a real protein.
   \item \textbf{Any other length:} the 20-letter alphabet \texttt{ACDEFGHIKLMNPQRSTVWY} repeated
     and truncated (\texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:113-117}).
@@ -293,13 +293,13 @@ keyword arguments used by AlphaFold2's source map to the current \texttt{min=}/\
 \toprule
 Setting & Value & Source \\
 \midrule
-Feature seed & 0 (ensemble: member index \texttt{i}, 0--7) & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:172}; \texttt{src/\allowbreak{}spike\_\allowbreak{}ensemble\_\allowbreak{}shard\_\allowbreak{}forward\_\allowbreak{}pass.py:103} \\
+Feature seed & 0 (ensemble: member index \texttt{i}, 0--7) & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:172}; \texttt{src/\allowbreak{}spike\_\allowbreak{}ensemble\_\allowbreak{}shard\_\allowbreak{}forward\_\allowbreak{}pass.py:110} \\
 Parameter-init seed & 0 & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:180} \\
 \texttt{predict} seed / \texttt{apply} PRNG key & 0 / \texttt{PRNGKey(0)} & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:198,211}; \texttt{src/\allowbreak{}spike\_\allowbreak{}pmap\_\allowbreak{}forward\_\allowbreak{}pass.py:100} \\
 Compilation cache & \texttt{jax\_\allowbreak{}compilation\_\allowbreak{}cache\_\allowbreak{}dir=/\allowbreak{}tmp/\allowbreak{}jax\_\allowbreak{}cache}, min entry size $-1$, min compile time 0; two separate processes & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:138-142}; \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}combined.yaml:57-64} \\
-GSPMD mesh & \texttt{jax.make\_\allowbreak{}mesh((8, 1), ("fsdp", "tp"))}, both axes \texttt{AxisType.Auto}, under \texttt{jax.set\_mesh} & \texttt{src/\allowbreak{}spike\_\allowbreak{}meshshard\_\allowbreak{}forward\_\allowbreak{}pass.py:85-86} \\
+Auto mesh & \texttt{jax.make\_\allowbreak{}mesh((8, 1), ("fsdp", "tp"))}, both axes \texttt{AxisType.Auto}, under \texttt{jax.set\_mesh} & \texttt{src/\allowbreak{}spike\_\allowbreak{}meshshard\_\allowbreak{}forward\_\allowbreak{}pass.py:90-91} \\
 \texttt{pmap} multi-query & \texttt{jax.pmap(runner.apply, in\_\allowbreak{}axes=(None, None, 0))} & \texttt{src/\allowbreak{}spike\_\allowbreak{}pmap\_\allowbreak{}forward\_\allowbreak{}pass.py:101} \\
-\texttt{pmap} + \texttt{pmean} ensemble & \texttt{jax.pmap} over members, \texttt{jax.lax.pmean} of \texttt{predicted\_lddt} logits on axis \texttt{ensemble} & \texttt{src/\allowbreak{}spike\_\allowbreak{}ensemble\_\allowbreak{}shard\_\allowbreak{}forward\_\allowbreak{}pass.py:122,125} \\
+\texttt{pmap} + \texttt{pmean} ensemble & \texttt{jax.pmap} over members, \texttt{jax.lax.pmean} of \texttt{predicted\_lddt} logits on axis \texttt{ensemble} & \texttt{src/\allowbreak{}spike\_\allowbreak{}ensemble\_\allowbreak{}shard\_\allowbreak{}forward\_\allowbreak{}pass.py:129,132} \\
 \texttt{vmap} batching & \texttt{jax.vmap(runner.apply, in\_\allowbreak{}axes=(None, None, 0))} on one device & \texttt{src/\allowbreak{}spike\_\allowbreak{}batch\_\allowbreak{}forward\_\allowbreak{}pass.py:117} \\
 Chip visibility & \texttt{TPU\_VISIBLE\_CHIPS} set to 1, 2, 4 or 8 chips; the 2- and 4-chip runs failed, and so did a retry with \texttt{LIBTPU\_INIT\_ARGS} & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}chipcount.yaml:39-43}; \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}chips\_\allowbreak{}retry.yaml} \\
 \bottomrule
@@ -376,7 +376,7 @@ consecutive regions:
 Region & What is timed & Synchronization & Source \\
 \midrule
 \texttt{init\_params} & \texttt{runner.init\_\allowbreak{}params(...)}: Haiku \texttt{init}, including its own JIT trace, compilation and execution & none explicit & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:178-182} \\
-1st \texttt{predict} (compile + run) & \texttt{runner.predict(...)}, \textbf{inside \texttt{jax.profiler.trace(...)}} in \texttt{spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py}, without a profiler in the GSPMD script & \texttt{jax.block\_\allowbreak{}until\_\allowbreak{}ready(result)} & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:191-201}; \texttt{src/\allowbreak{}spike\_\allowbreak{}meshshard\_\allowbreak{}forward\_\allowbreak{}pass.py:108-113} \\
+1st \texttt{predict} (compile + run) & \texttt{runner.predict(...)}, \textbf{inside \texttt{jax.profiler.trace(...)}} in \texttt{spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py}, without a profiler in the auto-mesh script & \texttt{jax.block\_\allowbreak{}until\_\allowbreak{}ready(result)} & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:191-201}; \texttt{src/\allowbreak{}spike\_\allowbreak{}meshshard\_\allowbreak{}forward\_\allowbreak{}pass.py:113-118} \\
 2nd \texttt{predict} (steady state) & the identical call again, no profiler & \texttt{jax.block\_\allowbreak{}until\_\allowbreak{}ready(result2)} & \texttt{src/\allowbreak{}spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py:203-216} \\
 \bottomrule
 \end{tabularx}
@@ -451,14 +451,14 @@ Implications:
     and \texttt{spike\_\allowbreak{}batch\_\allowbreak{}forward\_\allowbreak{}pass.py} include profiler overhead. On CPU/GPU they
     are not pure compile + execute times. Steady-state times are unaffected.
   \item \textbf{TPU magnitude unknown.} No TPU run log is in the repo \TODO{NOT IN REPO}.
-  \item \textbf{Non-comparable first calls across scripts.} The \texttt{pmap}, ensemble and GSPMD
+  \item \textbf{Non-comparable first calls across scripts.} The \texttt{pmap}, ensemble and auto-mesh
     scripts time their first call without a profiler. Their first-call numbers
-    (e.g.\ GSPMD 14.76 / 14.46~s, ensemble 16.61~s) are not comparable with the
+    (e.g.\ auto-mesh 14.76 / 14.46~s, ensemble 16.61~s) are not comparable with the
     $\sim$27--29~s first predicts from \texttt{spike\_\allowbreak{}tpu\_\allowbreak{}forward\_\allowbreak{}pass.py}.
-  \item \textbf{Alternative explanation for GSPMD.} \texttt{results/\allowbreak{}sweep/\allowbreak{}sharding.md} attributes
-    the shorter GSPMD first call to a warm XLA cache ``carried over from earlier in
+  \item \textbf{Alternative explanation for the auto-mesh first call.} \texttt{results/\allowbreak{}sweep/\allowbreak{}sharding.md} attributes
+    the shorter auto-mesh first call to a warm XLA cache ``carried over from earlier in
     the same pod's Python process lifetime''. But \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}sharding.yaml:36-44}
-    launches the \texttt{pmap} and GSPMD scripts as separate \texttt{python3} processes, without
+    launches the \texttt{pmap} and auto-mesh scripts as separate \texttt{python3} processes, without
     \texttt{-{}-cache\_dir}. The missing profiler is a simpler explanation consistent with the
     CPU/GPU logs, but it is \textbf{not verified on TPU}.
   \item \textbf{Trace window.} The same effect may explain why the profiler's traced
@@ -476,7 +476,7 @@ Script & 1st call timed & 2nd call timed & Profiler on 1st call & Derived metric
 \midrule
 \texttt{spike\_\allowbreak{}batch\_\allowbreak{}forward\_\allowbreak{}pass.py} (\texttt{vmap}) & yes & yes, \texttt{block\_until\_ready} & \textbf{yes} & throughput = $B / t_2$; per protein = $t_2 / B$ & \texttt{src/\allowbreak{}spike\_\allowbreak{}batch\_\allowbreak{}forward\_\allowbreak{}pass.py:119-136} \\
 \texttt{spike\_\allowbreak{}pmap\_\allowbreak{}forward\_\allowbreak{}pass.py} & yes & yes, \texttt{block\_until\_ready} & no & same definitions & \texttt{src/\allowbreak{}spike\_\allowbreak{}pmap\_\allowbreak{}forward\_\allowbreak{}pass.py:103-118} \\
-\texttt{spike\_\allowbreak{}ensemble\_\allowbreak{}shard\_\allowbreak{}forward\_\allowbreak{}pass.py} & yes & yes, \texttt{block\_until\_ready} & no & none (one query) & \texttt{src/\allowbreak{}spike\_\allowbreak{}ensemble\_\allowbreak{}shard\_\allowbreak{}forward\_\allowbreak{}pass.py:128-140} \\
+\texttt{spike\_\allowbreak{}ensemble\_\allowbreak{}shard\_\allowbreak{}forward\_\allowbreak{}pass.py} & yes & yes, \texttt{block\_until\_ready} & no & none (one query) & \texttt{src/\allowbreak{}spike\_\allowbreak{}ensemble\_\allowbreak{}shard\_\allowbreak{}forward\_\allowbreak{}pass.py:135-147} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -615,7 +615,7 @@ Compilation cache & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowb
 Profiler trace capture & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}trace\_\allowbreak{}capture.yaml:32-33} & same & 1 & Raw trace not in repo \\
 \texttt{vmap} batching (B = 1, 2, 4, 8) & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}batch.yaml:32-35} & \texttt{spike\_\allowbreak{}batch\_\allowbreak{}forward\_\allowbreak{}pass.py} & 1 & \\
 \texttt{pmap} multi-query (8 proteins) & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}sharding.yaml:36-37} & \texttt{spike\_\allowbreak{}pmap\_\allowbreak{}forward\_\allowbreak{}pass.py} & 1 & \\
-GSPMD auto-mesh & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}sharding.yaml:43-44} & \texttt{spike\_\allowbreak{}meshshard\_\allowbreak{}forward\_\allowbreak{}pass.py} & \textbf{2} & \texttt{sharding.json} has \texttt{run\_1} and \texttt{run\_2}, but the Job launches the script once. How the second run was launched is \TODO{NOT IN REPO}. \\
+Auto-mesh & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}sharding.yaml:43-44} & \texttt{spike\_\allowbreak{}meshshard\_\allowbreak{}forward\_\allowbreak{}pass.py} & \textbf{2} & \texttt{sharding.json} has \texttt{run\_1} and \texttt{run\_2}, but the Job launches the script once. How the second run was launched is \TODO{NOT IN REPO}. \\
 \texttt{pmap} + \texttt{pmean} ensemble & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}ensemble\_\allowbreak{}shard.yaml:32-33} & \texttt{spike\_\allowbreak{}ensemble\_\allowbreak{}shard\_\allowbreak{}forward\_\allowbreak{}pass.py} & 1 & \\
 Scaling grid (4 $\times$ 4 points) & \texttt{configs/\allowbreak{}af\_\allowbreak{}spike\_\allowbreak{}scaling\_\allowbreak{}grid.yaml:34-41} & \texttt{spike\_\allowbreak{}pmap\_\allowbreak{}forward\_\allowbreak{}pass.py} & 1 & 16 processes in total, one per point \\
 AF3, Colab CPU / Colab GPU & \texttt{af3\_*\_colab.ipynb} & \texttt{run\_alphafold.py} & 1 each & \\
@@ -675,7 +675,8 @@ What this implies for the paper:
   \item The script version that produced \texttt{results/\allowbreak{}result\_\allowbreak{}tpu-v5e-podslice.json}.
   \item Raw per-run JSONs and Job logs for every TPU experiment, and how they were aggregated into \texttt{results/sweep/*.json}.
   \item Which run supplied the recycle = 3 value (sweep Job or the recycle-3-only Job).
-  \item How the second GSPMD run was launched.
+  \item How the second auto-mesh run was launched.
+  \item Which partitioner actually executed the auto-mesh runs. The Job pins \texttt{jax[tpu]==0.10.2}, which defaults to Shardy, and sets no partitioner flag; the \texttt{"GSPMD"} string in \texttt{results/\allowbreak{}sweep/\allowbreak{}sharding.json}'s \texttt{description} field is hand-written, not recorded. \TODO{NOT IN REPO}
   \item Size of the profiler overhead on TPU first-call timings.
   \item Whether AF2 timings with trained weights match the random-init timings.
   \item Run dates of all TPU experiments.

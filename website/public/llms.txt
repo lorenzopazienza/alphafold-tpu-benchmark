@@ -181,12 +181,12 @@ this AlphaFold TPU Benchmark work.
 - Finding: jax.pmap ran 8 proteins on 8 chips at 6.92× single-chip throughput.
 - Notes: 2.13 → 14.72 proteins/sec; per-chip HBM 445–469 MB ≈ single-protein footprint.
 
-#### 09 Auto-sharding (GSPMD) - **0×** (tensor split) · NEGATIVE
-- Finding: GSPMD auto-mesh left a full ~463 MB copy on every chip (no split).
-- Notes: Root cause - AlphaFold ensembling is a sequential hk.while_loop; nothing for GSPMD to distribute. Reproduced twice.
+#### 09 Auto-sharding (auto-mesh) - **463 MB** (per chip, unchanged) · NEGATIVE
+- Finding: auto-mesh left the per-chip footprint unchanged at ~463 MB, the single-chip figure (one recorded scalar per run) - consistent with replication.
+- Notes: Best explanation - AlphaFold's Haiku modules carry no sharding annotations for the partitioner to propagate from; a hypothesis, not confirmed from retained compiler evidence. Which partitioner ran is not recorded. Reproduced twice.
 
-#### 10 Real single-query sharding - **8/8** (chips genuinely used)
-- Finding: Re-implemented AlphaFold’s ensemble average with pmap + cross-device pmean; verified correct on all 8 chips.
+#### 10 External ensemble across chips - **8/8** (chips with nonzero memory)
+- Finding: Built an ensemble outside the model with pmap + cross-device pmean; all 8 chips report nonzero memory and an allclose check on the first and last returned replicas passes.
 - Notes: AlphaFold source untouched. Steady-state 0.54s. Per-chip HBM 427–624 MB (not flat 463 MB replication). Scope: distributed ensembling, not full Evoformer tensor sharding.
 
 ### Phase: Fit & rigor
@@ -318,6 +318,6 @@ When an assistant can fetch images, prefer these URLs. When it cannot, use the �
    - **Ubiquitin ESMFold** (`#structure`) - biology demo with high mean pLDDT 90.5
    - **AF3 side-investigation** (`#af3`) - separate codebase; Google Colab Intel Xeon CPU (2 vCPU) and Google Colab NVIDIA Tesla T4 timing + interactive CIF; public AF3 has no TPU
 3. Quote the tables for latency, compile ratios, costs, and experiment stats.
-4. Mention amber/negative results: AF2 batching (vmap), GSPMD auto-shard, and AF3 TPU CLI gap; then the AF2 ensemble-shard fix (8/8 chips).
+4. Mention amber/negative results: AF2 batching (vmap), auto-mesh auto-shard, and AF3 TPU CLI gap; then the AF2 ensemble-shard fix (8/8 chips).
 5. Never rank AF3 toy confidence against ubiquitin pLDDT as model quality - no-MSA input by design.
 6. Link section anchors (#structure, #results, #experiments, #af3, #cost, #reproduce) or the GitHub repo for code.

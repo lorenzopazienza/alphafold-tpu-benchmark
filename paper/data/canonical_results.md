@@ -243,8 +243,8 @@ result (VM) that runs on one chip. Keep them apart in the paper.
   Eight *different, independent* proteins, one per chip. The output is 8 structures.
   The metric is **throughput**: 14.72 proteins/s against 2.13 for the baseline,
   a **6.92×** speedup. HBM per chip is 445–644 MB. No `pmean` is involved.
-- **Experiment 2: GSPMD auto-mesh (GS-01…GS-04).** One protein under an Auto mesh.
-  The run records 463 MB per chip, the single-chip footprint (one figure; the per-device list was not saved), so this is **replication, not sharding**.
+- **Experiment 2: auto-mesh automatic sharding (GS-01…GS-04).** One protein under an Auto mesh.
+  The run records 463 MB per chip, the single-chip footprint (one figure; the per-device list was not saved), which is **consistent with replication** and gives no evidence of any reduction in per-chip footprint; it does not by itself establish that every chip executed an identical full computation.
   Steady state (0.472 / 0.473 s) is unchanged from single-chip.
 - **Experiment 3: pmap + pmean ensemble (EN-01…EN-09).** **One** query whose 8
   ensemble members (different `random_seed`s) run one per chip and are averaged
@@ -255,7 +255,7 @@ result (VM) that runs on one chip. Keep them apart in the paper.
   Its 0.5381 s must not be compared with, or averaged with, MQ-02's 0.5435 s: they
   are different workloads that produce different outputs.
 - In addition, the ensemble members use a trivial single-sequence MSA, so they are
-  near-identical inputs (`ensemble_shard.md:82-88`). The experiment demonstrates the
+  near-identical inputs (`ensemble_shard.md:89-95`). The experiment demonstrates the
   mechanism, not a scientifically meaningful ensemble.
 
 ## Discrepancies and caveats found while cross-checking
@@ -268,7 +268,7 @@ result (VM) that runs on one chip. Keep them apart in the paper.
    the real per-chip values (chip 0 = 644 MB, chip 1 = 452 MB, chips 2-6 = 445-454 MB,
    chip 7 = 469 MB) and labels each chip as running its own forward pass. Line 35 now says
    445-469 MB on chips 1-7 and 644 MB on `TPU_0`, stressing that the values differ per chip
-   rather than matching GSPMD's single 463 MB per-chip figure. A new paragraph at line 37 states that
+   rather than matching the auto-mesh run's single 463 MB per-chip figure. A new paragraph at line 37 states that
    the data does not establish why chip 0 holds more memory, and gives one plausible,
    unmeasured contributor (`init_params` and `jnp.stack` run outside `pmap` on the JAX
    default device). The line numbers in the problem text above refer to the pre-fix
@@ -401,7 +401,7 @@ result (VM) that runs on one chip. Keep them apart in the paper.
     PR, MC, RR, CC and B-08.
     - This offers an alternative to the "warm XLA cache" explanation in
       `sweep/sharding.md:74-77`: `configs/af_spike_sharding.yaml` runs the `pmap` and
-      GSPMD scripts as separate processes without a cache directory.
+      auto-mesh scripts as separate processes without a cache directory.
     - It may also explain why the traced span TR-01 (16.56 s) is shorter than B-08
       (27.78 s).
     - Both are unverified on TPU.

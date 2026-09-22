@@ -178,7 +178,7 @@ keyword arguments used by AlphaFold2's source map to the current `min=`/`max=`
 
 - **118 residues** in the single-query scripts: a fixed toy sequence
   (`TOY_SEQUENCE_118`, `src/spike_tpu_forward_pass.py:107-110`), also used by the
-  ensemble and GSPMD scripts and by the AF3 input (`src/make_af3_input.py:30`).
+  ensemble and auto-mesh scripts and by the AF3 input (`src/make_af3_input.py:30`).
   It is synthetic, not a real protein.
 - **Any other length:** the 20-letter alphabet `ACDEFGHIKLMNPQRSTVWY` repeated
   and truncated (`src/spike_tpu_forward_pass.py:113-117`).
@@ -207,13 +207,13 @@ keyword arguments used by AlphaFold2's source map to the current `min=`/`max=`
 
 | Setting | Value | Source |
 |---|---|---|
-| Feature seed | 0 (ensemble: member index `i`, 0–7) | `src/spike_tpu_forward_pass.py:172`; `src/spike_ensemble_shard_forward_pass.py:103` |
+| Feature seed | 0 (ensemble: member index `i`, 0–7) | `src/spike_tpu_forward_pass.py:172`; `src/spike_ensemble_shard_forward_pass.py:110` |
 | Parameter-init seed | 0 | `src/spike_tpu_forward_pass.py:180` |
 | `predict` seed / `apply` PRNG key | 0 / `PRNGKey(0)` | `src/spike_tpu_forward_pass.py:198,211`; `src/spike_pmap_forward_pass.py:100` |
 | Compilation cache | `jax_compilation_cache_dir=/tmp/jax_cache`, min entry size −1, min compile time 0; two separate processes | `src/spike_tpu_forward_pass.py:138-142`; `configs/af_spike_combined.yaml:57-64` |
-| GSPMD mesh | `jax.make_mesh((8, 1), ("fsdp", "tp"))`, both axes `AxisType.Auto`, under `jax.set_mesh` | `src/spike_meshshard_forward_pass.py:85-86` |
+| Auto mesh | `jax.make_mesh((8, 1), ("fsdp", "tp"))`, both axes `AxisType.Auto`, under `jax.set_mesh` | `src/spike_meshshard_forward_pass.py:90-91` |
 | `pmap` multi-query | `jax.pmap(runner.apply, in_axes=(None, None, 0))` | `src/spike_pmap_forward_pass.py:101` |
-| `pmap` + `pmean` ensemble | `jax.pmap` over members, `jax.lax.pmean` of `predicted_lddt` logits on axis `ensemble` | `src/spike_ensemble_shard_forward_pass.py:122,125` |
+| `pmap` + `pmean` ensemble | `jax.pmap` over members, `jax.lax.pmean` of `predicted_lddt` logits on axis `ensemble` | `src/spike_ensemble_shard_forward_pass.py:129,132` |
 | `vmap` batching | `jax.vmap(runner.apply, in_axes=(None, None, 0))` on one device | `src/spike_batch_forward_pass.py:117` |
 | Chip visibility | `TPU_VISIBLE_CHIPS` set to 1, 2, 4 or 8 chips; the 2- and 4-chip runs failed, and so did a retry with `LIBTPU_INIT_ARGS` | `configs/af_spike_chipcount.yaml:39-43`; `configs/af_spike_chips_retry.yaml` |
 
@@ -272,7 +272,7 @@ consecutive regions:
 | Region | What is timed | Synchronization | Source |
 |---|---|---|---|
 | `init_params` | `runner.init_params(...)`: Haiku `init`, including its own JIT trace, compilation and execution | none explicit | `src/spike_tpu_forward_pass.py:178-182` |
-| 1st `predict` (compile + run) | `runner.predict(...)`, **inside `jax.profiler.trace(...)`** in `spike_tpu_forward_pass.py`, without a profiler in the GSPMD script | `jax.block_until_ready(result)` | `src/spike_tpu_forward_pass.py:191-201`; `src/spike_meshshard_forward_pass.py:108-113` |
+| 1st `predict` (compile + run) | `runner.predict(...)`, **inside `jax.profiler.trace(...)`** in `spike_tpu_forward_pass.py`, without a profiler in the auto-mesh script | `jax.block_until_ready(result)` | `src/spike_tpu_forward_pass.py:191-201`; `src/spike_meshshard_forward_pass.py:113-118` |
 | 2nd `predict` (steady state) | the identical call again, no profiler | `jax.block_until_ready(result2)` | `src/spike_tpu_forward_pass.py:203-216` |
 
 *Note on the script version.* The rows above and the bullets below describe the script
@@ -332,14 +332,14 @@ Implications:
   and `spike_batch_forward_pass.py` include profiler overhead. On CPU/GPU they
   are not pure compile + execute times. Steady-state times are unaffected.
 - **TPU magnitude unknown.** No TPU run log is in the repo **[NOT IN REPO]**.
-- **Non-comparable first calls across scripts.** The `pmap`, ensemble and GSPMD
+- **Non-comparable first calls across scripts.** The `pmap`, ensemble and auto-mesh
   scripts time their first call without a profiler. Their first-call numbers
-  (e.g. GSPMD 14.76 / 14.46 s, ensemble 16.61 s) are not comparable with the
+  (e.g. auto-mesh 14.76 / 14.46 s, ensemble 16.61 s) are not comparable with the
   ~27–29 s first predicts from `spike_tpu_forward_pass.py`.
-- **Alternative explanation for GSPMD.** `results/sweep/sharding.md` attributes
-  the shorter GSPMD first call to a warm XLA cache "carried over from earlier in
+- **Alternative explanation for the auto-mesh first call.** `results/sweep/sharding.md` attributes
+  the shorter auto-mesh first call to a warm XLA cache "carried over from earlier in
   the same pod's Python process lifetime". But `configs/af_spike_sharding.yaml:36-44`
-  launches the `pmap` and GSPMD scripts as separate `python3` processes, without
+  launches the `pmap` and auto-mesh scripts as separate `python3` processes, without
   `--cache_dir`. The missing profiler is a simpler explanation consistent with the
   CPU/GPU logs, but it is **not verified on TPU**.
 - **Trace window.** The same effect may explain why the profiler's traced
@@ -352,7 +352,7 @@ Implications:
 |---|---|---|---|---|---|
 | `spike_batch_forward_pass.py` (`vmap`) | yes | yes, `block_until_ready` | **yes** | throughput = B / t₂; per protein = t₂ / B | `src/spike_batch_forward_pass.py:119-136` |
 | `spike_pmap_forward_pass.py` | yes | yes, `block_until_ready` | no | same definitions | `src/spike_pmap_forward_pass.py:103-118` |
-| `spike_ensemble_shard_forward_pass.py` | yes | yes, `block_until_ready` | no | none (one query) | `src/spike_ensemble_shard_forward_pass.py:128-140` |
+| `spike_ensemble_shard_forward_pass.py` | yes | yes, `block_until_ready` | no | none (one query) | `src/spike_ensemble_shard_forward_pass.py:135-147` |
 
 Neither script times `init_params` or the `vmap` batching setup. Steady state is
 again a single call, rounded to 4 decimals. In both `pmap` scripts the
@@ -459,7 +459,7 @@ point. Every process times exactly one steady-state call.
 | Profiler trace capture | `configs/af_spike_trace_capture.yaml:32-33` | same | 1 | Raw trace not in repo |
 | `vmap` batching (B = 1, 2, 4, 8) | `configs/af_spike_batch.yaml:32-35` | `spike_batch_forward_pass.py` | 1 | |
 | `pmap` multi-query (8 proteins) | `configs/af_spike_sharding.yaml:36-37` | `spike_pmap_forward_pass.py` | 1 | |
-| GSPMD auto-mesh | `configs/af_spike_sharding.yaml:43-44` | `spike_meshshard_forward_pass.py` | **2** | `sharding.json` has `run_1` and `run_2`, but the Job launches the script once. How the second run was launched is **[NOT IN REPO]**. |
+| Auto-mesh | `configs/af_spike_sharding.yaml:43-44` | `spike_meshshard_forward_pass.py` | **2** | `sharding.json` has `run_1` and `run_2`, but the Job launches the script once. How the second run was launched is **[NOT IN REPO]**. |
 | `pmap` + `pmean` ensemble | `configs/af_spike_ensemble_shard.yaml:32-33` | `spike_ensemble_shard_forward_pass.py` | 1 | |
 | Scaling grid (4 × 4 points) | `configs/af_spike_scaling_grid.yaml:34-41` | `spike_pmap_forward_pass.py` | 1 | 16 processes in total, one per point |
 | AF3, Colab CPU / Colab GPU | `af3_*_colab.ipynb` | `run_alphafold.py` | 1 each | |
@@ -506,8 +506,9 @@ What this implies for the paper:
 8. The script version that produced `results/result_tpu-v5e-podslice.json`.
 9. Raw per-run JSONs and Job logs for every TPU experiment, and how they were aggregated into `results/sweep/*.json`.
 10. Which run supplied the recycle = 3 value (sweep Job or the recycle-3-only Job).
-11. How the second GSPMD run was launched.
-12. Size of the profiler overhead on TPU first-call timings.
-13. Whether AF2 timings with trained weights match the random-init timings.
-14. Run dates of all TPU experiments.
-15. The raw profiler trace analysed in `profiling/trace_analysis.md`.
+11. How the second auto-mesh run was launched.
+12. Which partitioner actually executed the auto-mesh runs. The Job pins `jax[tpu]==0.10.2`, which defaults to Shardy, and sets no partitioner flag; the `"GSPMD"` string in `results/sweep/sharding.json`'s `description` field is hand-written, not recorded. **[NOT IN REPO]**
+13. Size of the profiler overhead on TPU first-call timings.
+14. Whether AF2 timings with trained weights match the random-init timings.
+15. Run dates of all TPU experiments.
+16. The raw profiler trace analysed in `profiling/trace_analysis.md`.

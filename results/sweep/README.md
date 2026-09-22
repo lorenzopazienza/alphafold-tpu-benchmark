@@ -20,7 +20,7 @@ flowchart LR
 
     subgraph MC["Multi-chip parallelism"]
         BA["5. Batching (vmap)\nnegative result"]
-        SH["10. pmap vs GSPMD\npositive + negative"]
+        SH["10. pmap vs auto-mesh\npositive + negative"]
         ES["11. Ensemble shard\nreal fix, verified"]
         SCL["12. Scaling law"]
     end
@@ -144,7 +144,7 @@ zero change to steady-state performance. See `compilation_cache.md`.
 Direct follow-up to the batching (vmap) negative result. `jax.pmap`
 achieves genuine multi-chip data parallelism: **6.92x throughput speedup**
 (14.72 vs 2.13 proteins/sec), confirmed by distinct per-chip memory
-footprints. A separate attempt at GSPMD auto-sharding (splitting one
+footprints. A separate attempt at auto-mesh automatic sharding (splitting one
 protein's own computation across chips, using the same mesh pattern the
 course's own Lab 2 Tunix script uses) did **not** achieve real sharding:
 reproduced twice, the run recorded 463MB per chip, the same as the single-chip
@@ -154,15 +154,17 @@ rather than trusting the naive "nonzero memory" heuristic. See
 
 ## 10. Real single-query sharding: ensemble averaging via pmap + pmean
 
-Direct follow-up to the auto-mesh failure above, which replicated because
-AlphaFold's Haiku modules carry no sharding annotations (`sharding.md`).
+Direct follow-up to the auto-mesh result above, which left the per-chip
+footprint unchanged; our best explanation is that AlphaFold's Haiku
+modules carry no sharding annotations (`sharding.md`), which we did not
+confirm from retained compiler evidence.
 AlphaFold's own ensembling is a sequential `hk.while_loop`, so sharding cannot
 split it across chips either; this experiment works around that instead
 (the auto-mesh run used `num_ensemble = 1`, so ensembling was not its cause):
 AlphaFold's source is completely untouched, but the
-ensemble average is re-implemented via `jax.pmap` + a real `jax.lax.pmean`
-collective reduction across chips. **8/8 chips used, verified-correct
-cross-device reduction, distinct per-chip memory** (427-624MB, not the
+ensemble is built outside the model and averaged via `jax.pmap` + a real `jax.lax.pmean`
+collective reduction across chips. **8/8 chips report nonzero memory, an
+`allclose` check on the first and last returned replicas passes, distinct per-chip memory** (427-624MB, not the
 single 463MB-per-chip, single-chip-sized figure that indicated replication before).
 Honestly scoped: this is real distributed computation for one query's
 ensembling, not full internal tensor sharding of the Evoformer, that

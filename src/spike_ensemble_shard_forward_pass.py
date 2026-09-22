@@ -1,22 +1,29 @@
-"""Real single-query sharding: AlphaFold's ensemble-averaging distributed
-across physical TPU chips via jax.pmap + pmean.
+"""External ensemble distributed across physical TPU chips via
+jax.pmap + pmean.
 
 AlphaFold's own ensembling (config.data.eval.num_ensemble > 1) normally
 runs SEQUENTIALLY inside one chip (modules.py, AlphaFoldIteration uses
 hk.while_loop: each ensemble member's Evoformer pass runs one after
-another, accumulating a running sum). That's exactly why our earlier
-GSPMD auto-mesh attempt only replicated computation instead of sharding
-it -- nothing was structured as independent for XLA to distribute.
+another, accumulating a running sum). A sequential loop with a carried
+accumulator offers no axis to distribute, which is why this script builds
+its ensemble outside the model rather than trying to split that loop.
+That loop is NOT the reason the earlier auto-mesh attempt replicated:
+that run used num_ensemble = 1 (spike_meshshard_forward_pass.py:97), so
+the loop body never executed. Our best explanation for that result is
+that AlphaFold's Haiku modules carry no sharding annotations for the
+partitioner to propagate from, which we did not confirm from retained
+compiler evidence.
 
-This script re-implements the SAME mathematical operation (average N
-independent forward passes of the same query) using real distributed
-hardware instead: each of N physical chips computes exactly ONE ensemble
-member (config.num_ensemble stays 1 -- AlphaFold's own code is completely
+This script builds an ensemble OUTSIDE the model: each of N physical
+chips computes exactly ONE standard single-member forward pass
+(config.num_ensemble stays 1 -- AlphaFold's own code is completely
 unmodified, zero risk to its internal parameter-initialization logic),
-and jax.lax.pmean performs a genuine cross-device reduction to average
-the results. This is still ONE protein / ONE query -- N independent
-stochastic passes of the same sequence, now actually split across
-hardware, not a sequential loop.
+the N featurizations differ only by random_seed, and jax.lax.pmean
+performs a cross-device reduction over the per-member predicted_lddt
+logits. This is still ONE protein / ONE query -- N independent
+stochastic featurizations of the same sequence, mapped across hardware.
+It shows that AN ensemble can be distributed across the slice, not that
+AlphaFold's internal ensembling can.
 
 Honest caveat: our benchmark's MSA is a trivial single-sequence toy MSA
 (no real alignment depth), so the N "ensemble members" are near-identical
