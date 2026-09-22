@@ -171,7 +171,7 @@
               { "@type": "Person", "name": "Steve Jones", "jobTitle": "Professor" },
               { "@type": "Person", "name": "Mourad Bouache", "jobTitle": "Professor" }
             ],
-            "publisher": { "@type": "Organization", "name": "Stanford University" },
+            "sourceOrganization": { "@type": "Organization", "name": "Stanford University" },
             "keywords": [
               "Lorenzo Pazienza",
               "Ihab El Bani",
@@ -408,7 +408,7 @@
       <h2 id="approach">Approach</h2>
       <p>
         One script <code>spike_tpu_forward_pass.py</code> → Google Colab Intel Xeon CPU
-        (result_cpu.json), Google Colab NVIDIA Tesla T4 (result_gpu-t4.json), Stanford
+        (result_cpu-colab.json), Google Colab NVIDIA Tesla T4 (result_gpu-t4.json), Stanford
         GKE TPU v5e-8 / tpu-v5-lite-podslice 2×4 (result_tpu + traces). Systems
         timings: AlphaFold 2 model_3, Haiku random init (no ~350MB weights).
       </p>
@@ -441,7 +441,12 @@
           </tr>
         </tbody>
       </table>
-      <p>First/steady-state: CPU 1.28× · GPU 7.46× · TPU 59.1×.</p>
+      <p>
+        First/steady-state as timed: CPU 1.28× · GPU 7.46× · TPU 59.1×. The CPU and
+        GPU first calls ran with the profiler inside the timer; removing that
+        overhead gives ~1.11× and ~4.25×. The TPU figure cannot be corrected — no
+        TPU run log survives.
+      </p>
 
       <h2 id="experiments">Experiments - Twelve TPU follow-ups</h2>
       <p>Amber rail = negative result. Click + for method notes on the live UI.</p>
@@ -475,8 +480,9 @@
       <h3>Bottleneck &amp; fix</h3>
       <ol start="4">
         <li>
-          <strong>Profiler trace - 76%</strong> of first call in pjit cache_miss
-          (host JIT).
+          <strong>Profiler trace - 76%</strong> of the traced apply_fn span (16.56s)
+          in pjit cache_miss (host JIT), not of the whole first call (27.78s).
+          Reported from our trace analysis; the raw trace is not in the repository.
         </li>
         <li>
           <strong>Compilation cache - 6.8×</strong> faster init_params; steady-state
@@ -508,8 +514,10 @@
       </figure>
       <ol start="8">
         <li>
-          <strong>pmap - 6.92×</strong> throughput (2.13 → 14.72 proteins/sec on 8
-          chips).
+          <strong>pmap - 6.92×</strong> throughput over the single-query baseline
+          (2.13 → 14.72 proteins/sec on 8 chips). On the matched chip-count grid,
+          eight chips give 6.53× the throughput of one at 100 residues and 7.91×
+          at 1000.
         </li>
         <li>
           <strong>Auto-sharding (auto-mesh) - 463 MB per chip, unchanged</strong>
@@ -560,28 +568,24 @@
         <thead>
           <tr>
             <th>Backend</th>
-            <th>AF2 / sample</th>
-            <th>AF3 / sample</th>
-            <th>AF3 / AF2</th>
+            <th>AF3 model inference</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>CPU (Google Colab)</td>
-            <td>212.1s</td>
-            <td>490.8s</td>
-            <td>2.3×</td>
+            <td>2401.38s</td>
           </tr>
           <tr>
             <td>GPU T4 (Google Colab)</td>
-            <td>13.1s</td>
-            <td>22.8s</td>
-            <td>1.74×</td>
+            <td>86.21s</td>
           </tr>
         </tbody>
       </table>
       <p>
-        AF3 CPU→GPU speedup is <strong>21.5×</strong> (vs AF2’s 16.2×). Interactive
+        AF3 CPU→GPU speedup is <strong>27.86×</strong>, compilation included on both
+        sides. No ratio is taken against AlphaFold 2: the two models' timed regions
+        are not comparable. Interactive
         3D viewer loads
         <a href="/structure/af3_toy_test_cpu-colab_model.cif"
           >/structure/af3_toy_test_cpu-colab_model.cif</a
@@ -618,9 +622,11 @@ value should be one of &lt;cpu|gpu|mps&gt;
 
       <h2 id="cost">Cost</h2>
       <p>
-        Headline: cost per prediction is nearly flat in chip count. Baseline path
-        1 of 8 chips active (~87% idle) → TPU $1.25 vs GPU $1.27 per 1k; CPU
-        $11.19. After pmap, unit cost stays roughly constant as chips grow.
+        Headline: the dominant cost lever is whether the chips are kept busy, not
+        how many are rented. Baseline path 1 of 8 chips active (~87% idle) → TPU
+        $1.25 vs GPU $1.27 per 1k; CPU $11.19. On the measured chip-count grid,
+        going from 1 to 8 chips raises unit cost by 22.6% at 100 residues, 7% at
+        250, 3% at 500 and about 1% at 1000: nearly flat only at long sequences.
       </p>
 
       <h2 id="reproduce">Reproduce</h2>

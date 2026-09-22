@@ -9,19 +9,13 @@ const ProteinViewer = lazy(() => import('./ProteinViewer'))
 const ROWS = [
   {
     backend: 'CPU Xeon (Google Colab, 2 vCPU)',
-    af2: '212.1s',
-    af3: '490.8s',
-    ratio: '2.3×',
-    af2Pct: 43,
+    af3: '2401.38s',
     af3Pct: 100,
   },
   {
     backend: 'GPU NVIDIA Tesla T4 (Google Colab)',
-    af2: '13.1s',
-    af3: '22.8s',
-    ratio: '1.74×',
-    af2Pct: 57,
-    af3Pct: 100,
+    af3: '86.21s',
+    af3Pct: 4,
   },
 ]
 
@@ -58,11 +52,13 @@ export default function AlphaFold3() {
         </div>
 
         <div ref={ref} className="mt-10 max-w-2xl lg:mt-12">
-          <p className="kicker">Same-hardware · per sample</p>
+          <p className="kicker">AlphaFold 3 model inference · one seed, five samples</p>
             <p className="section-note mt-2">
-              Identical Google Colab Intel Xeon CPU and NVIDIA Tesla T4 runs. AF3
-              is slower; it also
-              gains more from the GPU (21.5× CPU→GPU vs AF2’s 16.2×).
+              Identical Google Colab Intel Xeon CPU and NVIDIA Tesla T4 runs,
+              compilation included on both sides: a 27.86× GPU-over-CPU speedup.
+              We take no ratio against AlphaFold 2 — the two differ in recycling
+              depth, in whether the timed region includes compilation, and in how
+              many samples one call produces.
             </p>
 
           <div className="mt-8 space-y-8">
@@ -72,29 +68,8 @@ export default function AlphaFold3() {
                   <p className="font-display text-lg font-semibold text-ink">
                     {row.backend}
                   </p>
-                  <p className="eq font-mono text-sm text-mute">
-                    AF3 {row.ratio} AF2
-                  </p>
                 </div>
                 <div className="mt-3 space-y-2.5">
-                  <div className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3">
-                    <span className="label-mono">AF2</span>
-                    <div className="bar-track min-w-0">
-                      <div
-                        className="bar-fill"
-                        style={{
-                          width: on ? `${row.af2Pct}%` : '0%',
-                          background: '#3d5f94',
-                          minWidth: on ? '3.5rem' : 0,
-                        }}
-                      >
-                        {row.af2}
-                      </div>
-                    </div>
-                    <span className="eq hidden text-sm text-mute sm:inline">
-                      /sample
-                    </span>
-                  </div>
                   <div className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3">
                     <span className="label-mono">AF3</span>
                     <div className="bar-track min-w-0">
@@ -110,7 +85,7 @@ export default function AlphaFold3() {
                       </div>
                     </div>
                     <span className="eq hidden text-sm text-mute sm:inline">
-                      /sample
+                      model inference
                     </span>
                   </div>
                 </div>

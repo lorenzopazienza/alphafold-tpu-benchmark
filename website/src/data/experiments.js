@@ -56,11 +56,11 @@ export const EXPERIMENTS = [
     phase: 'bottleneck',
     title: 'Profiler trace',
     finding:
-      'cache_miss in JAX pjit accounted for ~76% of the first predict call.',
+      'cache_miss in JAX pjit accounted for ~76% of the traced apply_fn span.',
     stat: '76%',
-    statLabel: 'of first call in cache_miss',
+    statLabel: 'of traced span in cache_miss',
     tone: 'default',
-    body: 'On the captured XLA trace, $pjit.py:250 cache_miss had 12.55s self-time inside a 16.56s first predict. The TPU device track was nearly idle for that interval, so the cost was host-side JIT work. That is why we tested a persistent compilation cache next.',
+    body: 'On the captured XLA trace, $pjit.py:250 cache_miss had 12.55s self-time inside a 16.56s traced apply_fn span. That span is not the whole first predict, which is 27.78s: they are two different captures. The TPU device track was nearly idle for the traced interval, so the cost was host-side JIT work. Both figures are reported from profiling/trace_analysis.md; the raw trace is not in the repository. That is why we tested a persistent compilation cache next.',
   },
   {
     id: 'cache',
@@ -89,25 +89,25 @@ export const EXPERIMENTS = [
     phase: 'multichip',
     title: 'Multi-query batching',
     finding:
-      'jax.vmap reduced proteins/sec as batch size grew; only TPU_0 used HBM.',
+      'jax.vmap never beat batch=1; only TPU_0 used HBM.',
     stat: 'lower',
     statLabel: 'proteins/sec vs batch=1',
     tone: 'negative',
     chart: '/figures/batching_chart.png',
     chartCaption:
       'Batching with jax.vmap: wall-clock rises with batch size; per-protein cost worsens vs batch=1 (negative result).',
-    body: 'At batch sizes 1, 2, 4, and 8, throughput never beat batch=1 and per-protein cost rose. Memory stayed on one chip. vmap stacks work inside a single compiled program; it does not place work on the other seven chips.',
+    body: 'At batch sizes 1, 2, 4, and 8, measured throughput was 2.051, 1.928, 1.487 and 1.508 proteins/sec: 0.94×, 0.73× and 0.74× the batch-1 rate. No batch size beat batch=1, and the decline is not monotonic — batch 8 is marginally above batch 4, so we report the values as measured rather than fitting a trend. Memory stayed on one chip, per the run write-up rather than a retained per-device record. vmap stacks work inside a single compiled program; it does not place work on the other seven chips.',
   },
   {
     id: 'pmap',
     phase: 'multichip',
     title: 'pmap parallelism',
     finding:
-      'jax.pmap ran 8 proteins on 8 chips at 6.92× the single-chip throughput.',
+      'jax.pmap ran 8 proteins on 8 chips at 6.92× the single-query, single-chip throughput.',
     stat: '6.92×',
-    statLabel: 'throughput speedup',
+    statLabel: 'over the single-query baseline',
     tone: 'default',
-    body: 'Throughput went from 2.13 to 14.72 proteins/sec. Per-chip HBM was 445–469 MB, close to the single-protein footprint, which matches eight independent runs rather than one replicated copy.',
+    body: 'Throughput went from 2.13 to 14.72 proteins/sec. That baseline uses a different input family, so the like-for-like comparison is the matched chip-count grid, where eight chips give 6.53× the throughput of one at 100 residues and 7.91× at 1000. Per-chip HBM was 644 MB on TPU_0 and 445–469 MB on the other seven, each close to a single-protein footprint, which matches eight independent runs rather than one replicated copy.',
   },
   {
     id: 'autoshard',
@@ -143,7 +143,7 @@ export const EXPERIMENTS = [
     chart: '/figures/scaling_law_chart.png',
     chartCaption:
       '16-run TPU grid: throughput vs chips and sequence length (power-law fit R² 0.981).',
-    body: 'throughput ≈ 4527.77 · chips^0.963 · length^−1.572. The chip exponent near 1.0 says pmap’s scaling holds across the lengths we tested. Combined with list prices, cost per prediction stays nearly flat in chip count.',
+    body: 'throughput ≈ 4527.77 · chips^0.963 · length^−1.572. The chip exponent near 1.0 says pmap’s scaling holds across the lengths we tested. The fit is a summary of this grid rather than a model of it: per length it over-predicts by 10–26% at 100 residues and 23–32% at 1000, and under-predicts at 250 and 500. Tested against the measured grid rather than the fit, cost per prediction is nearly flat in chip count only at long sequences: +22.6% from 1 to 8 chips at 100 residues, about +1% at 1000.',
   },
   {
     id: 'rigor',
