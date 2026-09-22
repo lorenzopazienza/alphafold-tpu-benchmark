@@ -11,3 +11,4 @@ results/**/trace_*/
 # Working copies, not part of the repo
 Claude outputs/
 paper-sections/
+_internal/

@@ -23,7 +23,7 @@
 | **Compilation layer** | JAX/XLA (JIT, compile cache, `vmap` / `pmap`) |
 | **Telemetry** | `jax.profiler` traces · TensorBoard Profile · in-process HBM / `tpu-info` |
 
-**Headline result:** steady-state TPU inference is **451×** faster than CPU and **27.8×** faster than Google Colab NVIDIA Tesla T4 (0.47s vs 212s / 13s). Cold TPU calls are dominated by host-side XLA compilation (~76% in `pjit` `cache_miss`). Default single-query path uses **1 of 8 chips**; multi-query `jax.pmap` gives eight chips **6.53–7.91×** the throughput of one on a matched chip-count grid (**6.92×** against the single-query baseline, which uses a different input family); an ensemble built **outside** the model with `pmap`+`pmean` occupies **8/8 chips**; automatic sharding left the per-chip footprint unchanged, consistent with replication.
+**Headline result:** steady-state TPU inference is **451×** faster than CPU and **27.8×** faster than Google Colab NVIDIA Tesla T4 (0.47s vs 212s / 13s). Cold TPU calls are dominated by host-side XLA compilation: a retained trace analysis of one first call puts ~76% of the traced `apply_fn` span in JAX's `pjit` `cache_miss` rather than in TPU execution. Default single-query path uses **1 of 8 chips**; multi-query `jax.pmap` gives eight chips **6.53–7.91×** the throughput of one on a matched chip-count grid (**6.92×** against the single-query baseline, which uses a different input family); an ensemble built **outside** the model with `pmap`+`pmean` occupies **8/8 chips**; automatic sharding left the per-chip footprint unchanged, consistent with replication.
 
 ![Human ubiquitin · ESMFold · pLDDT coloring](figures/ubiquitin_structure.png)
 
@@ -80,7 +80,7 @@ alphafold-tpu-benchmark/
 │   │   ├── af3_toy_test_summary_confidences.json · af3_toy_test_ranking_scores.csv        # Stanford CPU
 │   │   ├── af3_toy_test_cpu-colab_summary_confidences.json · af3_toy_test_cpu-colab_ranking_scores.csv  # Google Colab Intel Xeon CPU (2 vCPU)
 │   │   ├── af3_toy_test_gpu-t4_summary_confidences.json · af3_toy_test_gpu-t4_ranking_scores.csv        # Google Colab NVIDIA Tesla T4
-│   └── trace_<tag>/           # jax.profiler / TensorBoard traces
+│   └── trace_<tag>/           # jax.profiler traces -- written locally, gitignored
 ├── scripts/
 │   ├── run_spike.sh            # gcloud creds · ConfigMap · kubectl apply (AF2)
 │   └── run_af3_spike_tpu.sh    # Same, for AlphaFold3 on TPU (experimental)
@@ -135,7 +135,7 @@ flowchart LR
   subgraph Artifacts["Artifacts"]
     direction TB
     JSON["results/result_*.json"]
-    TRACE["results/trace_*/ · XLA profiler"]
+    TRACE["results/trace_*/ · XLA profiler<br/>local only, not committed"]
   end
 
   S -->|"docker build JAX_VARIANT"| Local
@@ -159,7 +159,7 @@ flowchart TB
   B --> E["result_cpu*.json"]
   C --> F["result_gpu-t4.json"]
   D --> G["result_tpu-v5e-podslice.json"]
-  D --> H["trace_tag/ · JAX profiler"]
+  D --> H["trace_tag/ · JAX profiler<br/>local only"]
 
   classDef backend fill:#e8f4f5,stroke:#0b6e7a,color:#0c1222
   classDef out fill:#f7f8f9,stroke:#6a7585,color:#0c1222
@@ -175,7 +175,7 @@ flowchart TB
 | TPU accelerator | `tpu-v5-lite-podslice`, topology `2×4` (8 chips) |
 | Orchestration | Kubernetes Job, admitted via Kueue (`student-queue`) |
 | Script inject path | ConfigMap → `/mnt/script` → copied into `/alphafold` |
-| Artifact paths | `results/result_*.json`, `results/trace_<tag>/`, `results/sweep/` |
+| Artifact paths | `results/result_*.json`, `results/sweep/`. `results/trace_<tag>/` is written by the run but gitignored, so it is not in this repository; the analysis of one trace is in `profiling/trace_analysis.md` |
 
 We deliberately avoid two heavy dependencies that are not needed for the systems question:
 
@@ -194,11 +194,12 @@ Identical workload: `model_3`, 0 recycles, 118-residue sequence, Haiku random-in
 |---|---|---|---|---|---|
 | CPU (Google Colab Intel Xeon, 2 vCPU) | 1 | 41.99 | 271.98 | 212.113 | 1× |
 | GPU (Google Colab NVIDIA Tesla T4) | 1 | 109.16 | 97.62 | 13.086 | **16.2×** |
-| **TPU (Stanford GKE v5e-8, 2×4 lite)** | **8 chips** | **36.6** | **27.78** | **0.47** | **451×** |
+| **TPU (Stanford GKE v5e-8, 2×4 lite)** | **8 allocated, 1 used** | **36.6** | **27.78** | **0.47** | **451×** |
 
 | Metric | CPU Xeon | GPU Tesla T4 | TPU v5e-8 |
 |---|---|---|---|
-| Cold / warm ratio | 1.28× | 7.46× | **59.1×** |
+| Cold / warm ratio, as timed | 1.28× | 7.46× | **59.1×** |
+| Cold / warm, profiler overhead removed | ~1.11× | ~4.25× | not correctable, no TPU log survives |
 | Steady-state vs GPU | - | 1× | **27.8×** |
 | Cost / 1k predictions | $11.19 | $1.27 | $1.25 |
 
@@ -227,21 +228,48 @@ Twelve further experiments on the Stanford GKE TPU v5e-8 (2×4 lite) slice (`res
 
 ---
 
+## Reproducibility of the baselines
+
+The headline CPU and GPU figures above are August 2026 single-call measurements.
+Five weeks later we reran both backends from a committed revision of the
+benchmark script, and **neither reproduced**:
+
+| Backend | August (n=1) | September | Change |
+|---|---|---|---|
+| CPU steady state | 212.113s | 348.861 ± 4.690s (2026-09-15, n=5) · 351.891 ± 4.303s (09-16) · 359.273 ± 2.787s (09-17) | 1.64–1.69× slower |
+| GPU (T4) steady state | 13.086s | 6.567 ± 0.057s (2026-09-15, n=5) | ~2× faster |
+
+The two moved in opposite directions and we did not isolate a cause. The
+September sessions record their host CPU and resolved package versions; the
+August ones do not, so no matched comparison is possible. The raw reruns are in
+[`results/repro/`](results/repro/), each stored with the benchmark commit it ran
+from and a capture of its environment.
+
+This bears directly on the numbers in this README. The **451×** and **27.8×**
+figures divide an August CPU or GPU baseline by the TPU steady state, and both
+numerators moved on rerun. The TPU cluster was a course allocation that ended
+with the course, so no TPU rerun exists to pair with the September values. We
+keep the August figures because they come from the same measurement campaign as
+the TPU numbers, and we report every session rather than electing one as
+canonical. They are specific to one campaign, not portable hardware constants.
+See discrepancy 16 and rows `C-16`, `SC-20`, `VM-06` and `CC-09` in
+[`paper/data/canonical_results.md`](paper/data/canonical_results.md).
+
 ## The Infrastructure Bottleneck Diagnosis
 
 **Primary operational bottleneck (cold TPU path): host-side XLA compilation**, not device FLOPs.
 
 Evidence from the captured profiler trace ([`profiling/trace_analysis.md`](profiling/trace_analysis.md)):
 
-- First TPU `predict` ≈ **16.56s**; JAX `pjit.py` **`cache_miss`** alone ≈ **12.55s (~76%)**.
+- Traced `apply_fn` span of one first TPU call ≈ **16.56s**, of which JAX `pjit.py` **`cache_miss`** self time ≈ **12.55s (~76%)**. That span is not the whole first `predict` (27.78s), and the raw trace is not in this repository: both figures are reported from [`profiling/trace_analysis.md`](profiling/trace_analysis.md).
 - Device track (`/device:TPU:0`) is nearly idle during that interval - cost is host JIT, not MXU saturation.
-- Cold/warm ratio on TPU is **59.1×** (27.78s → 0.47s). CPU is only **1.28×** (compute-bound; little compile graph to amortize).
+- Cold/warm ratio on TPU is **59.1×** as timed (27.78s → 0.47s), uncorrected: no TPU run log records the profiler overhead, so unlike CPU and GPU it cannot be adjusted. CPU is only **1.28×** as timed, **~1.11×** once the 36.00s of trace finalisation inside the timer is removed (compute-bound; little compile graph to amortize).
 
 **Secondary bottleneck (baseline multi-chip utilization): 1-of-8 chip occupancy.**
 
 - HBM activity stays on `TPU_0`; chips 1–7 ≈ 0 MB → ~**87%** of the paid pod idle for a single query.
 - `jax.vmap` does **not** fix this - it vectorizes inside one chip, and throughput never exceeds batch=1 (0.94× / 0.73× / 0.74× at B = 2 / 4 / 8).
-- List-price TPU vs T4 cost per 1k predictions therefore lands almost equal ($1.25 vs $1.27) despite a 28× wall-clock gap ([`results/cost_analysis.md`](results/cost_analysis.md)).
+- List-price TPU vs T4 cost per 1k predictions therefore lands almost equal ($1.25 vs $1.27) despite a 27.8× wall-clock gap ([`results/cost_analysis.md`](results/cost_analysis.md)).
 
 **Bottleneck shifts by backend:**
 
@@ -301,7 +329,9 @@ kubectl logs -f job/af-spike-${TEAM}
 All three use the identical input (`src/make_af3_input.py`: same
 118-residue toy sequence, empty MSA, seed=1) so the results drop straight
 into `af3_comparison.md`'s Performance Comparison table once run.
-Each run wraps the first `predict()` in `jax.profiler.trace(...)`, isolating **XLA compilation** from **steady-state execution** (second uncompiled `predict()`). View with:
+Each run wraps the first `predict()` in `jax.profiler.trace(...)`, isolating **XLA compilation** from **steady-state execution** (second uncompiled `predict()`).
+
+The trace lands in `results/trace_<tag>/` on the machine that runs the benchmark. It is gitignored and not part of this repository, so the command below works only after you have captured one yourself; our own analysis of a captured trace is in [`profiling/trace_analysis.md`](profiling/trace_analysis.md). View with:
 
 ```bash
 pip install tensorboard-plugin-profile
@@ -332,10 +362,14 @@ report) was run on the same 118-residue toy sequence across all three
 backends this project tests AF2 on: **CPU (Google Colab Intel Xeon, 2 vCPU), GPU (Google Colab NVIDIA Tesla T4), and
 TPU (Stanford)**.
 
-**CPU and GPU: real, measured results.** On identical Google Colab hardware, AF3
-is **2.3x slower than AF2 per prediction on CPU, narrowing to 1.74x on
-GPU** - AF3 gains proportionally more from the GPU (21.5x CPU→GPU
-speedup vs. AF2's 16.2x). A same-seed reproducibility check across three
+**CPU and GPU: real, measured results.** AlphaFold3's own timed model-inference
+region (one seed, five diffusion samples, compilation included, since AF3 makes
+a single model call per process with no warm-up) runs **2401.38s** on the Colab
+CPU and **86.21s** on the Colab T4, a **27.86×** GPU-over-CPU speedup. We do not
+divide any AlphaFold3 timing by an AlphaFold2 one: the two differ in recycling
+depth, in whether the timed region includes compilation, and in how many output
+samples one call produces, so no per-prediction ratio between the two models is
+reported here or in the paper. A same-seed reproducibility check across three
 hardware/backend combinations found near-identical output across
 different machines on the *same* backend (Stanford vs. Google Colab Intel Xeon CPU (2 vCPU), <0.1%
 difference on 4/5 samples), but substantially different output *across*

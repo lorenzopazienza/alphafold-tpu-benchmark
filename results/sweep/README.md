@@ -197,13 +197,14 @@ GPU or CPU).
 table, a build-effort table (AF2's engineering went into multi-chip
 sharding; AF3's went into a native C++ build, an easy-to-miss
 `build_data` step, and backend-specific flags undocumented outside a
-Dockerfile comment), a **real, same-hardware performance comparison**
-(on identical Google Colab hardware (Intel Xeon 2 vCPU / NVIDIA Tesla T4), AF3 is 2.3x slower than AF2 on CPU,
-narrowing to 1.74x on GPU - reversing an earlier hardware-confounded
-estimate), a **reproducibility study** using the same seed across three
+Dockerfile comment), AlphaFold3's own internal timings on identical Google
+Colab hardware (Intel Xeon 2 vCPU / NVIDIA Tesla T4) with no ratio taken
+against AlphaFold2, since the two models' timed regions are not comparable,
+a **reproducibility study** using the same seed across three
 hardware/backend combinations (near-identical across machines on the same
 backend; substantially different across backends - CPU vs. GPU differs
 by up to 32% per sample, plausibly explained by a numerical issue
-AlphaFold3's own issue tracker documents for GPUs below compute
-capability 8.0), and the TPU flag-rejection result with log evidence.
+AlphaFold3's own performance documentation (`docs/performance.md`) reports
+for CUDA Capability 7.x devices), and the TPU flag-rejection result with
+log evidence.
 

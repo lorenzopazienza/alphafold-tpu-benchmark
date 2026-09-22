@@ -2,7 +2,7 @@
 
 Single source of truth for every number the paper may cite. Every value was
 read directly from the raw files in `results/`, `results/sweep/` and
-`profiling/` (branch `paper`, commit `007cce6`) and every derived value was
+`profiling/` in this repository, and every derived value was
 recomputed from those raw values, not copied from the prose write-ups.
 
 ## Conventions
@@ -470,9 +470,9 @@ result (VM) that runs on one chip. Keep them apart in the paper.
     - **Supported wording:** "~76% of the traced `apply_fn` call (12.55 of 16.56 s) is
       self time in JAX's `cache_miss` tracing/compilation path; the rest is its child
       tracing frames."
-    - **Related:** this is the slide-level form of discrepancy 3, and the same
-      misattribution appears on the website and in the README
-      (`paper/WEBSITE_UPDATES_NEEDED.md`, items 5.2–5.6).
+    - **Related:** this is the slide-level form of discrepancy 3. The same
+      misattribution still appears on the website; the README was corrected
+      on 2026-09-22.
 15. **AF3 ran with 10 recycles and AF2 with 0, so A3-11 and A3-12 cannot be interpreted.**
     - **Settings.**
       - The AF3 Colab runs did not pass `--num_recycles` (`notebooks/af3_*_colab.ipynb`,
