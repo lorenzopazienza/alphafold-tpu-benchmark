@@ -381,3 +381,17 @@ Vite + React site in [`website/`](website/).
 ```bash
 cd website && npm install && npm run dev
 ```
+
+---
+
+
+## License
+
+The contents of this repository — the benchmark scripts in [`src/`](src/),
+the Kubernetes Job definitions, the notebooks, the plotting scripts, the raw
+result files, the results catalogue and the website — are released under the
+MIT License, see [`LICENSE`](LICENSE).
+
+AlphaFold 2 and AlphaFold 3 are not included here. The scripts clone or
+download them at run time, and they remain under their own licenses and terms
+of use, which are DeepMind's, not ours.
