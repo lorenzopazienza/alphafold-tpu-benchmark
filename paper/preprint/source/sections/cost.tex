@@ -1,0 +1,150 @@
+
+\subsection{Pricing basis}
+\label{sec:cost-basis}
+
+We price each backend at an August 2026 on-demand rate, and the three
+rates do not come from the same place. The TPU figure, \$1.20 per
+v5e chip-hour, so \$9.60/hour for an 8-chip pod, is Google Cloud's own
+published price \citep{googletpupricing}. The GPU figure,
+approximately \$0.35/hour for an NVIDIA T4 instance, is taken from a
+third-party survey of Google Cloud prices carried out in the same
+month. The CPU figure, approximately \$0.19/hour for an instance
+comparable to \texttt{n2-standard-4}, is our own estimate, for which we
+recorded no dated source. It is the weakest input here, and we use it
+only for the CPU row. The catalogue marks all three as input
+assumptions, not measurements. These are list prices
+for a hypothetical always-on rental, not the cost we were actually
+billed: our TPU cluster was a Stanford course allocation, and our
+Colab CPU/GPU sessions ran on shared, non-dedicated infrastructure.
+We could not obtain a smaller TPU slice than the full 8-chip pod on
+our GKE setup, so the single-call TPU cost below bills for the whole
+pod even though only one chip does work. The chip-count analysis in
+Section~\ref{sec:cost-scaling} instead prices slices of 1, 2, 4 and 8
+chips at the same per-chip rate, which prices \emph{hypothetical}
+slices: 2- and 4-chip subsets failed to initialize on our setup with a
+libtpu topology error, so no smaller slice was ever billed.
+The \$1.20 rate was still listed unchanged when we re-checked Google's
+pricing page on 2026-09-17.
+
+\subsection{Cost per prediction, single call}
+\label{sec:cost-baseline}
+
+Combining these rates with the steady-state throughput measured in
+Section~\ref{sec:results-hardware} gives the per-backend cost of 1{,}000
+predictions in Table~\ref{tab:cost-baseline}.
+
+\begin{table}[H]
+\centering\small
+\caption{Cost per 1{,}000 single-call predictions at on-demand list
+prices, from August steady-state throughput. The TPU row bills the full
+8-chip pod.}
+\label{tab:cost-baseline}
+\begin{tabular}{lrr}
+\toprule
+Backend & Throughput (pred/h) & \$ / 1{,}000 predictions \\
+\midrule
+CPU                          & 17.0   & \$11.19 \\
+GPU (T4)                     & 275    & \$1.27  \\
+TPU pod, 1 of 8 chips active & 7{,}660 & \$1.25  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The TPU pod and the GPU land at almost the same \$/1k despite the pod
+costing 27.4$\times$ more per hour: the chip is far faster than the
+GPU, 7{,}660 against 275 predictions per hour, but on this single-chip
+workload the pod bills for seven idle chips (87.5\% of the pod, the
+same idle-chip finding as Section~\ref{sec:parallelism}), and the two
+effects very nearly cancel. If it were possible to rent
+one TPU chip alone at the same per-chip rate, the hypothetical cost
+would be \$0.157/1k, about 8.1$\times$ cheaper than the GPU. That
+makes the pod-billing effect, not the chip's own economics, the reason
+the \$1.25 figure looks unremarkable next to the GPU. The near-equality is specific to the August GPU baseline: on the
+September rerun the GPU would sit near \$0.64/1k and the pod would be
+about twice as expensive (Section~\ref{sec:rh-variability}). The
+idle-chip mechanism does not depend on which baseline is used.
+
+
+Renting the whole pod stops being wasteful once all 8 chips do useful
+work. Using the multi-query \texttt{pmap} throughput from
+Section~\ref{sec:parallelism} (6.92$\times$ over one chip, 14.718
+proteins/second across 8 independent proteins) at the same \$9.60/hour pod
+rate gives
+$
+\$9.60 \,/\, (14.718 \times 3600) \times 1000 \approx \$0.181\text{/1k predictions},
+$
+within about 15\% of the single-chip hypothetical rate once the pod is
+kept busy. The two rates are not strictly commensurable: the
+multi-query throughput comes from the rotated-alphabet input family
+timed around \texttt{apply}, while the single-chip baseline folds the
+fixed synthetic sequence and times \texttt{predict}, which also
+includes AlphaFold2's host-side confidence metrics
+(Section~\ref{sec:meth-workload}). The like-for-like chip-count
+comparison is the 100-residue grid of Section~\ref{sec:cost-scaling}.
+
+\subsection{Cost as a function of chip count}
+\label{sec:cost-scaling}
+
+Section~\ref{sec:scaling} finds throughput scaling as
+$\mathrm{chips}^{0.963}$, just below linear, which by itself would
+predict that cost per prediction is nearly independent of chip count.
+We test this directly on the measured chip-count $\times$ sequence-length
+grid, not on the fitted formula, in Table~\ref{tab:cost-scaling}. Each
+point is the multi-query \texttt{pmap} workload, and each cost charges
+only the chips in use (chips $\times$ \$1.20 per hour divided by
+measured throughput). This prices a \emph{hypothetical} slice of that
+size at the same per-chip rate, unlike Table~\ref{tab:cost-baseline},
+which bills the whole 8-chip pod; as Section~\ref{sec:cost-basis}
+notes, slices smaller than eight chips could not be obtained on our
+setup.
+
+\begin{table}[H]
+\centering\small
+\caption{Cost per 1{,}000 predictions by chip count and sequence length,
+computed from measured throughput on the scaling grid. The last column
+is the increase from 1 to 8 chips.}
+\label{tab:cost-scaling}
+\begin{tabular}{lrrrrr}
+\toprule
+Length (residues) & 1 chip & 2 chips & 4 chips & 8 chips & 1$\to$8 \\
+\midrule
+100  & \$0.114 & \$0.121 & \$0.128 & \$0.139 & +23\% \\
+250  & \$0.386 & \$0.394 & \$0.399 & \$0.413 & +7\% \\
+500  & \$1.004 & \$1.012 & \$1.019 & \$1.036 & +3\% \\
+1000 & \$5.051 & \$5.089 & \$5.089 & \$5.109 & +1\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Adding chips is not free: going from 1 to 8 chips raises cost per
+prediction by 22.6\% at 100 residues (23\% in the table's integer
+rounding, computed from the unrounded throughputs). The penalty shrinks quickly with
+sequence length, to 7\% at 250, 3\% at 500 and about 1\% at 1000
+residues; the last figure is within the rounding of the one-chip
+throughput at that length, which the grid records to only two
+significant figures. On this grid, with one run per point, the
+near-invariance implied by the fitted exponent therefore holds only for
+long sequences. For short sequences, close to
+the 118-residue input of our single-query experiments, using more chips
+has a real, double-digit cost.
+
+\subsection{Practical implication}
+\label{sec:cost-implication}
+
+Chip count should therefore be chosen for latency and throughput
+requirements, not to minimize unit cost: the cost penalty for using
+more chips is modest, but it is not zero, and it is largest exactly in
+the short-sequence regime this study otherwise focuses on. In our
+measurements, the dominant cost lever for this workload is not how
+many chips are rented but whether they are kept busy. Renting an
+8-chip pod
+to run a single-chip job wastes 87.5\% of what is being paid for; the
+same pod running eight independent proteins in parallel does not cost
+more per hour and delivers 6.92$\times$ the predictions, an 86.5\%
+parallel efficiency.
+
+All figures in this section use a single steady-state measurement per
+backend (Section~\ref{sec:limitations}). We did not recompute the CPU
+figures against the September sessions: no session has a better claim
+than another to being the reference
+(Section~\ref{sec:rh-variability}).

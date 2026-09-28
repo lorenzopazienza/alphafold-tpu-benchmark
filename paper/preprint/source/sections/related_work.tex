@@ -1,0 +1,99 @@
+
+\subsection{AlphaFold2 acceleration}
+\label{sec:rw-alphafold}
+
+AlphaFold2 inference optimization has been studied almost entirely on
+NVIDIA GPUs. ParaFold separates the CPU-bound MSA search stage from
+GPU inference and avoids redundant JAX recompilation across a batch of
+proteins by sorting them by length, reporting an average 13.8$\times$
+speedup over baseline AlphaFold2 \citep{zhong2022parafold}. FastFold
+introduces Dynamic Axial Parallelism, a model-parallel scheme specific
+to AlphaFold2's Evoformer, together with an activation-memory reduction
+technique (AutoChunk); its arXiv version reports scaling to 512 GPUs
+\citep{cheng2022fastfoldarxiv}. We do not place our 86.5\% parallel
+efficiency on 8 chips (Section~\ref{sec:parallelism}) next to the
+efficiency reported there: that figure is a \emph{training} scaling
+result and ours is inference throughput, and the two are not directly
+comparable \citep{cheng2024fastfold,cheng2022fastfoldarxiv}. APACE distributes
+AlphaFold2's ensemble across hundreds of A100 GPUs to reduce
+time-to-solution on real structures from weeks to minutes
+\citep{apace2024}. ScaleFold and HelixFold scale AlphaFold2
+\emph{training}, rather than inference, to large GPU clusters
+\citep{scalefold2024,helixfold2022}. Uni-Fold reimplements AlphaFold2 in
+PyTorch specifically because the original was TPU-trained and TPU
+access is scarce, an explicit statement of the accessibility gap this
+paper's TPU results speak to \citep{unifold}. OpenFold is a widely used GPU-targeted
+reimplementation and ColabFold a widely used inference workflow around
+the released models; ColabFold's roughly
+90$\times$ batch speedup, achieved in part by avoiding recompilation
+across a batch, is the same JAX-recompilation cost that
+Section~\ref{sec:profiling}'s retained trace analysis reports at the
+function level on a different accelerator \citep{openfold2024,colabfold2022}.
+AlphaFold2 optimization has thus been a GPU-and-CPU-centric
+literature; none of it reports TPU experiments.
+
+Two works come closer to the TPU setting considered here, but address
+different questions. ManyFold is a JAX library for
+training and validating protein-folding models that does run on TPU,
+but the TPU role there is training a different, smaller model
+(pLMFold) on a TPU v2-128 pod; its own AlphaFold-style inference-speed
+comparison runs on a GPU, not a multi-chip TPU slice
+\citep{villegas-morcillo2023manyfold}. MatrixFold describes itself as
+the first systematic study of AlphaFold2 mixed-precision inference
+\emph{on a many-core ARM CPU architecture}; the framing is close to
+this paper's, but the hardware is not
+\citep{matrixfold2026}. Neither measures AlphaFold2 inference across a
+multi-chip TPU slice using \texttt{pmap}, \texttt{vmap}, or automatic
+partitioning, which
+is this paper's subject.
+
+JAXBench includes operators extracted from AlphaFold2 among the TPU
+kernels it benchmarks \citep{jaxbench2026}; it benchmarks kernels, not
+the end-to-end model. A recent characterization of AlphaFold3 profiles
+that model's bottlenecks on CPUs and GPUs \citep{iiswc2025af3} and does
+not include TPU.
+
+\subsection{Accelerator benchmarking methodology}
+\label{sec:rw-benchmarking}
+
+Outside the AlphaFold family, recent trace-based and end-to-end
+comparisons of TPU against GPU on language models
+\citep{ding2026cclbench,gemma2026tpu} are precedent for comparing the
+two through platform-specific stacks on the same model and task; none
+touches protein folding, and we do not draw on their results.
+Jouppi et al.'s original and TPU v4 architecture papers
+\citep{jouppi2017tpu,jouppi2023tpuv4}, together with Google's own v5e
+documentation \citep{googletpuv5e}, are our source for the hardware
+specifications in Section~\ref{sec:background}, since the v5e
+generation used throughout this paper has no dedicated peer-reviewed
+architecture paper of its own.
+
+\subsection{Compilation and parallelism frameworks}
+\label{sec:rw-frameworks}
+
+GSPMD, the design JAX/XLA's automatic partitioners follow, shards a
+computation by propagating sharding decisions outward from explicit
+annotations, and its own presentation treats a computation carrying
+none as a limiting case of that design rather than as a failure
+\citep{xu2021gspmd}. DrJAX documents a
+closely related case: removing explicit sharding structure from a
+partitioner-based MapReduce system removes its ability to scale efficiently,
+even for an embarrassingly parallel pattern \citep{drjax2024}. This is
+the closest published precedent to Section~\ref{sec:parallelism}'s
+observation, and to our hypothesis that AlphaFold2's unannotated Haiku
+modules leave the partitioner nothing to shard on. Neither paper
+reports this on AlphaFold2 or on any protein-folding model. We present
+our result as consistent with what that design implies when
+annotations are absent, not as a new mechanism or a confirmed one. Recent JAX/XLA
+measurements on TPU v6e report first-call compilation costs of the
+same order as ours \citep{jitcompile2026}, and a separate benchmark
+confirms that a new input shape retriggers the cost
+\citep{warmup2025}. Finally, Duet Benchmarking and the SPEC
+Research Group's methodology for reproducible cloud performance
+evaluation document that same-type cloud instances can vary
+substantially in measured performance due to hardware heterogeneity
+the provider does not expose to the tenant
+\citep{bulej2020duet,papadopoulos2021specrg}; we read the gaps
+Section~\ref{sec:rh-variability} reports as consistent with that
+literature, without a cause isolated, and not as an independent
+confirmation of it on ML accelerators.

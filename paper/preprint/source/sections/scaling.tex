@@ -1,0 +1,85 @@
+
+\subsection{Measurement grid}
+\label{sec:scaling-grid}
+
+We measure throughput of the multi-query \texttt{pmap} configuration
+from Section~\ref{sec:parallelism} on a full grid of chip count
+(1, 2, 4, 8) and sequence length (100, 250, 500, 1000 residues), 16
+points total, each a single steady-state measurement with no
+repeat.
+At chips=8, throughput falls from 19.153 to 0.522 proteins/second as
+length grows from 100 to 1000 residues. At length=100, it rises from
+2.935 to 19.153 proteins/second as chips grow from 1 to 8. Every point
+on this grid uses the rotated-alphabet input described in
+Section~\ref{sec:methodology}, not the 118-residue toy sequence used
+for the single-query experiments elsewhere in the paper. Because chip
+count and length are varied on the same input family and the same
+timer, this grid is the paper's cleanest measure of what adding chips
+buys.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{scaling_grid.pdf}
+  \caption{The 16-point scaling grid (multi-query \texttt{pmap},
+  repeated-alphabet inputs, one process per point). (a) Measured
+  throughput against chips in use for each sequence length, with the
+  fitted law $4527.77 \times \mathrm{chips}^{0.963} \times
+  \mathrm{length}^{-1.572}$ drawn dashed. (b) Fitted divided by measured
+  throughput at every grid point: the fit over-predicts at 100 and 1000
+  residues and under-predicts at 250 and 500, a systematic pattern. The one-chip point at 1000 residues is recorded
+  to two significant figures.}
+  \label{fig:scaling-grid}
+\end{figure}
+
+\subsection{Measured speedup at each length}
+\label{sec:scaling-speedup}
+
+The eight-over-one-chip speedup
+is 6.53$\times$ at length 100, rising to 7.47$\times$ at 250,
+7.76$\times$ at 500, and 7.91$\times$ at 1000.
+The four-over-one and two-over-one speedups show the same pattern:
+3.55$\times$ to 3.97$\times$, and 1.88$\times$ to 1.98$\times$,
+respectively, moving toward their ideal values (4$\times$, 2$\times$)
+as length grows.
+Scaling efficiency is worst at the shortest sequence length in this
+grid, which is also closest to the 118-residue input used
+throughout the rest of the paper: the fixed per-call overhead that
+Sections~\ref{sec:profiling} and~\ref{sec:parallelism} describe
+makes up a larger share of a short call, leaving less of the
+eight-chip speedup to be realized. At longer sequences, where
+per-chip compute dominates more of the call, the measured speedup
+approaches ideal linear scaling.
+
+\subsection{A descriptive power-law fit}
+\label{sec:scaling-fit}
+
+An ordinary-least-squares fit in log-log space summarizes the grid as
+\begin{equation}
+  \text{throughput} \approx 4527.77 \times \text{chips}^{0.963} \times \text{length}^{-1.572},
+  \quad R^2 = 0.981.
+  \label{eq:scaling-fit}
+\end{equation}
+The chip exponent, 0.963, is close enough to 1 to describe scaling
+across chips as near-linear over this range. The length exponent,
+$-1.572$, is steeper than $-1$: throughput falls faster than simple
+inverse proportionality with sequence length, consistent with the
+pair representation's cost growing faster than linearly in residue
+count (Section~\ref{sec:background}).
+
+$R^2 = 0.981$ describes the fit in log space across all 16 points; it
+does not mean the fit tracks the grid closely at any one length.
+The ratio of fitted to measured throughput follows a systematic
+pattern: the fit over-predicts
+by 10--26\% at length 100 and by 23--32\% at length 1000, and
+under-predicts by 11--13\% at length 250 and by 22--26\% at length
+500 (Figure~\ref{fig:scaling-grid}).
+A single global exponent therefore approximates a relationship that
+curves, and we use the fit only as a summary of this grid. We give
+per-length residuals instead of a regression interval on the
+exponents: with one measurement per cell the deviation is dominated by
+misspecification, not by sampling noise, and an interval would
+understate it. A chip exponent close to 1 predicts that cost per
+prediction is roughly flat in chip count. Section~\ref{sec:cost} tests
+this on the measured grid and finds it holds only at longer
+sequences.
+

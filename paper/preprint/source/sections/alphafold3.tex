@@ -1,0 +1,54 @@
+
+We treat AlphaFold3 not as a second benchmark study but as a portability
+question: does what Section~\ref{sec:parallelism} and
+Section~\ref{sec:results-hardware} found about AlphaFold2 on TPU
+generalize to a newer model in the same family. AlphaFold3 is run with
+its real, trained weights, not the untrained weights used for AlphaFold2
+elsewhere in this paper (Section~\ref{sec:methodology}). The setup,
+timings and per-sample score comparisons are in
+Appendix~\ref{app:af3}; two findings bear on the argument of this
+paper.
+
+\subsection{No TPU backend in the release we tested}
+\label{sec:af3-tpu}
+
+Running the same TPU Job configuration used throughout this paper
+against AlphaFold3 fails immediately: \texttt{run\_alphafold.py} rejects
+\texttt{-{}-jax\_backend=tpu} at flag parsing, after 5.588\,s, before any
+model code executes. The accepted values are \texttt{cpu}, \texttt{gpu}
+and \texttt{mps}.
+This matches AlphaFold3's own documentation, which lists CPU or an
+NVIDIA GPU of compute capability 7.0 or greater as the supported
+targets \citep{af3docs2026}. TPU is not a documented target. The
+rejection above is a Job failure on our own cluster, not an inference
+from the documentation alone.
+
+
+\subsection{Output differs across backends}
+\label{sec:af3-body-repro}
+
+Running the identical seed and input on the same backend but different
+machines (Stanford's CPU cluster versus the Colab CPU) changes the
+per-sample ranking score by at most 1.67\%, and by under 0.1\% on four
+of five samples; running it on different backends (Colab CPU versus
+Colab GPU) changes it by up to 32.33\% on one sample.
+The across-backend divergence is roughly an order of magnitude larger
+than the across-machine, same-backend noise. A plausible, documented
+cause exists in AlphaFold3's own performance notes, which report known
+numerical issues on CUDA Capability 7.x devices such as the Colab T4
+\citep{af3docs2026}. We did not isolate the operation responsible, so
+this cause remains plausible and unconfirmed
+(Appendix~\ref{app:af3-repro}).
+
+\subsection{Summary}
+\label{sec:af3-summary}
+
+Section~\ref{sec:parallelism}'s central finding, that realized
+performance on TPU depends on how parallelism is expressed rather than
+on the accelerator alone, cannot be tested on AlphaFold3 at all: the
+release we tested has no TPU path to express parallelism on in the
+first place. The broader caution of this paper does carry over: a
+newer model in the same family changes not just speed but which
+backends are available at all, and, on a documented edge case of GPU
+hardware, how far the reported output can be trusted to match across
+sessions.

@@ -1,0 +1,98 @@
+
+\textbf{One sequence length for most experiments.} Every single-query
+timing in Sections~\ref{sec:results-hardware} and
+\ref{sec:profiling} uses one 118-residue sequence. The
+sequence-length sweep behind Section~\ref{sec:scaling}'s fit covers
+100 to 1000 residues, but on a different, rotated-alphabet input
+family (Section~\ref{sec:methodology}) that we do not compare
+timings against the 118-residue results.
+
+\textbf{One TPU generation.} All TPU measurements use v5e; we have no
+data on v6e, v7 (Ironwood), or the announced TPU 8t/8i generation
+\citep{googletpuv8ann2026}, and make no claim about whether any
+finding here holds on a different generation.
+
+\textbf{Untrained weights.} AlphaFold2 runs with randomly initialized
+parameters throughout (Section~\ref{sec:methodology}). This is
+deliberate for a timing study and does not affect the compiled
+graph's shape, but it means every result here is a statement about
+compute, not about prediction quality, and we did not measure whether
+timing with trained weights is the same.
+
+\textbf{Asymmetric isolation.} The TPU ran as a dedicated Kubernetes
+Job. CPU and GPU ran on shared Colab runtimes whose underlying
+machine the provider chooses and can change between sessions
+(Section~\ref{sec:rh-variability}). The session-to-session
+variability we measured and report is therefore a property of the
+CPU/GPU setup specifically, not evidence about TPU stability one way
+or the other.
+
+\textbf{The headline speedups are computed from baselines that did not
+reproduce.} The 27.8$\times$ TPU-over-GPU figure divides the August GPU
+steady state by the TPU one, and the 451$\times$ TPU-over-CPU figure
+divides the August CPU steady state by it; both numerators moved on
+rerun, the GPU one by roughly a factor of two and the CPU one by
+1.6--1.7$\times$, gaps we could not explain
+(Section~\ref{sec:rh-variability}). We keep the August figures because
+they come from the same measurement campaign as the TPU numbers and no
+TPU rerun exists to pair with the September values: substituting them
+would compare across sessions in exactly the way this section's own
+finding argues against. Our records do not, however, establish that the
+three August backends ran in a single session: the result files carry
+no timestamp or session identifier, archived notebook output dates the
+CPU and GPU runs to 2026-08-08, and the TPU run is dated only by its
+commit (Section~\ref{sec:meth-provenance}).
+The consequence is that these ratios compare one chip against one T4
+and two vCPUs respectively, on one measurement campaign whose baselines
+later moved, and should not be read as portable hardware constants.
+
+\textbf{Most TPU measurements are single runs.} Two exceptions: a
+three-repeat check on the single-query configuration (coefficient of
+variation under 1.2\% on every timed region), and the auto-mesh
+experiment, which ran twice. Neither extends to the multi-chip
+\texttt{pmap} or scaling-grid experiments. Access to the
+TPU cluster ended with the course that provided it, so none of this
+can be regenerated or repeated.
+
+\textbf{Provenance gaps predating this project's audit.} The original
+August baselines were produced by scripts that were never committed
+to version control in the form that ran (Section~\ref{sec:methodology}),
+so those specific numbers cannot be reproduced bit-for-bit from the
+released repository. The September reruns close this gap for CPU and
+GPU only. Several supporting figures, including the raw XLA profiler
+trace behind Section~\ref{sec:profiling}, the vendor hardware
+specifications in Section~\ref{sec:background}, and one AlphaFold3
+Stanford-CPU timing, come from project documentation, with no raw data
+file behind them in the repository.
+
+\textbf{The measured software stack is only partly pinned.} On the TPU
+Jobs only \texttt{jax[tpu]} was pinned, to 0.10.2;
+\texttt{dm-haiku}, \texttt{tensorflow-cpu}, \texttt{numpy},
+\texttt{biopython}, \texttt{ml\_collections} and \texttt{absl-py} were
+installed unpinned at container start-up, and the AlphaFold2 commit was
+not recorded (Section~\ref{sec:meth-software}). Re-running the same
+scripts today may therefore resolve a different dependency set from the
+one that produced these numbers, and any effect of that difference
+cannot be separated from the hardware and session effects discussed
+above.
+
+\textbf{Cost figures rest on a single measurement per backend and one
+pricing snapshot.} Section~\ref{sec:cost} prices each backend
+from one steady-state throughput value, not from the session-level
+distributions of Section~\ref{sec:rh-variability}, and uses on-demand
+list prices from a single date. Neither changes qualitatively with
+small input variation, but neither is a distribution.
+
+\textbf{The scaling-law fit is an approximation, not a tight one.}
+Section~\ref{sec:scaling} reports the fitted curve's actual deviation
+from the measured grid directly, up to 32\% at the extremes of the
+tested length range; with a single measurement per grid cell we do not
+compute a confidence interval. A global two-exponent power law is a
+convenient summary of this grid, not a precise model of it.
+
+\textbf{AlphaFold3 results are effectively single runs per backend.}
+Each of the five diffusion samples in Section~\ref{sec:alphafold3}
+comes from one process invocation, not five independent runs, so the
+CPU-versus-GPU divergence there is one comparison, not a distribution
+of comparisons, and the documented cause we report for it
+(Appendix~\ref{app:af3-repro}) is plausible but unconfirmed.

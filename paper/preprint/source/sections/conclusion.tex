@@ -1,0 +1,41 @@
+
+On the same AlphaFold2 inference code and the same input, accelerator
+choice alone did not determine what a user actually got. A single TPU
+v5e chip beat a T4 GPU by 27.8$\times$ at steady state on our August
+baseline, a figure Section~\ref{sec:limitations} qualifies. That
+number also described one of eight allocated chips; the other seven sat at
+0\,MB until we explicitly asked JAX to use them
+(Section~\ref{sec:parallelism}), and the pod's list price reflected
+all eight regardless (Section~\ref{sec:cost}). Vectorizing with
+\texttt{jax.vmap} never recovered them. Mapping independent queries
+across devices with \texttt{jax.pmap} did, giving eight chips
+6.53--7.91$\times$ the throughput of one on a matched grid. Automatic sharding, meant to make that mapping
+unnecessary, left the per-chip footprint at its single-chip size,
+consistent with replication. Our best explanation is that AlphaFold2's
+Haiku modules carry no sharding annotations for it to propagate from,
+which we could not confirm from retained compiler evidence. Separately,
+we showed that an ensemble built outside the model can be mapped
+across all eight chips with an explicit \texttt{pmap} and
+\texttt{jax.lax.pmean} reduction, without changing AlphaFold2's
+source. None of this was
+visible from steady-state throughput alone. The cold-start cost
+appeared only in a profiler trace (Section~\ref{sec:profiling}), the
+baseline drift only when we reran the same benchmark weeks later
+(Section~\ref{sec:results-hardware}), and the idle-chip cost only when
+the slice was priced as it is billed (Section~\ref{sec:cost}).
+
+\subsection*{Future work}
+
+Three extensions follow directly from what this paper could not test.
+Google's TPU 8i, announced before these measurements but not evaluated
+here \citep{googletpuv8ann2026}, is inference-specialized silicon.
+Testing it against the first-call compilation costs characterized here
+is a natural next step once it is available.
+FastFold's Dynamic Axial Parallelism is a model-parallel alternative
+to the data-parallel approach this paper uses. Whether it transfers to
+TPU, and how it compares to the \texttt{pmap}-based approach here, is
+untested. And the single sequence length and single TPU generation
+noted in Section~\ref{sec:limitations} are the most direct gaps to
+close: longer sequences, multimer inputs, and later TPU generations
+would each test whether the mechanisms identified here, not just the
+specific numbers, generalize beyond this study's setup.

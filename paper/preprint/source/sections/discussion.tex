@@ -1,0 +1,47 @@
+
+The results in this paper separate two things that are easy to
+conflate when picking an accelerator: what the hardware is capable of,
+and what a given program actually gets from it. On every measure we
+took, the single v5e chip's raw capability was never in question. What
+varied, sometimes by an order of magnitude, was how much of that
+capability the default execution path exposed, and closing that gap
+required knowing which JAX transformation to reach for
+(Section~\ref{sec:parallelism}), understanding what a profiler trace
+was and was not measuring (Section~\ref{sec:profiling}), and pricing a
+slice by whether it was kept busy rather than by its hourly rate
+(Section~\ref{sec:cost}). None of this required modifying AlphaFold2's
+own source.
+
+\subsection{Steady state versus cold start}
+\label{sec:disc-when}
+
+The single-chip comparison in Section~\ref{sec:results-hardware}
+favors the TPU by a wide margin at steady state, but the same section
+shows a raw 59.1$\times$ gap between the TPU's cold and steady-state
+call, uncorrected because no TPU profiler-overhead log survives to
+correct it. Whatever the true corrected value, the qualitative point
+carries: a workload dominated by one-off calls at varying input shapes
+pays the compilation cost on nearly every call, while a workload that
+reuses one compiled shape repeatedly, such as sustained serving of a
+fixed-length input, amortizes it away. This paper measures a
+steady-state advantage, and nothing here tests whether it holds for a
+workload that never reaches steady state.
+
+\subsection{The cost of the default path}
+\label{sec:disc-default}
+
+A user who runs our unmodified single-query forward-pass driver on an
+8-chip TPU slice gets the result Section~\ref{sec:parallelism}
+describes: one chip working, seven idle, with no error or warning that
+anything is wrong. We did not test every production entry point, but
+nothing in AlphaFold2's default configuration asks for anything
+different. Section~\ref{sec:cost}
+shows what this costs in money as well as in throughput: the pod bills
+for 87.5\% capacity that produced no output. No bug is involved:
+on our reading of the evidence, this is the documented behavior of
+\texttt{jax.jit} and of an automatic partitioner given a model with no
+sharding annotations. The gap this paper
+measures is therefore not primarily a hardware limitation or a flaw in
+AlphaFold2's implementation, but a gap in what a user needs to know
+about JAX's parallelism primitives before an 8-chip rental delivers
+8 chips of work.

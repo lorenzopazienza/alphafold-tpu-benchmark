@@ -1,0 +1,72 @@
+
+This appendix records how AlphaFold3 was brought up on each backend,
+its timings, and the per-sample score comparisons summarized in
+Section~\ref{sec:alphafold3}.
+
+\subsection{Bringing AlphaFold3 up}
+\label{app:af3-infra}
+
+AlphaFold3 is a separate, diffusion-based codebase, not a version
+increment of AlphaFold2, and required meaningfully more engineering to
+run on every backend. Unlike AlphaFold2's pure-Python install,
+AlphaFold3 needs a native C++ build step (\texttt{libcifpp} and pybind11
+bindings) unavailable without root on our cluster's login node, and a
+separate \texttt{build\_data} step that constructs the Chemical Component
+Dictionary the model needs at start-up. Skipping it does not fail at
+start-up but a few seconds into the run, with a missing-file error. The T4
+also required \texttt{XLA\_FLAGS=-{}-xla\_disable\_hlo\_passes=%
+custom-kernel-fusion-rewriter}, documented in AlphaFold3's own
+Dockerfile comments: without it the run raises a \texttt{ValueError}
+before any computation starts. Its
+released weights decompress to 1.15\,GB. That is roughly 3.3$\times$ an
+AlphaFold2 model, measured against an approximately 350\,MB AlphaFold2
+figure taken from our own notes; we did not weigh a checkpoint, since
+these runs initialize AlphaFold2 randomly and never load a trained
+one.
+On our cluster, the C++ build step had to run inside a Kubernetes Job,
+for the same reason the rest of this paper's
+TPU work does: no root access outside a Job.
+
+\subsection{CPU and GPU results}
+\label{sec:af3-cpuresults}
+
+AlphaFold3's own timed model-inference region (one seed, five diffusion
+samples, including JIT compilation, since AlphaFold3 makes a single
+model call per process with no warm-up) runs 2401.38\,s on the Colab
+CPU and 86.21\,s on the Colab T4, a 27.86$\times$ GPU-over-CPU speedup
+with compilation included on both sides.
+As with AlphaFold2, we do not compute an AlphaFold3-over-AlphaFold2
+speed ratio anywhere in this paper: the two models differ in recycling
+depth, in whether the timed region includes compilation, and in how
+many output samples one call produces, and an early draft of this
+comparison that did not control for those differences reached the
+wrong sign. We report each model's own internal ratios and nothing that
+divides one model's timing by the other's.
+
+\subsection{A reproducibility finding}
+\label{app:af3-repro}
+
+Section~\ref{sec:af3-body-repro} gives the headline comparison. Across
+backends, the best-ranked sample's score falls from 0.41 to 0.33 and its
+fraction of disordered residues from 0.37 to 0.21.
+The divergence is not explained by anything in our own methodology: the
+two runs share seed, input and AlphaFold3 version. They are not identical in every respect: the GPU
+run also sets the XLA flag described above, which the CPU run does not
+need, and we did not isolate that flag's effect on the outputs.
+
+A plausible, independently documented cause exists. AlphaFold3's own
+performance documentation states that CUDA Capability 7.x devices have
+known numerical issues, and recommends a specific XLA flag as a
+workaround \citep{af3docs2026}; the Colab T4 used throughout this paper
+is compute capability 7.5, inside that range, and the same flag was
+required to get any AlphaFold3 result on it at all
+(Appendix~\ref{app:af3-infra}). Community reports on AlphaFold3's own
+issue tracker corroborate output problems on GPUs below the officially
+tested tier (A100 and H100), though we did not find that tracker
+discussion naming compute capability 7.5 specifically. We treat the
+documented CUDA-capability issue, not the tracker discussion, as the
+source for this explanation, and report it as a plausible cause
+consistent with our own measurements. It is not confirmed: we did not
+instrument AlphaFold3 internally to isolate which operation
+produces the divergence.
+

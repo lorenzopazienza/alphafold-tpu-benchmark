@@ -8,6 +8,8 @@
 
 **Live site:** [alphafold-tpu.vercel.app](https://alphafold-tpu.vercel.app) · **Repo:** [lorenzopazienza/alphafold-tpu-benchmark](https://github.com/lorenzopazienza/alphafold-tpu-benchmark) · **Slides:** [presentation PDF](presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf) (also [download from the site](https://alphafold-tpu.vercel.app/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf))
 
+**Paper:** *Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs*, Lorenzo Pazienza and Ihab El Bani, arXiv preprint, 2026 (cs.DC). [PDF](paper/preprint/Pazienza_ElBani_2026_AlphaFold2_Inference_on_Cloud_TPUs.pdf) · [LaTeX source](paper/preprint/source/). The paper cites commit `a63e955` of this repository; every number in it traces to [`paper/data/canonical_results.md`](paper/data/canonical_results.md).
+
 ---
 
 ## Executive Summary
@@ -58,6 +60,10 @@ alphafold-tpu-benchmark/
 │   ├── real_protein_fold_visualization.ipynb
 │   ├── af3_cpu_colab.ipynb            # AF3 CPU (Google Colab Intel Xeon, 2 vCPU) -- run_tag=cpu-colab
 │   └── af3_gpu_colab.ipynb            # AF3 GPU (Google Colab NVIDIA Tesla T4) -- run_tag=gpu-t4
+├── paper/
+│   ├── data/canonical_results.md      # Every number in the paper, with its source file
+│   ├── sections/methodology.{md,tex}  # Provenance audit (file:line for each figure)
+│   └── preprint/                      # arXiv preprint: PDF + LaTeX source as submitted
 ├── presentation/
 │   └── AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf  # Course deck (mirrored on the site)
 ├── profiling/
@@ -418,6 +424,20 @@ cd website && npm install && npm run dev
 
 ---
 
+## Citation
+
+If you use this benchmark or its results, please cite the preprint:
+
+```bibtex
+@misc{pazienza2026accelerator,
+  title  = {Accelerator Choice Is Not Enough: {AlphaFold2} Inference on Cloud {TPUs}},
+  author = {Pazienza, Lorenzo and El Bani, Ihab},
+  year   = {2026},
+  note   = {arXiv preprint}
+}
+```
+
+---
 
 ## License
 

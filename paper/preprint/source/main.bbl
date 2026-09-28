@@ -1,0 +1,253 @@
+\begin{thebibliography}{29}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Ahdritz et~al.(2024)Ahdritz, Bouatta, Floristean, Kadyan, Xia,
+  Gerecke, O'Donnell, Berenberg, Fisk, Zanichelli, Zhang, Nowaczynski, Wang,
+  Stepniewska-Dziubinska, Zhang, Ojewole, Guney, Biderman, Watkins, Ra,
+  Lorenzo, Nivon, Weitzner, Ban, Chen, Zhang, Li, Song, He, Sorger, Mostaque,
+  Zhang, Bonneau, and AlQuraishi]{openfold2024}
+Gustaf Ahdritz, Nazim Bouatta, Christina Floristean, Sachin Kadyan, Qinghui
+  Xia, William Gerecke, Timothy~J. O'Donnell, Daniel Berenberg, Ian Fisk,
+  Niccol{\`o} Zanichelli, Bo~Zhang, Arkadiusz Nowaczynski, Bei Wang, Marta~M.
+  Stepniewska-Dziubinska, Shang Zhang, Adegoke Ojewole, Murat~Efe Guney, Stella
+  Biderman, Andrew~M. Watkins, Stephen Ra, Pablo~Ribalta Lorenzo, Lucas Nivon,
+  Brian Weitzner, Yih-En~Andrew Ban, Shiyang Chen, Minjia Zhang, Conglong Li,
+  Shuaiwen~Leon Song, Yuxiong He, Peter~K. Sorger, Emad Mostaque, Zhao Zhang,
+  Richard Bonneau, and Mohammed AlQuraishi.
+\newblock {OpenFold}: retraining {AlphaFold2} yields new insights into its
+  learning mechanisms and capacity for generalization.
+\newblock \emph{Nature Methods}, 21\penalty0 (8):\penalty0 1514--1524, 2024.
+\newblock \doi{10.1038/s41592-024-02272-z}.
+
+\bibitem[Bulej et~al.(2020)Bulej, Horký, Tůma, Farquet, and
+  Prokopec]{bulej2020duet}
+Lubomír Bulej, Vojtěch Horký, Petr Tůma, François Farquet, and Aleksandar
+  Prokopec.
+\newblock Duet benchmarking: Improving measurement accuracy in the cloud.
+\newblock In \emph{Proceedings of the ACM/SPEC International Conference on
+  Performance Engineering (ICPE)}, 2020.
+\newblock arXiv:2001.05811.
+
+\bibitem[Cheng et~al.(2023)Cheng, Zhao, Lu, Fang, Yu, Zheng, Wu, Zhang, Peng,
+  and You]{cheng2022fastfoldarxiv}
+Shenggan Cheng, Xuanlei Zhao, Guangyang Lu, Jiarui Fang, Zhongming Yu, Tian
+  Zheng, Ruidong Wu, Xiwen Zhang, Jian Peng, and Yang You.
+\newblock {FastFold}: Reducing {AlphaFold} training time from 11 days to 67
+  hours, 2023.
+\newblock arXiv:2203.00854v3.
+
+\bibitem[Cheng et~al.(2024)Cheng, Zhao, Lu, Fang, Zheng, Wu, Zhang, Peng, and
+  You]{cheng2024fastfold}
+Shenggan Cheng, Xuanlei Zhao, Guangyang Lu, Jiarui Fang, Tian Zheng, Ruidong
+  Wu, Xiwen Zhang, Jian Peng, and Yang You.
+\newblock {FastFold}: Optimizing {AlphaFold} training and inference on {GPU}
+  clusters.
+\newblock In \emph{Proceedings of the 29th ACM SIGPLAN Annual Symposium on
+  Principles and Practice of Parallel Programming (PPoPP)}, 2024.
+\newblock \doi{10.1145/3627535.3638465}.
+
+\bibitem[Ding et~al.(2026)Ding, Oh, Kataria, Guo, Gvero, Kumar, Devraj, Bowen,
+  Sonwane, Manzoor, and Singh]{ding2026cclbench}
+Eric Ding, Byungsoo Oh, Bhaskar Kataria, Kaiwen Guo, Jelena Gvero,
+  Abhishek~Vijaya Kumar, Arjun Devraj, Lindsey Bowen, Atharv Sonwane, Emaad
+  Manzoor, and Rachee Singh.
+\newblock {CCL-Bench} 1.0: A trace-based benchmark for {LLM} infrastructure,
+  2026.
+\newblock arXiv:2605.06544.
+
+\bibitem[Du et~al.(2026)Du, Yang, Lu, You, Zhou, and Qian]{matrixfold2026}
+Shaokang Du, Hailong Yang, Tao Lu, Xin You, Baojian Zhou, and Depei Qian.
+\newblock {MatrixFold}: Unleashing manycore {CPUs} with outer-product units for
+  mixed-precision {AlphaFold} inference.
+\newblock In \emph{Euro-Par 2026: Parallel Processing}, volume 16782 of
+  \emph{Lecture Notes in Computer Science}, pages 423--436, 2026.
+\newblock \doi{10.1007/978-3-032-35251-4_29}.
+
+\bibitem[{Google Cloud}(2026{\natexlab{a}})]{googletpupricing}
+{Google Cloud}.
+\newblock {Cloud} {TPU} pricing.
+\newblock \url{https://cloud.google.com/tpu/pricing}, 2026{\natexlab{a}}.
+\newblock Accessed 2026-09-17.
+
+\bibitem[{Google Cloud}(2026{\natexlab{b}})]{googletpuv5e}
+{Google Cloud}.
+\newblock {Cloud} {TPU} v5e.
+\newblock \url{https://docs.cloud.google.com/tpu/docs/v5e}, 2026{\natexlab{b}}.
+\newblock Accessed 2026-09-18.
+
+\bibitem[{Google Cloud}(2026{\natexlab{c}})]{googletpuv8ann2026}
+{Google Cloud}.
+\newblock {TPU} 8t and {TPU} 8i technical deep dive.
+\newblock
+  \url{https://cloud.google.com/blog/products/compute/tpu-8t-and-tpu-8i-technical-deep-dive},
+  2026{\natexlab{c}}.
+\newblock Accessed 2026-09-18.
+
+\bibitem[{Google DeepMind}(2026)]{af3docs2026}
+{Google DeepMind}.
+\newblock {AlphaFold3} performance.
+\newblock
+  \url{https://github.com/google-deepmind/alphafold3/blob/main/docs/performance.md},
+  2026.
+\newblock Accessed 2026-09-18.
+
+\bibitem[Hauck et~al.(2025)Hauck, Kabel, and Gauger]{warmup2025}
+Sascha~H. Hauck, Matthias Kabel, and Nicolas~R. Gauger.
+\newblock Performance benchmarking of tensor trains for accelerated
+  quantum-inspired homogenization on {TPU}, {GPU} and {CPU} architectures,
+  2025.
+\newblock arXiv:2512.07811.
+
+\bibitem[Jouppi et~al.(2017)]{jouppi2017tpu}
+Norman~P. Jouppi et~al.
+\newblock In-datacenter performance analysis of a tensor processing unit.
+\newblock In \emph{Proceedings of the 44th Annual International Symposium on
+  Computer Architecture (ISCA)}, 2017.
+
+\bibitem[Jouppi et~al.(2023)]{jouppi2023tpuv4}
+Norman~P. Jouppi et~al.
+\newblock {TPU} v4: An optically reconfigurable supercomputer for machine
+  learning with hardware support for embeddings, 2023.
+\newblock arXiv:2304.01433. ISCA 2023.
+
+\bibitem[Jumper et~al.(2021)Jumper, Evans, Pritzel, Green, Figurnov,
+  Ronneberger, Tunyasuvunakool, Bates, {\v Z}{\'i}dek, Potapenko, Bridgland,
+  Meyer, Kohl, Ballard, Cowie, Romera-Paredes, Nikolov, Jain, Adler, Back,
+  Petersen, Reiman, Clancy, Zielinski, Steinegger, Pacholska, Berghammer,
+  Bodenstein, Silver, Vinyals, Senior, Kavukcuoglu, Kohli, and
+  Hassabis]{jumper2021alphafold}
+John Jumper, Richard Evans, Alexander Pritzel, Tim Green, Michael Figurnov,
+  Olaf Ronneberger, Kathryn Tunyasuvunakool, Russ Bates, Augustin {\v
+  Z}{\'i}dek, Anna Potapenko, Alex Bridgland, Clemens Meyer, Simon A.~A. Kohl,
+  Andrew~J. Ballard, Andrew Cowie, Bernardino Romera-Paredes, Stanislav
+  Nikolov, Rishub Jain, Jonas Adler, Trevor Back, Stig Petersen, David Reiman,
+  Ellen Clancy, Michal Zielinski, Martin Steinegger, Michalina Pacholska, Tamas
+  Berghammer, Sebastian Bodenstein, David Silver, Oriol Vinyals, Andrew~W.
+  Senior, Koray Kavukcuoglu, Pushmeet Kohli, and Demis Hassabis.
+\newblock Highly accurate protein structure prediction with {AlphaFold}.
+\newblock \emph{Nature}, 596:\penalty0 583--589, 2021.
+\newblock \doi{10.1038/s41586-021-03819-2}.
+
+\bibitem[Kim et~al.(2025)Kim, Kwon, and Zhao]{iiswc2025af3}
+Jinpyo Kim, Mingi Kwon, and Jishen Zhao.
+\newblock {AlphaFold3} workload characterization: A comprehensive analysis of
+  bottlenecks and performance scaling.
+\newblock In \emph{IEEE International Symposium on Workload Characterization
+  (IISWC)}, 2025.
+
+\bibitem[Kishnani et~al.(2026)Kishnani, Goel, Singh, Agrawal, and
+  Mishra]{gemma2026tpu}
+Jatin Kishnani, Mayank Goel, Amit Singh, Pulkit Agrawal, and Sairanjan Mishra.
+\newblock Fine-tuning and serving {Gemma} 4 {31B} on {Google} {Cloud} {TPU}: A
+  technical comparison with {GPU} baselines, 2026.
+\newblock arXiv:2605.25645.
+
+\bibitem[Li et~al.(2022)Li, Liu, Chen, Shen, Bi, Ke, and Zhang]{unifold}
+Ziyao Li, Xuyang Liu, Weijie Chen, Fan Shen, Hangrui Bi, Guolin Ke, and Linfeng
+  Zhang.
+\newblock {Uni-Fold}: An open-source platform for developing protein folding
+  models beyond {AlphaFold}.
+\newblock \emph{bioRxiv}, 2022.
+\newblock \doi{10.1101/2022.08.04.502811}.
+
+\bibitem[Mirdita et~al.(2022)Mirdita, Sch{\"u}tze, Moriwaki, Heo, Ovchinnikov,
+  and Steinegger]{colabfold2022}
+Milot Mirdita, Konstantin Sch{\"u}tze, Yoshitaka Moriwaki, Lim Heo, Sergey
+  Ovchinnikov, and Martin Steinegger.
+\newblock {ColabFold}: making protein folding accessible to all.
+\newblock \emph{Nature Methods}, 19:\penalty0 679--682, 2022.
+\newblock \doi{10.1038/s41592-022-01488-1}.
+
+\bibitem[{OpenXLA Project}(2026)]{shardy2026}
+{OpenXLA Project}.
+\newblock {Shardy}: An {MLIR}-based tensor partitioning system.
+\newblock \url{https://github.com/openxla/shardy}, 2026.
+\newblock Accessed 2026-09-18.
+
+\bibitem[Papadopoulos et~al.(2021)Papadopoulos, Versluis, Bauer, Herbst, von
+  Kistowski, Ali-Eldin, Abad, Amaral, Tůma, and Iosup]{papadopoulos2021specrg}
+Alessandro~Vittorio Papadopoulos, Laurens Versluis, André Bauer, Nikolas
+  Herbst, Jóakim von Kistowski, Ahmed Ali-Eldin, Cristina~L. Abad,
+  José~Nelson Amaral, Petr Tůma, and Alexandru Iosup.
+\newblock Methodological principles for reproducible performance evaluation in
+  cloud computing.
+\newblock \emph{IEEE Transactions on Software Engineering}, 47\penalty0 (8),
+  2021.
+
+\bibitem[Park et~al.(2024)Park, Patel, Haas, and Huerta]{apace2024}
+Hyun Park, Parth Patel, Roland Haas, and E.~A. Huerta.
+\newblock {APACE}: {AlphaFold2} and advanced computing as a service for
+  accelerated discovery in biophysics.
+\newblock \emph{Proceedings of the National Academy of Sciences}, 121\penalty0
+  (27):\penalty0 e2311888121, 2024.
+\newblock \doi{10.1073/pnas.2311888121}.
+\newblock Preprint: arXiv:2308.07954.
+
+\bibitem[Rush et~al.(2024)Rush, Charles, Garrett, Augenstein, and
+  Mitchell]{drjax2024}
+Keith Rush, Zachary Charles, Zachary Garrett, Sean Augenstein, and Nicole
+  Mitchell.
+\newblock {DrJAX}: Scalable and differentiable {MapReduce} primitives in {JAX},
+  2024.
+\newblock arXiv:2403.07128.
+
+\bibitem[Santoni and Thapar(2026)]{jitcompile2026}
+Cosmo Santoni and Anmol Thapar.
+\newblock Compiler-first state space duality and portable {$O(1)$}
+  autoregressive caching for inference, 2026.
+\newblock arXiv:2603.09555.
+
+\bibitem[Tschand et~al.(2026)Tschand, Hong, Walker, Cai, Wang, Subramanian,
+  Dev, Janapa~Reddi, Yazdanbakhsh, and Sankaran]{jaxbench2026}
+Arya Tschand, Charles Hong, Julian Walker, Nina Cai, Shangkun Wang, Suvinay
+  Subramanian, Sundar Dev, Vijay Janapa~Reddi, Amir Yazdanbakhsh, and Sethu
+  Sankaran.
+\newblock {JAXBench}: Benchmarking autonomous {TPU} kernel optimization, 2026.
+\newblock arXiv:2607.20466.
+
+\bibitem[Villegas-Morcillo et~al.(2023)Villegas-Morcillo, Robinson, Flajolet,
+  and Barrett]{villegas-morcillo2023manyfold}
+Amelia Villegas-Morcillo, Louis Robinson, Arthur Flajolet, and Thomas~D.
+  Barrett.
+\newblock {ManyFold}: an efficient and flexible library for training and
+  validating protein folding models.
+\newblock \emph{Bioinformatics}, 39\penalty0 (1):\penalty0 btac773, 2023.
+\newblock \doi{10.1093/bioinformatics/btac773}.
+
+\bibitem[Wang et~al.(2022)Wang, Fang, Wu, Liu, Xue, Xiang, Yu, Wang, and
+  Ma]{helixfold2022}
+Guoxia Wang, Xiaomin Fang, Zhihua Wu, Yiqun Liu, Yang Xue, Yingfei Xiang,
+  Dianhai Yu, Fan Wang, and Yanjun Ma.
+\newblock {HelixFold}: An efficient implementation of {AlphaFold2} using
+  {PaddlePaddle}, 2022.
+\newblock arXiv:2207.05477.
+
+\bibitem[Xu et~al.(2021)Xu, Lee, Chen, Hechtman, Huang, Joshi, Krikun,
+  Lepikhin, Ly, Maggioni, Pang, Shazeer, Wang, Wang, Wu, and Chen]{xu2021gspmd}
+Yuanzhong Xu, HyoukJoong Lee, Dehao Chen, Blake Hechtman, Yanping Huang, Rahul
+  Joshi, Maxim Krikun, Dmitry Lepikhin, Andy Ly, Marcello Maggioni, Ruoming
+  Pang, Noam Shazeer, Shibo Wang, Tao Wang, Yonghui Wu, and Zhifeng Chen.
+\newblock {GSPMD}: General and scalable parallelization for {ML} computation
+  graphs, 2021.
+\newblock arXiv:2105.04663.
+
+\bibitem[Zhong et~al.(2022)Zhong, Su, Wen, Zuo, Hong, and
+  Lin]{zhong2022parafold}
+Bozitao Zhong, Xiaoming Su, Minhua Wen, Sicheng Zuo, Liang Hong, and James Lin.
+\newblock {ParaFold}: Paralleling {AlphaFold} for large-scale predictions.
+\newblock In \emph{HPC Asia 2022 Workshops (Workshops of HPC Asia 2022)}, 2022.
+\newblock arXiv:2111.06340.
+
+\bibitem[Zhu et~al.(2024)Zhu, Xin, Eryilmaz, Nowaczynski, Song, Yang, Li,
+  Marcinkiewicz, and Andersch]{scalefold2024}
+Feiwen Zhu, Jie Xin, Sukru~Burc Eryilmaz, Arkadiusz Nowaczynski, Yifei Song,
+  Jun Yang, Rundong Li, Michal Marcinkiewicz, and Michael Andersch.
+\newblock {ScaleFold}: Reducing {AlphaFold} initial training time to 10 hours,
+  2024.
+\newblock arXiv:2404.11068.
+
+\end{thebibliography}

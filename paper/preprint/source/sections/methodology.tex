@@ -1,0 +1,218 @@
+
+This section describes the hardware, software, workload and timing
+procedure behind every measurement in the paper, and states what our
+records do not contain. The full provenance audit, with a
+file-level source for each statement below, is part of the released
+repository (see Code and Data Availability).
+
+\subsection{Hardware}
+\label{sec:meth-hardware}
+
+We compare three backends running the same AlphaFold2 inference code
+(Table~\ref{tab:meth-hardware}). CPU and GPU runs used Google Colab
+runtimes; TPU runs used a Google Kubernetes Engine cluster in
+\texttt{us-west4} provided through Stanford's ME344 course.
+
+\begin{table}[H]
+\centering\small
+\caption{Hardware and software per backend. ``Not recorded'' means our
+run artifacts do not contain the value; these gaps are discussed in
+Section~\ref{sec:limitations}.}
+\label{tab:meth-hardware}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.17\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
+\toprule
+ & CPU (Colab) & GPU (Colab) & TPU (GKE) \\
+\midrule
+Device & x86\_64 CPU runtime, 2 vCPU (from our write-up, not a
+recorded field in the run artifacts); August host CPU model not
+recorded; September reruns: Intel Xeon @ 2.20\,GHz (family 6,
+model 79) & NVIDIA Tesla T4, 15{,}360\,MiB, compute capability 7.5,
+driver 580.82.07 & TPU v5e slice (\texttt{tpu-v5-lite-podslice},
+topology 2$\times$4): 8 chips, 16.9\,GB HBM limit per chip \\
+Host CPU / RAM & same as device & not recorded (August) & not recorded \\
+JAX & unpinned in August (resolved version not recorded); 0.10.2 in
+the September reruns & unpinned, \texttt{jax[cuda12]} (resolved
+version not recorded) & \texttt{jax[tpu]==0.10.2} \\
+Scheduling & interactive notebook & interactive notebook & Kubernetes
+Job, Kueue queue, 8 chips requested \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Two properties of this setup bear on the results. The TPU allocation
+is always the full 8-chip slice, but in the default single-query
+execution path only one chip performs work: seven of the eight chips
+report zero bytes of device memory in use. Single-query TPU timings
+therefore measure one v5e chip (Section~\ref{sec:rh-onechip}), while
+cost is billed for all eight (Section~\ref{sec:cost}). The backends are
+also not equally isolated: the TPU ran as a dedicated Kubernetes
+Job, whereas the CPU and GPU ran on shared Colab runtimes whose
+underlying machine is chosen by the provider and may change between
+sessions. Section~\ref{sec:rh-variability} reports how repeated CPU and
+GPU timings varied across sessions; we did not isolate a cause, and
+shared tenancy remains a hypothesis there rather than a demonstrated
+one.
+
+\subsection{Software}
+\label{sec:meth-software}
+
+All AlphaFold2 runs use the public DeepMind implementation, cloned from
+its default branch at run time. The August runs did not record which
+commit that resolved to; the September reruns do, in their environment
+files. The AlphaFold2 source is not modified. One compatibility shim
+is applied from outside it: our scripts wrap \texttt{jax.numpy.clip} so
+that the \texttt{a\_min}/\texttt{a\_max} keyword arguments used by
+AlphaFold2 map onto the argument names of current JAX releases. No
+container image digest or lockfile was used for the original runs: TPU
+Jobs started from a floating \texttt{python:3.12-slim} image and
+installed packages at start-up, with only JAX pinned, and the Colab
+notebooks installed JAX and AlphaFold2's dependencies unpinned. For the
+September reruns, each result is stored together with the benchmark
+repository commit it was run from and a capture of the environment
+(installed package versions and host CPU).
+
+\subsection{Workload}
+\label{sec:meth-workload}
+
+Every AlphaFold2 run uses the \texttt{model\_3} configuration (no
+templates), a single ensemble member, no recycling
+(\texttt{num\_recycle}~$=0$) and float32 precision, unless an experiment
+varies one of these explicitly (the recycling, precision and
+model-comparison sweeps).
+
+\paragraph{Input sequences.} Single-query experiments fold a fixed
+synthetic 118-residue sequence. The sequence-length sweep, the
+\texttt{vmap} batching experiment, the multi-query \texttt{pmap}
+experiment and the chip-count scaling grid instead use the 20-letter
+amino-acid alphabet repeated to the target length (rotated per batch
+item), including at 118 residues. These two input families are
+therefore not identical. The one place the paper sets a number from
+each family side by side is the 6.92$\times$ multi-query throughput
+gain of Section~\ref{sec:parallelism}, whose denominator is the
+fixed-sequence single-query baseline; we flag that mismatch where the
+figure appears, and treat the matched chip-count grid as the cleaner
+comparison.
+
+\paragraph{MSA and features.} To isolate model execution from the data
+pipeline, no genetic database search is run and no templates are used:
+the MSA contains only the query sequence, built with AlphaFold2's own
+parsing and feature code. Feature processing happens before any timer
+starts. The trivial MSA does not shrink the compiled graph, because
+AlphaFold2 pads its MSA tensors to fixed sizes: the logged model inputs
+are \texttt{msa\_feat} of shape $(1, 512, 118, 49)$ and
+\texttt{extra\_msa} of shape $(1, 5120, 118)$. All feature, parameter
+and prediction seeds are fixed to 0, with one exception: the external
+ensemble experiment of Section~\ref{sec:parallelism} builds its eight
+feature sets with seeds 0--7, since identical seeds would give
+identical members. Parameter initialization and the shared model PRNG
+stay at 0 there too.
+
+\paragraph{Why random weights.} AlphaFold2 is run with randomly
+initialized parameters; the trained checkpoint is never loaded. This is a
+systems study: the question is where time goes during compilation and
+execution, not how accurate the predicted structures are, and the
+compiled graph's shapes and operations do not depend on parameter
+values. The predicted structures are therefore meaningless and are
+never interpreted, and timing equivalence with trained weights is
+argued rather than measured: we did not time a run with trained
+weights, so value-dependent runtime effects cannot be ruled out.
+The AlphaFold3 runs (Section~\ref{sec:alphafold3}) use the real, trained
+AlphaFold3 weights.
+
+\subsection{Timing procedure}
+\label{sec:meth-timing}
+
+All times are host wall-clock (\texttt{time.time()}). Every timed
+\texttt{predict} call is followed by \texttt{jax.block\_until\_ready},
+so that asynchronous accelerator work is included; the
+\texttt{init\_params} timer has no such explicit barrier, so any device
+work it leaves outstanding is not counted in that region. Each single-query process
+times three consecutive regions: parameter initialization
+(\texttt{init\_params}, including its own tracing and compilation), a
+first \texttt{predict} call, which compiles and executes the model, and
+a second, identical \texttt{predict} call, which reuses the compiled
+program and is reported as the \emph{steady state}. The first call is
+the only warm-up. The timed \texttt{predict} region also includes the
+confidence metrics that AlphaFold2 computes on the host after the
+forward pass.
+
+\paragraph{Repeated steady-state calls.} In the original August
+baselines, the steady state is a single call per process. For the
+September CPU and GPU reruns, the committed script repeats the
+steady-state call a configurable number of times and makes the profiler
+optional: each rerun times five consecutive steady-state calls in the
+same process, with the profiler disabled, and we report their mean and
+sample standard deviation.
+
+\paragraph{Profiler overhead on the first call.} In the August and TPU
+runs of the single-query and \texttt{vmap} scripts, the first
+\texttt{predict} runs inside a
+\texttt{jax.profiler.trace} context, and closing that context is inside
+the timer. The Colab logs let us measure this directly: after
+\texttt{predict} returned, the timer kept running for another 36.00\,s
+on CPU and 42.02\,s on GPU, while the same \texttt{block\_until\_ready}
+took under a millisecond on the second call. Reported first-call times
+from these scripts therefore include trace finalization; steady-state
+times are unaffected. Section~\ref{sec:rh-coldstart} reports cold-start
+ratios corrected for this overhead on CPU and GPU. No TPU run log
+survives, so the size of the overhead on TPU is unknown. The
+\texttt{pmap}, ensemble-sharding and auto-mesh scripts do not use the
+profiler, so their first-call times are not comparable with those of
+the single-query script.
+
+\paragraph{Multi-chip experiments.} The multi-query \texttt{pmap} and
+\texttt{vmap} experiments report throughput as batch size divided by the
+steady-state call time. Device memory is read once per process from
+JAX's per-device memory statistics after the second call; the reported
+peak is the process-lifetime peak.
+
+\paragraph{AlphaFold3.} AlphaFold3 is timed from its own log: model
+inference for one seed and five diffusion samples, which includes JIT
+compilation because AlphaFold3 makes a single model call per process
+with no warm-up. Because recycling depth, compilation and sample
+accounting all differ between the two models, we report no
+AlphaFold3-to-AlphaFold2 speed ratio (Section~\ref{sec:alphafold3}).
+
+\subsection{Repetitions and noise}
+\label{sec:meth-repetitions}
+
+Most experiments are a single process per configuration point. The
+auto-mesh partitioning experiment was run twice, with steady states of
+0.472\,s and 0.473\,s, but the only
+deliberate \emph{noise characterization} on the TPU ran the
+single-query benchmark three
+times in the same pod, with a coefficient of variation of 0.12\% on
+steady state, 0.82\% on \texttt{init\_params} and 1.00\% on the first
+call. This noise estimate applies to the TPU setup only. Access to the
+TPU cluster ended with the course, so the TPU measurements cannot be
+repeated. For the shared Colab runtimes, we instead reran the CPU
+baseline in three further sessions (2026-09-15, -16 and -17) and the GPU
+baseline in one (2026-09-15), five steady-state calls each
+(Section~\ref{sec:rh-variability}). Experiments that share a Kubernetes
+Job ran back to back in one pod, in a fixed order.
+
+\subsection{Provenance}
+\label{sec:meth-provenance}
+
+The original results were committed together with the benchmark scripts
+in a single commit, so version control cannot tie a result to the
+script revision that produced it. The August CPU and GPU baselines were
+produced by an uncommitted copy of the script embedded in the Colab
+notebooks, with the same timing structure as the committed version; the
+TPU baseline result matches neither surviving script version. TPU run
+dates were not recorded. Version control only bounds them from above,
+since all TPU results were already committed by 2026-08-11 (most of them
+on 2026-08-08). The September
+reruns close this gap for CPU and GPU, since each is tied to an explicit
+commit and a captured environment.
+
+The consequence is that the August baseline runs, and the headline
+ratios computed from them, cannot be regenerated from the repository
+as it stands. We know what was measured and from which
+result file each number comes, because the catalogue records that. What
+we cannot do is re-execute the exact configuration that produced them.
+The September reruns are reproducible in that stronger sense, and the
+comparison between the two is reported in
+Section~\ref{sec:rh-variability}. Everything else our records do not
+contain is listed with its consequences in Section~\ref{sec:limitations}.
+

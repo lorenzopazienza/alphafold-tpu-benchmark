@@ -1,0 +1,108 @@
+
+Section~\ref{sec:results-hardware} showed that the first call to
+AlphaFold2's forward pass at a new input shape is far more expensive
+than steady state, and that part of that cost is an artifact of
+capturing the call inside a profiler trace rather than compilation
+itself (Section~\ref{sec:rh-coldstart}). This section looks inside a single
+first call to identify, at the function level, where the remaining
+cost goes.
+
+\subsection{Tracing a first call}
+\label{sec:prof-method}
+
+We captured one first-\texttt{predict} call for the single-query TPU
+configuration (\texttt{model\_3}, 118 residues, \texttt{num\_recycle=0})
+inside \texttt{jax.profiler.trace}, copied the resulting trace off the
+pod before it was reclaimed, and inspected it in Chrome's trace
+viewer. TPU pods on this cluster are torn down within roughly a
+minute of job completion, so capturing the trace file required an
+explicit copy step while the pod was still alive.
+
+\subsection{The \texttt{cache\_miss} finding}
+\label{sec:prof-cachemiss}
+
+The traced call stack descends from AlphaFold2's outer
+\texttt{apply\_fn} wrapper, which itself accounts for essentially none
+of the traced time, into a function named \texttt{cache\_miss}, defined
+in JAX's own \texttt{pjit.py}. Its purpose is to trace and compile a
+computation the first time JAX encounters a given input shape. Of the
+16.56\,s spanned by the traced \texttt{apply\_fn} call, 12.55\,s (about
+76\%) is self time inside \texttt{cache\_miss} itself, not in any
+function it calls. These trace figures come from the analysis written
+up when the trace was taken; the raw profiler trace is not in the
+repository, so they are reported figures that cannot be re-derived
+from a retained artifact (Section~\ref{sec:limitations}).
+Below \texttt{cache\_miss}, the call stack descends through
+\texttt{\_infer\_params}, \texttt{\_trace\_for\_jit}, and
+\texttt{trace\_to\_jaxpr} into Haiku's own \texttt{apply\_fn}, which
+lowers AlphaFold2's Evoformer computation into XLA's intermediate
+representation. Every frame in this path executes on the host. The
+TPU device track in the same trace shows only a handful of brief
+marks near the start of the window, and is otherwise idle for nearly
+the full 16.56\,s while the host finishes tracing and compiling.
+
+The 76\% figure is a share of the traced span, not of the
+first-\texttt{predict} call as a whole: the trace covers 16.56\,s,
+while the first-\texttt{predict} timings reported in
+Section~\ref{sec:results-hardware} run 27.43--28.80\,s
+in the runs that measure it directly. The two are separate captures
+of related but not identical work, and the trace does not by itself
+explain the gap between them. We report the 76\% figure only as a
+property of the traced \texttt{apply\_fn} span: three quarters of that
+span is JAX's own tracing-and-compilation machinery, concentrated in a
+single named function, rather than TPU execution, data movement or
+AlphaFold2's own arithmetic.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{coldstart_regions.pdf}
+  \caption{The cold-start regime. (a) The three timed regions of the
+  August baselines on each backend, on a log scale. On CPU and GPU the
+  lighter top segment of the first-\texttt{predict} bar is the profiler
+  teardown that ran inside the timer (36.00\,s and 42.02\,s,
+  Section~\ref{sec:rh-coldstart}); the TPU bar cannot be corrected
+  because no TPU run log survives. (b) On TPU, a persistent compilation
+  cache shortens \texttt{init\_params} 6.81$\times$ and the first
+  \texttt{predict} call 1.90$\times$ in a fresh process; the steady state
+  is unchanged.}
+  \label{fig:coldstart}
+\end{figure}
+
+\subsection{Compilation cache}
+\label{sec:prof-cache}
+
+A persistent JAX compilation cache stores compiled XLA binaries across
+process restarts, so a second process at the same input shape can skip
+the compile step that produced them. Comparing a cold process against
+one with a warm cache, on the same single-query configuration
+(Figure~\ref{fig:coldstart}b),
+\texttt{init\_params} drops from 37.68\,s to 5.53\,s, a 6.81$\times$
+speedup, and the first \texttt{predict} call drops from 28.80\,s to
+15.19\,s, a 1.90$\times$ speedup.
+These are two different compilations and the two speedups should not
+be compared to each other or to the 12.55\,s \texttt{cache\_miss}
+figure above: the cache experiment and the trace are separate runs, and
+a warm cache still requires a fresh process to re-trace the Python
+program down to a jaxpr before it can consult the cache, which
+plausibly accounts for part of the 15.19\,s that remains on the warm
+first call. The comparison does establish that most of AlphaFold2's
+start-up cost on TPU is avoidable across process restarts at a fixed
+input shape, provided that cost is taken as \texttt{init\_params} and
+the first \texttt{predict} together: the two fall from 66.48\,s to
+20.72\,s, a 69\% reduction. The first \texttt{predict} alone falls only
+47\%, so more than half of it survives the cache, and
+\texttt{init\_params} benefits far more from caching than the forward
+pass itself does.
+
+\subsection{Relation to prior work}
+\label{sec:prof-priorwork}
+
+Compilation-dominated cold starts are not unique to this hardware or
+this study. ParaFold identifies JAX recompilation as a major cost of
+running AlphaFold2 at scale on GPU, and mitigates it within a process by
+sorting input sequences by length so that fewer distinct shapes
+trigger a fresh trace-and-compile cycle \citep{zhong2022parafold}. Our
+finding is the same underlying cost, reported at the function level by
+our retained trace analysis, on a different accelerator. We take it as consistent evidence that
+the cost comes from AlphaFold2's JAX/XLA compilation model, whatever
+the backend, and do not claim it as an independent discovery.

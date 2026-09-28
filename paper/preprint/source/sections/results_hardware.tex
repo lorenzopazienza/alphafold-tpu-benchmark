@@ -1,0 +1,166 @@
+
+\subsection{Main comparison}
+\label{sec:rh-main}
+
+Table~\ref{tab:rh-main} reports \texttt{init\_params}, first
+\texttt{predict} and steady-state timing for the same AlphaFold2
+forward pass (\texttt{model\_3}, 118 residues, \texttt{num\_recycle=0},
+float32, untrained weights) on CPU (Google Colab), GPU (NVIDIA T4,
+Google Colab) and TPU (a single v5e chip on the Stanford cluster
+slice). These are the original August 2026 baseline runs, each a single
+call with no repetition. None of the three result
+files records a timestamp or a session identifier. Archived
+execution output in the August notebooks dates the CPU and GPU runs
+to 2026-08-08 by the notebook's own clock; the TPU run is bounded only
+by the commit that carries it. Nothing establishes that the three
+backends ran within one session
+(Section~\ref{sec:meth-provenance}); Section~\ref{sec:rh-variability}
+reports what changed when we reran two of the three backends five
+weeks later.
+
+\begin{table}[H]
+\centering\small
+\caption{The August 2026 single-call baseline on the three backends:
+one 118-residue inference per backend, untrained weights, float32. The
+TPU row is a single v5e chip.}
+\label{tab:rh-main}
+\begin{tabular}{lrrr}
+\toprule
+Backend & \texttt{init\_params} (s) & First \texttt{predict} (s) & Steady state (s) \\
+\midrule
+CPU        & 41.99  & 271.98 & 212.113 \\
+GPU (T4)   & 109.16 & 97.62  & 13.086  \\
+TPU (v5e)  & 36.6   & 27.78  & 0.47    \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At steady state, the TPU is 451$\times$ faster than the CPU and
+27.8$\times$ faster than the T4; the T4 itself is 16.2$\times$ faster
+than the CPU. Each ratio compares exactly two measured points. We do
+not chain any two of them into a claim about the TPU's advantage over
+the CPU \emph{through} the GPU.
+Figure~\ref{fig:rh-speedup} shows the same three timings on a log
+scale, with each backend's speedup over the CPU; the TPU row carries
+the single-chip caveat of Section~\ref{sec:rh-onechip}.
+
+\subsection{TPU figures are single-chip figures}
+\label{sec:rh-onechip}
+
+The Stanford cluster slice exposes 8 TPU chips, but the single-query
+path used for every number in Table~\ref{tab:rh-main} places work on
+only one of them: the other seven report 0\,MB of device memory in
+use throughout the run. The TPU numbers above therefore compare one
+v5e chip against one T4 GPU or a two-vCPU Colab runtime (the vCPU
+count is from our write-up, not a recorded field), not an 8-chip slice against
+a single device. This caveat applies wherever these ratios are
+cited later in the paper, including the central claim in
+Section~\ref{sec:introduction}. Section~\ref{sec:parallelism} is about
+what changes once the other seven chips are put to work.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\linewidth]{speedup_hardware.pdf}
+  \caption{Steady-state time per AlphaFold2 inference call (log scale),
+  with the speedup of each backend over the CPU. The TPU value uses one of the slice's eight chips
+  (Section~\ref{sec:rh-onechip}). All values are single-call August
+  2026 baselines; Section~\ref{sec:rh-variability} reports how CPU and
+  GPU timings changed across sessions.}
+  \label{fig:rh-speedup}
+\end{figure}
+
+\subsection{The cold-start regime, corrected for profiler overhead}
+\label{sec:rh-coldstart}
+
+The first \texttt{predict} call is far more expensive than steady
+state (271.98\,s vs.\ 212.113\,s for CPU, 97.62\,s vs.\ 13.086\,s for
+GPU) because it includes JIT compilation of the full computation
+graph (Section~\ref{sec:background}), not just execution. Read at face
+value this gives cold/steady ratios of 1.28$\times$ (CPU) and
+7.46$\times$ (GPU). Both first-\texttt{predict} timings, however, were
+captured with \texttt{jax.profiler.trace} running inside the timed
+region, and trace finalization itself measurably inflates the timer:
+36.00\,s on CPU and 42.02\,s on GPU
+(Section~\ref{sec:profiling}). Subtracting that overhead gives
+corrected cold/steady ratios of approximately 1.11$\times$ for CPU and
+4.25$\times$ for GPU: the compilation cost is real, but roughly
+40\% smaller than the raw numbers suggest for GPU, and close to
+negligible for CPU. The equivalent TPU correction cannot be applied:
+no TPU run log recording profiler overhead separately is in the
+repository, so the TPU's raw 59.1$\times$ cold/steady ratio is neither
+confirmed nor corrected, and we do not report a corrected TPU figure.
+
+\subsection{Cross-session variability, on two backends}
+\label{sec:rh-variability}
+
+Two of the three backends were rerun five weeks later, on
+2026-09-15, with the same input and the same metric definitions as the
+August baseline, from a committed revision of the benchmark script (the
+August runs used an uncommitted copy of the script, so code identity
+with August cannot be verified); the CPU backend was rerun twice more,
+on 2026-09-16 and 2026-09-17. No rerun matches the August baseline
+(Figure~\ref{fig:rh-variability}).
+
+The CPU steady state rose from 212.113\,s (n=1, August) to
+$348.861 \pm 4.690$\,s (n=5, 2026-09-15), $351.891 \pm 4.303$\,s
+(n=5, 2026-09-16) and $359.273 \pm 2.787$\,s (n=5, 2026-09-17). The
+three September sessions span 3\% and all sit 1.64--1.69$\times$ above
+the August value. All three ran on the same host CPU model (an Intel
+Xeon at 2.20\,GHz, family 6, model 79) with the same JAX version
+(0.10.2); for the August session neither the host CPU model nor the JAX
+version was recorded, so the gap cannot be attributed to either. With
+four session-level data points the pattern looks less like symmetric
+noise around a stable mean and more like a level shift between August
+and September; four sessions are not enough to say which of the two
+levels is typical for this Colab tier. The GPU steady state moved the other direction, from
+13.086\,s (n=1, August) to $6.567 \pm 0.057$\,s (n=5, 2026-09-15), an
+almost 2$\times$ \emph{drop}; there is only one September data point for
+this backend. In neither case does the repository record a verified cause:
+for GPU specifically, both sessions report identical GPU model,
+driver and compute capability; the script copy and the numpy version
+differ, while the August session's JAX version and host CPU were never
+recorded, so those cannot be compared at all. No rerun isolates any of
+these as the source of the gap. We report all
+session values rather than picking one as canonical.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{session_variability.pdf}
+  \caption{Steady-state time per call across Colab sessions for the
+  same benchmark and input. (a) CPU: the August baseline (one call) and
+  three September sessions (five calls each, mean and sample standard
+  deviation). (b) GPU (T4): the August baseline and one September
+  session. Neither backend reproduced its August value; the two moved in
+  opposite directions.}
+  \label{fig:rh-variability}
+\end{figure}
+
+Prior reports of cloud benchmark instability put our gaps in context,
+though they do not fully account for them. Surveying that literature,
+\citet{bulej2020duet} report differences of around 15\% among
+instances sharing a CPU type, and similar differences for one instance
+over time, while differences as large as 280\% appear between
+\emph{different} CPU types. Those figures are examples from particular
+studies, not bounds, so they do not tell us which case our CPU gap
+(August vs.\ the September sessions, 64--69\%) and GPU gap
+(approximately 100\%) fall into. A host reassignment between sessions,
+which the provider does not expose to the tenant, would be consistent
+with both gaps; so would a change in
+the resolved software environment, which the August runs did not
+record. Neither can be confirmed: the September sessions record their
+host CPU and package versions, the August ones do not, so no matched
+comparison is possible.
+What is unusual about
+our case is not the magnitude but that it appears on two different
+backends of the same benchmark, run weeks apart. The two are not
+independent observations: both are Google Colab runtimes, sharing a
+provider and a tenancy model, and the evidence behind them is thin:
+one August call per backend, three September CPU sessions and one
+September GPU session. We read this as consistent with a phenomenon
+the cloud-systems literature already documents for general compute,
+not as independent confirmation of it on ML accelerators
+(Section~\ref{sec:limitations}). Every ratio in this paper that is
+derived from the August GPU baseline (B-10, B-11 and B-14 in our
+results catalogue, and with them the GPU cost figures C-06 and C-09 of
+Section~\ref{sec:cost}) inherits this open gap, and we did not recompute them against
+the September value.

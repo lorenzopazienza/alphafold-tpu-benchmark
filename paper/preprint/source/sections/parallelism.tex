@@ -1,0 +1,254 @@
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{parallelism_chips.pdf}
+  \caption{What each JAX transformation does with the eight-chip slice.
+  (a) Steady-state throughput on one chip with \texttt{jax.vmap} at
+  batch sizes 1--8, and with \texttt{jax.pmap} mapping eight independent
+  queries onto eight chips; the dashed line is the \texttt{vmap}
+  batch-size-1 rate (2.051 proteins/second), not the 2.128
+  proteins/second single-query baseline behind the 6.92$\times$ figure
+  in the text, which comes from a different input family and timer.
+  (b) HBM in use on each chip after the second call. Under the default
+  path only one chip holds data; the auto-mesh summary reports 463\,MB
+  per chip, consistent with replication, stored as a single scalar,
+  with no per-device list, and drawn as a dashed line;
+  \texttt{pmap} and the \texttt{pmap}+\texttt{pmean} ensemble
+  distribute across all eight.
+  Row labels give the results-catalogue row IDs.}
+  \label{fig:par-chips}
+\end{figure}
+
+\subsection{Default execution leaves most of the slice idle}
+\label{sec:par-default}
+
+A Cloud TPU~v5e slice with eight chips exposes eight independent
+devices to JAX, but nothing about calling \texttt{jax.jit} or invoking
+AlphaFold2's own inference function causes computation to spread across
+them. Under the default call path, only the first device (\texttt{TPU\_0})
+allocates HBM for the model's parameters and activations; the
+remaining seven report zero bytes used for the duration of the run.
+The rest of the section covers two ways of asking JAX to use the other
+seven, one that does not work and one that does, an automatic mechanism
+that does not split the model either, and an ensemble built outside
+the model.
+Figure~\ref{fig:par-chips} summarizes all four cases.
+
+\subsection{Batching within one device: \texttt{jax.vmap}}
+\label{sec:par-vmap}
+
+The first attempt batches queries with \texttt{jax.vmap}, which maps a
+function over a leading array axis by tracing it once and vectorizing
+the resulting operations. This is a within-device transformation: it
+changes the shape of the computation that runs on a single core, not
+the number of cores it runs on. Applied to AlphaFold2's forward pass, it
+does not shard the batch axis across the slice. The sweep records only
+\texttt{TPU\_0}'s HBM, which grows with batch size from 487\,MB to
+821\,MB. The run write-up reports the other seven chips at 0\,MB, but no
+per-device record was retained.
+
+The throughput data confirms this is not a partial win. At batch sizes
+1, 2, 4, and 8 the measured throughput is 2.051, 1.928, 1.487, and
+1.508 proteins/second, i.e. 0.94$\times$, 0.73$\times$, and
+0.74$\times$ the batch-size-1 rate.
+No tested batch size exceeds the batch-size-1 throughput, and the
+degradation is not monotonic: the batch-8 rate is marginally higher
+than batch-4. We report the values as measured rather than fitting a
+smooth trend to them. At every batch size tested, vectorization within
+a device gives Cloud TPU~v5e no more throughput than not batching at
+all.
+
+\subsection{Explicit device mapping: \texttt{jax.pmap}}
+\label{sec:par-pmap}
+
+\texttt{jax.pmap} traces the function once and executes one copy per
+device, communicating explicitly rather than relying on an
+automatic partitioner. Assigning eight independent protein queries to
+the eight chips, one query per chip, yields
+14.718~proteins/second against a 2.128~proteins/second single-query,
+single-chip baseline (0.47\,s per query): a 6.92$\times$ throughput
+gain.
+Distinct per-chip HBM allocations confirm the work is distributed
+across the chips: 644\,MB on
+\texttt{TPU\_0} and 445--469\,MB on the remaining seven chips.
+On a like-for-like eight-versus-one-chip comparison at a fixed input
+length of 100 residues, the corresponding speedup is 6.53$\times$,
+that is 81.6\% parallel efficiency; the 118-residue multi-query run's
+6.92$\times$ corresponds to 86.5\%.
+The two figures answer different questions: 6.92$\times$ is the
+throughput gain over a single query on a single chip, and 6.53$\times$
+is the eight-over-one-chip speedup on a matched workload,
+corresponding to 81.6\% parallel efficiency. Neither should be quoted
+in place of the other.
+
+The difference between Section~\ref{sec:par-vmap} and this section is one of
+semantics, not tuning. \texttt{vmap} vectorizes an axis
+\emph{within} a computation; on its own, with unsharded inputs as
+here, it gives the partitioner no reason to place slices of that axis
+on different devices. \texttt{pmap} does exactly that: it is, by construction, a
+per-device dispatch.
+
+\subsection{Automatic sharding}
+\label{sec:par-gspmd}
+
+Between manual \texttt{pmap} and no parallelism at all sits JAX's
+automatic partitioner, which infers a sharding of a computation graph
+from the sharding of its inputs and outputs without requiring the
+programmer to rewrite the function. Two implementations of that idea
+exist: GSPMD \citep{xu2021gspmd}, long the default, and Shardy
+\citep{shardy2026}, which has since replaced it as JAX's default. The
+committed Job configuration pins \texttt{jax[tpu]==0.10.2} and sets no
+partitioner flag; that release defaults to Shardy. No retained
+execution artifact records the effective setting, so we describe the
+automatic-mesh experiment without attributing its outcome to a
+confirmed implementation. Both implementations propagate shardings
+outward from annotations, which is the property the observation below
+turns on, though shared principles do not guarantee identical
+decisions on a given graph.
+Running AlphaFold2's forward pass under automatic mesh assignment
+shows no sign of a sharded model: both retained run summaries record
+463\,MB of HBM per chip, equal to the unsharded single-chip footprint,
+with steady states of 0.472\,s and 0.473\,s. Each summary stores that
+one per-chip figure, with no per-device list, and no compiled
+layout or partitioner decision was retained.
+That is consistent with replication and gives no evidence of any
+reduction in per-chip footprint. It does not by itself establish that
+every chip executed an identical full computation.
+
+An earlier account of this result attributed the failure to AlphaFold2's
+ensembling, implemented as a sequential \texttt{hk.while\_loop} with no
+axis for the partitioner to distribute over. That explanation does not
+hold for this experiment: the run in question used
+\texttt{num\_ensemble\,=\,1}. AlphaFold2 computes the first ensemble
+member outside the loop and enters \texttt{hk.while\_loop} at index~1
+with the condition $i <$ \texttt{num\_ensemble}, so during inference
+at a single member the loop body never executes (initialization
+invokes it once, separately), and it cannot be the cause of the
+single-chip-sized footprint the run records. AlphaFold2's released evaluation configuration in fact sets
+\texttt{num\_ensemble\,=\,1} by default; the model does not run an
+ensemble unless explicitly configured to.
+
+The explanation we find most plausible does not depend on control
+flow at all, and we state it as a hypothesis rather than a
+demonstrated cause. An automatic partitioner of this kind works by
+propagating sharding information outward from whatever annotations
+exist on a computation's inputs and parameters. Inspecting AlphaFold2's
+Haiku modules and our driver, we find no partition spec attached to
+any weight or activation, and none supplied from outside through
+input or output shardings. A partitioner given nothing to propagate
+has no basis for a split, and replicating the whole computation is
+its documented fallback \citep{xu2021gspmd}. DrJAX reports, by
+analogy, that removing explicit sharding structure from a
+partitioner-based system removes its ability to scale even for
+embarrassingly parallel patterns \citep{drjax2024}. Our records do not
+contain the evidence that would confirm this account for this graph:
+no compiler trace, no retained array layouts, and no ablation that
+adds annotations and observes a change. We present the missing
+annotations as the likely explanation, consistent with the design
+literature and with what we observed, not as a result we measured.
+
+The sequential \texttt{hk.while\_loop} used for AlphaFold2's ensembling
+does matter for the external ensemble of Section~\ref{sec:par-fix}:
+because the ensemble average is computed inside
+a loop with no vectorizable or shardable axis, distributing it
+requires an approach that does not depend on the partitioner inferring structure
+that the loop does not expose.
+
+\subsection{An external ensemble with \texttt{pmap} + \texttt{lax.pmean}}
+\label{sec:par-fix}
+
+Rather than modify AlphaFold2's sequential loop, we sidestep it and build
+an ensemble outside the model. The configuration keeps
+\texttt{num\_ensemble\,=\,1}, so each chip runs exactly the
+single-member forward pass AlphaFold2 always runs; what varies across
+chips is the featurization, built eight times with a different
+\texttt{random\_seed} each. An explicit \texttt{pmap} places one member
+per chip and a \texttt{jax.lax.pmean} averages the resulting
+\texttt{predicted\_lddt} logits across devices.
+Listing~\ref{lst:fix} contrasts the two shapes.
+
+This demonstration has two limits. AlphaFold2's own ensembling is not
+replaced or exercised here: it stays
+at a single member throughout, and the loop we describe above never
+executes its body, so this experiment shows that \emph{an}
+ensemble can be distributed across the slice, not that AlphaFold2's
+internal one can. The quantity averaged also differs: AlphaFold2 combines
+representations inside the model, whereas \texttt{pmean} here reduces
+the per-member confidence logits after the forward pass, which is
+where a plain JAX array is available to a collective. The eight members
+share one trivial single-sequence MSA and differ only by seed, so they
+are near-identical inputs; the result demonstrates the mechanism, not a
+scientifically meaningful ensemble.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption={AlphaFold2's internal ensembling, which stays at a single member here, against the external ensemble we distribute instead. The per-member forward pass is the same in both.}, label={lst:fix}, language=Python]
+# AlphaFold2's own ensembling: the first member is computed outside
+# the loop, and hk.while_loop accumulates the rest sequentially on one
+# device. We leave this untouched at num_ensemble = 1, so the loop body
+# never executes.
+representations = evoformer(slice_batch(0))
+
+def body(x):
+    i, current = x
+    return i + 1, current + evoformer(slice_batch(i))
+
+_, total = hk.while_loop(lambda x: x[0] < num_ensemble, body,
+                         (1, representations))
+
+# What we run instead: one differently seeded featurization per chip,
+# each a standard single-member forward pass, averaged across devices.
+per_member_features = [featurize(query, random_seed=i)
+                       for i in range(n_chips)]
+
+@functools.partial(jax.pmap, axis_name="ensemble")
+def sharded_apply(feat):
+    out = runner.apply(params, rng, feat)
+    return jax.lax.pmean(out["predicted_lddt"]["logits"],
+                         axis_name="ensemble")
+
+averaged = sharded_apply(stack(per_member_features))
+\end{lstlisting}
+\end{minipage}
+
+This places the work on the whole slice: all eight chips report nonzero
+HBM allocation, and an \texttt{allclose} check on the first and last
+returned replicas passes.
+The change touches none of AlphaFold2's own modules; only the entry point
+that drives ensemble members is replaced. \texttt{jax.lax.pmean}
+averages the \texttt{predicted\_lddt} logits emitted by each member;
+individual predicted structures are not themselves averaged.
+Steady-state latency for the eight-way ensemble-sharded configuration
+is 0.538\,s.
+No sequential \texttt{num\_ensemble=8} baseline exists in the data, so
+no speedup figure is reported or derived for this configuration; it
+should not be described as faster or slower than a sequential
+ensemble we did not measure.
+
+This result is distinct from Section~\ref{sec:par-pmap}'s multi-query
+experiment, which maps eight \emph{independent} protein queries onto
+eight chips and measures throughput. Here the eight \emph{members of
+one query's ensemble} are mapped onto eight chips, and the question is
+whether the reduction that combines them can be executed without a
+sequential loop. Both use \texttt{pmap}, but they parallelize different
+axes of the problem.
+
+\subsection{Summary}
+\label{sec:par-summary}
+
+The slice's eight chips are never disabled or defective. Every
+experiment in this section runs on the same hardware. What changes
+across the section is how much of that hardware the program
+uses: one chip under the default path and under \texttt{vmap},
+eight chips under \texttt{pmap} for independent queries, with a
+6.92$\times$ throughput gain over a single query at 118 residues and a
+6.53$\times$ eight-over-one-chip speedup at 100 residues, one chip's
+worth of computation
+apparently replicated eight times under automatic sharding, and
+eight chips each running a full forward pass once an ensemble is built
+outside the model and mapped across them with an explicit
+\texttt{pmap}+\texttt{pmean} reduction. The last case distributes
+independent members and reduces their confidence logits; it does not
+partition one model instance, and does not repair the automatic
+sharding of the case before it. In all four cases the hardware is the
+same, and the outcome depends on the JAX transformation used to
+express the work.

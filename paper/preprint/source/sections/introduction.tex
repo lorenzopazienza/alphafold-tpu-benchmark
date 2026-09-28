@@ -1,0 +1,125 @@
+
+AlphaFold2 made accurate protein structure prediction routine
+\citep{jumper2021alphafold}, and in doing so turned it into a computing
+workload: large screening campaigns run inference on thousands of
+sequences, and each prediction is a deep network evaluated on
+specialized hardware. Its public implementation is written in JAX, which
+compiles the same Python program through XLA for CPUs, GPUs and Google's
+Tensor Processing Units (TPUs). On paper this makes the choice of
+accelerator a matter of picking the fastest or cheapest device. In
+practice, the performance a user obtains depends on more than the
+device: on how the program is compiled, on how its computation is mapped
+onto the chips that are allocated, and on how stable the underlying
+cloud machine is from one session to the next. For this class of
+scientific workload, the gap between what the hardware can deliver and
+what a user running the model actually gets has received little
+systematic attention.
+
+This paper measures that gap. We run the same AlphaFold2 inference code
+on the same input on three backends: a Colab CPU runtime, an NVIDIA T4
+GPU, and a dedicated eight-chip Google Cloud TPU~v5e slice. We then ask
+three questions: how the backends compare on a single call, where the
+time goes when a call is first compiled, and what it takes to put all
+the allocated chips to work.
+
+The single-call comparison favors the TPU by a wide margin: in steady
+state, one TPU chip completes an inference call in 0.47\,s, 27.8$\times$
+faster than the T4 in our August baseline
+(Section~\ref{sec:results-hardware}).
+That comparison comes with three qualifications. It is the performance of
+\emph{one} chip: in the default execution path, seven of the eight
+allocated chips hold no data at all, so a user pays for a full slice and
+uses an eighth of it, and at list prices this idle capacity makes the
+TPU slice cost about the same per prediction as the T4 GPU on that same
+August baseline (Section~\ref{sec:cost}). The first call on each new
+input shape is dominated by work that precedes execution: in a profiler
+trace of the first call, about three quarters of the traced
+model-application span is self time in JAX's tracing and compilation
+path (Section~\ref{sec:profiling}). For one-off jobs, this cold start
+matters more than steady-state speed. Finally, the CPU and GPU
+baselines did not reproduce across Colab sessions weeks apart: the CPU became roughly
+1.6--1.7$\times$ slower and the GPU about twice as fast, for reasons we
+could not identify. The GPU change bears directly on the TPU-over-GPU
+ratio above, so we report every session rather than a single canonical
+value (Section~\ref{sec:rh-variability}).
+
+The idle chips are not recovered by the obvious fix. Vectorizing the
+model over a batch of queries with \texttt{jax.vmap} does not help:
+throughput never exceeds that of a single query and falls to roughly
+three quarters of it at batch sizes 4 and 8 (0.73$\times$ and
+0.74$\times$). Mapping independent queries
+across devices with \texttt{jax.pmap} does put all eight chips to work:
+on a matched grid, eight chips deliver 6.53$\times$ to 7.91$\times$ the
+throughput of one, the efficiency rising with sequence length
+(Section~\ref{sec:scaling}); against the single-query baseline, which
+uses a different input family, the gain is 6.92$\times$.
+JAX's automatic partitioner, which is meant to make such manual
+mapping unnecessary, leaves the per-chip memory footprint of a
+single-query run unchanged from the one-chip case, consistent with
+replicating the model rather than splitting it. Our best explanation
+is that the model carries no sharding annotations, leaving the
+partitioner nothing from which to derive a split, which is the
+documented fallback of an annotation-driven partitioner
+\citep{xu2021gspmd,shardy2026} and matches the reported effect of
+stripping sharding structure from such a system \citep{drjax2024}.
+We did not retain the compiler evidence that would confirm it. AlphaFold2's own
+ensembling cannot be split this way either, because the public
+implementation runs ensemble members in a sequential \texttt{while\_loop}
+rather than along an array axis. We build the ensemble outside the
+model instead: eight differently seeded featurizations of
+one query, one per chip under \texttt{pmap}, with their
+\texttt{predicted\_lddt} logits averaged by \texttt{pmean}. AlphaFold2's
+source and its internal \texttt{num\_ensemble\,=\,1} path are left
+untouched, so this demonstrates that an ensemble can be spread across
+the slice; it does not replace AlphaFold2's own ensembling
+(Section~\ref{sec:parallelism}).
+
+Prior work has optimized AlphaFold2 training and long-sequence
+inference on GPU clusters through model parallelism (FastFold) and through pipeline separation with
+compilation reuse (ParaFold) \citep{cheng2024fastfold,zhong2022parafold}.
+Both target NVIDIA GPUs; neither reports TPU experiments.
+Closer to the hardware, JAXBench includes operators extracted from
+AlphaFold2 among its TPU kernel benchmarks \citep{jaxbench2026}, and a recent characterization of
+AlphaFold3 profiles its bottlenecks on CPUs and GPUs
+\citep{iiswc2025af3}; to our knowledge, neither measures end-to-end
+AlphaFold2 inference on TPU.
+
+Our contributions are:
+\begin{itemize}
+  \item a controlled comparison of AlphaFold2 inference on CPU, GPU and
+    a multi-chip TPU slice, using identical code and input, with its
+    provenance gaps and cross-session variability reported
+    (Sections~\ref{sec:methodology} and~\ref{sec:results-hardware});
+  \item a retained trace analysis of the cold-start regime on TPU,
+    reporting that about three quarters of the traced \texttt{apply\_fn}
+    span is JAX tracing and compilation rather than execution, consistent
+    with the compilation cost that ParaFold identified on GPU,
+    together with a profiler-overhead correction to our CPU and GPU
+    first-call timings, which we could not verify on TPU
+    (Section~\ref{sec:profiling});
+  \item a measurement showing that vectorization does not raise
+    throughput for this model while explicit data parallelism across
+    chips does (Section~\ref{sec:parallelism});
+  \item an observation that automatic sharding leaves AlphaFold2's
+    per-chip footprint unchanged, with a hypothesis for why, and a
+    demonstration that an
+    ensemble can instead be built outside the model and mapped across
+    chips, leaving the model source untouched
+    (Section~\ref{sec:parallelism});
+  \item a matched 16-point grid over chip count and sequence length,
+    with measured eight-over-one-chip speedups of 6.53--7.91$\times$, a
+    descriptive fit to it, and its consequences for cost per prediction
+    (Sections~\ref{sec:scaling} and~\ref{sec:cost});
+  \item a portability finding across model generations: the
+    AlphaFold3 release we tested accepts only CPU, GPU and Apple MPS
+    backends, not TPU (Section~\ref{sec:alphafold3}).
+\end{itemize}
+
+Section~\ref{sec:background} introduces TPUs, the JAX/XLA compilation
+model and the computational structure of AlphaFold2.
+Section~\ref{sec:methodology} describes the setup, and
+Sections~\ref{sec:results-hardware} to~\ref{sec:alphafold3} present the
+results. Section~\ref{sec:related-work} places them in context,
+Section~\ref{sec:discussion} discusses what they imply for users of
+scientific JAX workloads, and Sections~\ref{sec:limitations}
+and~\ref{sec:conclusion} state the limitations and conclude.

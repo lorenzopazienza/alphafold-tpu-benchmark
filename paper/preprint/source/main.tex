@@ -1,0 +1,183 @@
+\documentclass{article}
+
+\usepackage{arxiv}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amsfonts}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{xspace}
+\usepackage{url}
+\usepackage{natbib}
+\usepackage{hyperref}
+\usepackage{cleveref}   %
+\usepackage{doi}
+\usepackage[section]{placeins}  %
+\usepackage{float}                %
+\raggedbottom                      %
+
+\graphicspath{{figures/}}
+
+\newcommand{\AFtwo}{AlphaFold2\xspace}
+\newcommand{\AFthree}{AlphaFold3\xspace}
+
+\newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\newcommand{\REF}[1]{\textcolor{blue}{\textbf{[REF: #1]}}}
+
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape\color{gray},
+  stringstyle=\color{teal},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  frame=tb,
+  breaklines=true,
+  showstringspaces=false,
+  captionpos=b
+}
+
+\title{Accelerator Choice Is Not Enough:\\
+AlphaFold2 Inference on Cloud TPUs}
+
+\date{September 28, 2026}
+
+\author{
+  Lorenzo Pazienza\thanks{Work carried out during the Stanford Summer
+  Session 2026, using TPU~v5e infrastructure provided by Stanford
+  University.} \\
+  LUISS Guido Carli University \\
+  Rome, Italy \\
+  \texttt{lorenzo.pazienza@gmail.com} \\
+  \And
+  Ihab El Bani \\
+  Al Akhawayn University \\
+  Ifrane, Morocco \\
+  \texttt{elbani.ihab@gmail.com} \\
+}
+
+\renewcommand{\headeright}{Preprint}
+\renewcommand{\undertitle}{Preprint}
+\renewcommand{\shorttitle}{AlphaFold2 Inference on Cloud TPUs}
+
+\hypersetup{
+  colorlinks=true, linkcolor=blue!50!black, citecolor=blue!50!black, urlcolor=blue!50!black,
+  pdftitle={Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs},
+  pdfauthor={Lorenzo Pazienza, Ihab El Bani},
+  pdfkeywords={TPU, JAX, XLA, automatic sharding, AlphaFold2, AlphaFold3, benchmarking},
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+AlphaFold2 is written in JAX, so the same inference code compiles and
+runs unchanged on CPUs, GPUs and Google Cloud TPUs. That portability
+makes the accelerator look like the main decision a user has to make.
+We show that it is not. Running one AlphaFold2 inference workload
+across a Colab CPU runtime, an NVIDIA T4 GPU and a dedicated eight-chip
+Cloud TPU~v5e slice, we find a large hardware advantage for the TPU,
+0.47\,s per call in steady state on a single chip against 13.1\,s on
+the T4 in the same measurement campaign, and three ways in which the
+software layer decides how much of it a user actually gets. The default
+execution path uses one chip of the eight, and at list prices the idle
+capacity makes the slice cost about as much per prediction as the GPU.
+Batching with \texttt{jax.vmap} never exceeds single-query throughput,
+while mapping queries across chips with \texttt{jax.pmap} gives eight
+chips 6.5--7.9$\times$ the throughput of one on a matched grid;
+automatic sharding leaves the per-chip footprint unchanged, consistent
+with replication, most plausibly because AlphaFold2 carries no sharding
+annotations. Our retained trace analysis of a first call at a new input
+shape reports about three quarters of the traced span in JAX tracing
+and compilation rather than execution. Reruns five weeks later
+reproduced neither cloud baseline, the GPU one off by roughly a factor
+of two, so the hardware ratio above is specific to one campaign.
+\end{abstract}
+
+\keywords{Tensor Processing Units \and JAX/XLA \and Automatic sharding \and
+Data parallelism \and Protein structure prediction \and Benchmarking}
+
+
+\section{Introduction}\label{sec:introduction}
+\input{sections/introduction}
+
+\section{Background}\label{sec:background}
+\input{sections/background}
+
+\section{Methodology}\label{sec:methodology}
+\input{sections/methodology}
+
+\section{Single-Chip Hardware Comparison}\label{sec:results-hardware}
+\input{sections/results_hardware}
+
+\section{Profiling the Cold-Start Regime}\label{sec:profiling}
+\input{sections/profiling}
+
+\section{Expressing Parallelism on a Multi-Chip TPU Slice}\label{sec:parallelism}
+\input{sections/parallelism}
+
+\section{Scaling with Chip Count and Sequence Length}\label{sec:scaling}
+\input{sections/scaling}
+
+\section{Cost Analysis}\label{sec:cost}
+\input{sections/cost}
+
+\section{Portability to AlphaFold3}\label{sec:alphafold3}
+\input{sections/alphafold3}
+
+\section{Related Work}\label{sec:related-work}
+\input{sections/related_work}
+
+\section{Discussion}\label{sec:discussion}
+\input{sections/discussion}
+
+\section{Limitations}\label{sec:limitations}
+\input{sections/limitations}
+
+\section{Conclusion and Future Work}\label{sec:conclusion}
+\input{sections/conclusion}
+
+\section*{Code and Data Availability}
+All benchmark scripts, Kubernetes Job definitions, notebooks, raw result
+files and the results catalogue that every number in this paper is taken
+from are available at
+\url{https://github.com/lorenzopazienza/alphafold-tpu-benchmark}, branch
+\texttt{paper}, commit \texttt{a63e955}. The catalogue
+(\texttt{paper/data/canonical\_results.md}) gives, for each value, the
+file and field it comes from and whether it is measured, derived, an
+input assumption or reported only; \texttt{paper/sections/methodology.md} documents the
+provenance of the setup line by line, including what our records do not
+contain. The reproduction runs of September~2026
+(\texttt{results/repro/}) each store the benchmark commit they ran from
+together with the resolved package versions and host CPU of their
+session. The TPU experiments ran with \texttt{jax[tpu]==0.10.2};
+their remaining dependencies were not pinned, as
+Section~\ref{sec:limitations} states.
+
+\section*{Acknowledgments}
+This work was carried out during the ME344 High Performance Computing
+and AI Systems course at Stanford University (Summer Session 2026). We
+thank Mourad Bouache (Google), who taught the course, for his guidance
+throughout the project and for the opportunity to present this work at
+Google, and Steve Jones, Director of the Stanford High
+Performance Computing Center and Research Scientist at Stanford
+University, for access to the TPU~v5e cluster used throughout. We also
+thank the Department of Mechanical Engineering at Stanford University
+for hosting the course.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+\section{AlphaFold3 Setup, Timings and Score Comparison}\label{app:af3}
+\input{sections/appendix_af3}
+
+\end{document}

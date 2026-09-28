@@ -1,0 +1,115 @@
+
+\subsection{TPU slices and device placement}
+\label{sec:bg-tpu}
+
+A single Cloud TPU v5e chip, the generation used throughout this
+work, provides 197\,bf16 TFLOPs and 16\,GB of HBM with a memory bandwidth of 800\,GiB/s
+\citep{googletpuv5e}. Multiple chips on a slice are connected by a
+dedicated Inter-Chip Interconnect (ICI) fabric arranged as a 2D torus,
+independent of the host network, allowing up to 256 chips per pod to
+exchange activations and gradients without going through the datacenter
+network \citep{googletpuv5e}. Because v5e has no dedicated
+peer-reviewed architecture paper, we cite the vendor documentation for
+per-chip specifications and the two Jouppi ISCA papers
+\citep{jouppi2017tpu, jouppi2023tpuv4} for the systolic-array design and
+its evolution across TPU generations.
+
+Software sees each chip as an explicit JAX device. Nothing about the
+torus interconnect is used unless the program says so. A slice with
+$n$ chips visible does not automatically distribute an $n$-chip job
+across them: how work is mapped onto devices is decided by the JAX/XLA
+compilation layer, or explicitly by the programmer, not by the
+hardware. Section~\ref{sec:parallelism} measures what that layer does
+with AlphaFold2 on this slice.
+
+\subsection{The JAX/XLA compilation model}
+\label{sec:bg-jax}
+
+JAX traces Python functions into an intermediate representation
+(a \texttt{jaxpr}) the first time they are called with a new
+combination of argument shapes, then lowers that representation to
+XLA HLO and compiles it to a binary for the target device. The
+profile labels the function that performs this trace-and-compile step
+\texttt{cache\_miss}, after the fallback path taken when JAX's
+fast-path jit cache does not hold an entry for the call; for a
+Haiku-based model such as AlphaFold2, this trace walks through
+Haiku's \texttt{apply\_fn}, lowering the full Evoformer computation
+graph into XLA's representation before a single matrix multiply has
+executed. Compilation is keyed on input shapes and dtypes, together
+with any static arguments: a function called again with the same
+signature reuses the compiled binary, while a change to it (a different
+sequence length, or a switch between \texttt{float32} and
+\texttt{bfloat16}) triggers a fresh trace and compile. A workload's
+\emph{first} call at a given input shape is therefore different work
+from every call after it, and the timing methodology has to separate
+the two (Section~\ref{sec:methodology}). A persistent compilation
+cache can carry compiled binaries across process restarts, avoiding
+the XLA-compile step on a shape that has already been compiled once,
+but a fresh process still has to re-trace the Python program down to a
+jaxpr before it can consult that cache, so a persistent cache reduces
+cold-start cost without eliminating it.
+
+JAX's own transformations for expressing
+parallelism, \texttt{vmap} for vectorizing a function over a batch axis
+and \texttt{pmap} for mapping a function across physical devices with
+an explicit per-device argument axis, are different operations even
+though both add a leading axis to a function's inputs: \texttt{vmap}
+changes what a single device computes, \texttt{pmap} changes which
+device computes it. XLA's automatic partitioner, in turn, can shard a
+computation across devices
+without a user manually writing per-device code, but it does so by
+propagating sharding decisions outward from explicit annotations,
+principally \texttt{PartitionSpec} constraints placed on inputs,
+outputs or intermediates. (JAX also offers \texttt{shard\_map}, the
+manual complement to automatic partitioning: there the programmer
+writes the per-device code and the collectives.) A computation carrying no annotations gives the partitioner
+nothing to propagate from, and its documented fallback is to replicate
+the computation rather than split it.
+
+\subsection{AlphaFold2's computational structure}
+\label{sec:background-af2}
+
+AlphaFold2 predicts a protein's three-dimensional structure from its
+amino-acid sequence by iterating two representations against each
+other: a multiple sequence alignment (MSA) representation, one row per
+homologous sequence, and a pair representation, one entry per pair of
+residues, encoding the model's evolving belief about which residues
+are close in space. The Evoformer block updates both representations
+through attention operations (including triangular self-attention and
+triangular multiplicative updates on the pair representation, whose
+cost scales with the number of residues beyond simple quadratic
+attention) before a structure module converts the final single and pair
+representations into three-dimensional coordinates
+\citep{jumper2021alphafold}. The whole Evoformer-plus-structure-module
+pipeline is then \emph{recycled}: its own output is fed back as input
+for a further pass, refining the prediction over a small, fixed number
+of iterations \citep{jumper2021alphafold}. AlphaFold2's public
+implementation is written in JAX and Haiku, which is what makes it
+usable, unmodified, as a systems benchmark across JAX-supported
+backends (Section~\ref{sec:methodology}): a real, widely used model
+with an attention-heavy graph and small sequential control flow.
+Its diffusion-based successor,
+AlphaFold3, replaces the Evoformer/structure-module pair with a
+different architecture, and its released entry point accepts a
+different set of backends (Section~\ref{sec:alphafold3}). We report
+those as two separate facts: nothing we measured connects the one to
+the other.
+
+One further structural detail matters for multi-chip execution.
+AlphaFold2 can run an \emph{ensemble}: several stochastic variations of
+the same input are processed and their representations averaged. The
+released configuration uses a single member for evaluation, as do our
+runs. When more members are requested, the public implementation does
+not compute them along an array axis. It iterates over them with a
+sequential \texttt{hk.while\_loop} inside \texttt{AlphaFoldIteration},
+and recycling is implemented as a \texttt{while\_loop} in the same way.
+Sequential control flow of this kind offers no tensor dimension to
+split across devices, so the ensemble cannot be parallelized by
+sharding its arrays; spreading members across chips requires mapping
+them explicitly, which is what we do in Section~\ref{sec:parallelism}.
+This is a separate matter from the partitioner behavior we observe on a
+single-member forward pass, for which the most plausible explanation
+is the general mechanism described in Section~\ref{sec:bg-jax}: the
+model carries no sharding annotations for the partitioner to propagate.
+Section~\ref{sec:parallelism} states what evidence we have for that
+and what we lack.
