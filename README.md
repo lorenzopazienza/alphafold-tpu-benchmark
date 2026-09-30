@@ -8,7 +8,7 @@
 
 **Live site:** [alphafold-tpu.vercel.app](https://alphafold-tpu.vercel.app) · **Repo:** [lorenzopazienza/alphafold-tpu-benchmark](https://github.com/lorenzopazienza/alphafold-tpu-benchmark) · **Slides:** [presentation PDF](presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf) (also [download from the site](https://alphafold-tpu.vercel.app/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf))
 
-**Paper:** *Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs*, Lorenzo Pazienza and Ihab El Bani, arXiv preprint, 2026 (cs.DC). [PDF](paper/preprint/Pazienza_ElBani_2026_AlphaFold2_Inference_on_Cloud_TPUs.pdf) · [LaTeX source](paper/preprint/source/). The paper cites commit `a63e955` of this repository; every number in it traces to [`paper/data/canonical_results.md`](paper/data/canonical_results.md).
+**Paper:** *Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs*, Lorenzo Pazienza and Ihab El Bani, [arXiv:2609.34818](https://arxiv.org/abs/2609.34818) (cs.DC), 2026. [PDF](paper/preprint/Pazienza_ElBani_2026_AlphaFold2_Inference_on_Cloud_TPUs.pdf) · [arXiv PDF](https://arxiv.org/pdf/2609.34818) · [LaTeX source](paper/preprint/source/). The paper cites commit `a63e955` of this repository; every number in it traces to [`paper/data/canonical_results.md`](paper/data/canonical_results.md).
 
 ---
 
@@ -430,10 +430,14 @@ If you use this benchmark or its results, please cite the preprint:
 
 ```bibtex
 @misc{pazienza2026accelerator,
-  title  = {Accelerator Choice Is Not Enough: {AlphaFold2} Inference on Cloud {TPUs}},
-  author = {Pazienza, Lorenzo and El Bani, Ihab},
-  year   = {2026},
-  note   = {arXiv preprint}
+  title         = {Accelerator Choice Is Not Enough: {AlphaFold2} Inference on Cloud {TPUs}},
+  author        = {Pazienza, Lorenzo and El Bani, Ihab},
+  year          = {2026},
+  eprint        = {2609.34818},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.DC},
+  doi           = {10.48550/arXiv.2609.34818},
+  url           = {https://arxiv.org/abs/2609.34818}
 }
 ```
 
