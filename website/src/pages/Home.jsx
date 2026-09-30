@@ -1,12 +1,14 @@
 import { lazy, Suspense } from 'react'
 import Nav from '../components/Nav'
 import Hero from '../components/Hero'
+import Paper from '../components/Paper'
 import Problem from '../components/Problem'
 import Architecture from '../components/Architecture'
 import HeadlineResults from '../components/HeadlineResults'
 import DeepDive from '../components/DeepDive'
 import AlphaFold3 from '../components/AlphaFold3'
 import CostTakeaways from '../components/CostTakeaways'
+import Next from '../components/Next'
 import Repo from '../components/Repo'
 import Footer from '../components/Footer'
 
@@ -18,6 +20,14 @@ export default function Home() {
       <Nav />
       <main>
         <Hero />
+        <Paper />
+        <Problem />
+        <Architecture />
+        <HeadlineResults />
+        <DeepDive />
+        <AlphaFold3 />
+        <CostTakeaways />
+        <Next />
         <Suspense
           fallback={
             <section
@@ -31,14 +41,8 @@ export default function Home() {
             </section>
           }
         >
-          <ProteinViewer />
+          <ProteinViewer kicker="Aside · a real structure (ESMFold)" />
         </Suspense>
-        <Problem />
-        <Architecture />
-        <HeadlineResults />
-        <DeepDive />
-        <AlphaFold3 />
-        <CostTakeaways />
         <Repo />
       </main>
       <Footer />

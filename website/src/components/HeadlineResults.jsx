@@ -5,7 +5,7 @@ const DATA = [
     name: 'CPU Xeon',
     seconds: 212.113,
     display: '212.1s',
-    speedup: '1×',
+    speedup: '1× (CPU baseline)',
     width: 100,
     color: '#7a8796',
   },
@@ -13,7 +13,7 @@ const DATA = [
     name: 'NVIDIA Tesla T4',
     seconds: 13.086,
     display: '13.1s',
-    speedup: '16.2×',
+    speedup: '16.2× vs CPU',
     width: 58,
     color: '#3d5f94',
   },
@@ -21,7 +21,7 @@ const DATA = [
     name: 'TPU v5e-8',
     seconds: 0.47,
     display: '0.47s',
-    speedup: '451×',
+    speedup: '451× vs CPU',
     width: 18,
     color: '#0b6e7a',
   },
@@ -49,8 +49,10 @@ export default function HeadlineResults() {
       <div className="viewport-tight shell">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="max-w-lg">
-            <p className="kicker">AlphaFold 2 · performance delta</p>
-            <h2 className="section-title">Steady-state predict latency</h2>
+            <p className="kicker">
+              Single-chip comparison · August 2026 campaign
+            </p>
+            <h2 className="section-title">Steady-state latency, one chip</h2>
           </div>
           <p className="eq font-display text-[clamp(3rem,8vw,4.5rem)] font-bold leading-none tracking-[-0.04em] text-teal">
             0.47s
@@ -99,19 +101,50 @@ export default function HeadlineResults() {
           ))}
         </div>
 
+        <p className="section-note mt-6 max-w-2xl">
+          The TPU figure is one chip of the eight in the slice. Speedups are
+          relative to the August CPU baseline.
+        </p>
+
+        <div className="mt-8 max-w-2xl md:mt-10">
+          <p className="kicker">Did the baselines reproduce?</p>
+          <p className="section-body mt-3">
+            No. Reruns five weeks later, with the same input and metrics, found
+            the CPU 1.64–1.69× slower (three September sessions) and the T4 about
+            2× faster (6.567 s, one September session), for reasons the records
+            cannot identify. The TPU-over-GPU ratio above is therefore specific
+            to the August campaign.
+          </p>
+        </div>
+
         <hr className="rule mt-10 md:mt-12" />
 
         <div className="mt-6 md:mt-8">
           <p className="kicker">First predict / steady-state</p>
           <p className="section-body mt-3 max-w-2xl">
-            First predict includes XLA compile. The gap to the second predict
-            shows how compile-bound each backend is.
+            The first call includes XLA compilation. On CPU and GPU, part of the
+            timed first call was profiler teardown, which we can subtract. In a
+            retained trace of one TPU first call, about 76% of the traced
+            apply_fn span is self time in JAX&rsquo;s tracing and compilation
+            path.
           </p>
           <dl className="mt-6 grid gap-6 sm:grid-cols-3 sm:text-center">
             {[
-              { k: 'CPU Xeon', v: '1.28×', s: 'Mostly compute' },
-              { k: 'GPU NVIDIA Tesla T4', v: '7.46×', s: 'Compile is visible' },
-              { k: 'TPU v5e-8', v: '59.1×', s: 'Cold path is compile' },
+              {
+                k: 'CPU Xeon',
+                v: '1.28×',
+                s: '≈1.11× after removing profiler teardown',
+              },
+              {
+                k: 'GPU NVIDIA Tesla T4',
+                v: '7.46×',
+                s: '≈4.25× after removing profiler teardown',
+              },
+              {
+                k: 'TPU v5e-8',
+                v: '59.1×',
+                s: 'not correctable: no TPU run log survives',
+              },
             ].map((row) => (
               <div key={row.k}>
                 <dt className="section-note">{row.k}</dt>

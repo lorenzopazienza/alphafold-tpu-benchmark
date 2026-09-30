@@ -2,7 +2,8 @@ const TREE = [
   ['configs/', 'K8s Jobs (AF2 sweeps + AF3 TPU attempt)'],
   ['figures/', 'Charts + AF3 structure still'],
   ['notebooks/', 'AF2 + AF3 Google Colab notebooks'],
-  ['presentation/', 'Course slides PDF'],
+  ['paper/', 'Preprint PDF + LaTeX source, results catalogue, provenance audit'],
+  ['presentation/', 'ME344 course slides (August 2026)'],
   ['profiling/', 'XLA trace notes'],
   ['results/', 'AF2 clocks + sweep/ + af3_comparison.md'],
   ['src/', 'AF2 spikes + make_af3_input.py'],
@@ -11,6 +12,7 @@ const TREE = [
 ]
 
 const REPO = 'https://github.com/lorenzopazienza/alphafold-tpu-benchmark'
+const ARXIV_ABS = 'https://arxiv.org/abs/2609.34818'
 const SLIDES =
   '/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf'
 
@@ -23,11 +25,13 @@ export default function Repo() {
             <p className="kicker">Reproduce</p>
             <h2 className="section-title">Code and commands</h2>
             <p className="section-lede !mt-3">
-              AF2 Docker/K8s paths and AF3 Google Colab notebooks (
+              Code, Kubernetes Jobs, raw results and a catalogue tracing every
+              number in the paper to its source file. AF2 Docker/K8s paths and
+              AF3 Google Colab notebooks (
               <code className="font-mono text-[0.9em]">af3_cpu_colab</code> /{' '}
               <code className="font-mono text-[0.9em]">af3_gpu_colab</code>) live
               in the repo. Full AF3 write-up:{' '}
-              <code className="font-mono text-[0.9em]">
+              <code className="font-mono text-[0.9em] break-all">
                 results/sweep/af3_comparison.md
               </code>
               . Course deck is in{' '}
@@ -36,11 +40,19 @@ export default function Repo() {
           </div>
           <div className="flex flex-col gap-3 self-start sm:items-end">
             <a
+              href={ARXIV_ABS}
+              target="_blank"
+              rel="noreferrer"
+              className="link-quiet inline-flex min-h-11 items-center text-sm font-medium"
+            >
+              Paper (arXiv)
+            </a>
+            <a
               href={SLIDES}
               download
               className="link-quiet inline-flex min-h-11 items-center text-sm font-medium"
             >
-              Download slides PDF
+              Course slides (PDF)
             </a>
             <a
               href={REPO}

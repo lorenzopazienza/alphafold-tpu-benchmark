@@ -3,9 +3,9 @@ export default function Problem() {
     <section id="problem" className="border-t border-line">
       <div className="viewport-tight shell grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
         <div>
-          <p className="kicker">Problem</p>
+          <p className="kicker">Question</p>
           <h2 className="section-title">
-            Where does AlphaFold 2 spend time on CPU, GPU, and TPU?
+            What decides the performance a user actually gets?
           </h2>
         </div>
 
@@ -19,16 +19,18 @@ export default function Problem() {
             GPU vs TPU trade-offs.
           </p>
           <p className="section-lede !mt-0 max-w-xl">
-            <span className="font-medium text-ink">What we did.</span> Same
-            AlphaFold 2 forward pass, script, and shape (118 residues,{' '}
-            <code className="font-mono text-[0.92em] text-ink">model_3</code>, 0
-            recycles, Haiku random-init params) on Google Colab Intel Xeon CPU
-            (2 vCPU), Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (
+            <span className="font-medium text-ink">What we did.</span> We ran
+            AlphaFold2&rsquo;s JAX forward pass on a Google Colab CPU runtime (2
+            vCPU), a Google Colab NVIDIA Tesla T4 and a Stanford GKE TPU v5e-8
+            slice (
             <code className="font-mono text-[0.92em] text-ink">
               tpu-v5-lite-podslice
             </code>
-            , topology 2×4, 8 chips). Then we timed init, cold predict, and
-            steady-state, and fixed the bottlenecks we found.
+            , 2×4, 8 chips). Single-query timings use the same 118-residue input,{' '}
+            <code className="font-mono text-[0.92em] text-ink">model_3</code>, 0
+            recycles and randomly initialized parameters on every backend. Then
+            we asked where the time goes on a first call, and what it takes to
+            put all eight chips to work.
           </p>
           <p className="section-note max-w-xl">
             Follow-up:{' '}
@@ -36,8 +38,7 @@ export default function Problem() {
               AlphaFold 3
             </a>{' '}
             (a separate diffusion codebase) on the same Google Colab Intel Xeon
-            CPU and NVIDIA Tesla T4
-            T4, plus a confirmed finding that its public release does not
+            CPU and NVIDIA Tesla T4, plus a confirmed finding that its public release does not
             support TPU.
           </p>
         </div>

@@ -3,7 +3,7 @@ const NODES = [
     id: 'cpu',
     label: 'CPU',
     detail: 'Google Colab Intel Xeon · 2 vCPU',
-    out: 'result_cpu.json',
+    out: 'result_cpu-colab.json',
   },
   {
     id: 'gpu',
@@ -32,13 +32,16 @@ export default function Architecture() {
             <code className="font-mono text-[0.92em] text-ink">
               tpu-v5-lite-podslice
             </code>
-            ). Every timing run calls{' '}
+            ). The single-query baseline calls{' '}
             <code className="font-mono text-[0.92em] text-ink">
               spike_tpu_forward_pass.py
             </code>{' '}
-            with AlphaFold 2{' '}
+            with AlphaFold2{' '}
             <code className="font-mono text-[0.92em] text-ink">model_3</code>, 0
-            recycles, 118 residues. Only the accelerator changes.
+            recycles and a 118-residue input on every backend. The multi-chip and
+            scaling-grid experiments use a different synthetic input family, so
+            their numbers are compared among themselves, not with the
+            single-query baseline.
           </p>
         </div>
 
@@ -71,9 +74,9 @@ export default function Architecture() {
         <p className="section-note mt-8 max-w-2xl">
           <span className="font-medium text-ink">Parameters.</span> AF2 systems
           timings use Haiku random init so we exercise the same compiled graph
-          without downloading trained weights (~350MB). The ubiquitin structure
-          above is separate: ESMFold with trained weights, for biology, not for
-          the CPU/GPU/TPU clocks. AlphaFold 3 uses its own notebooks and Jobs;
+          without downloading trained weights. The ubiquitin structure
+          lower down the page is separate: ESMFold with trained weights, for
+          biology, not for the CPU/GPU/TPU clocks. AlphaFold 3 uses its own notebooks and Jobs;
           see{' '}
           <a href="#af3" className="link-quiet font-medium text-ink">
             AF3

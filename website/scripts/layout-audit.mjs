@@ -59,12 +59,15 @@ const VIEWPORTS = [
 
 const SECTIONS = [
   'top',
+  'paper',
   'structure',
   'problem',
   'approach',
   'results',
   'experiments',
+  'af3',
   'cost',
+  'next',
   'reproduce',
 ]
 

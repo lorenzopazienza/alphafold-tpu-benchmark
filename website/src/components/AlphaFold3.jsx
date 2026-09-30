@@ -56,7 +56,7 @@ export default function AlphaFold3() {
             <p className="section-note mt-2">
               Identical Google Colab Intel Xeon CPU and NVIDIA Tesla T4 runs,
               compilation included on both sides: a 27.86× GPU-over-CPU speedup.
-              We take no ratio against AlphaFold 2 — the two differ in recycling
+              We take no ratio against AlphaFold 2: the two differ in recycling
               depth, in whether the timed region includes compilation, and in how
               many samples one call produces.
             </p>

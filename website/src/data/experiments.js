@@ -67,11 +67,11 @@ export const EXPERIMENTS = [
     phase: 'bottleneck',
     title: 'Compilation cache',
     finding:
-      'Persisting the JAX compile cache across a process restart cut init_params by 6.8×.',
-    stat: '6.8×',
+      'Persisting the JAX compile cache across a process restart cut init_params by 6.81×.',
+    stat: '6.81×',
     statLabel: 'faster init_params',
     tone: 'default',
-    body: 'First predict also improved 1.9× with a warm cache. Steady-state was unchanged. This matches the course vLLM setup: pay XLA compile once, reuse the artifact.',
+    body: 'First predict also improved 1.90× with a warm cache. Steady-state was unchanged. This matches the course vLLM setup: pay XLA compile once, reuse the artifact.',
   },
   {
     id: 'precision',
@@ -96,7 +96,7 @@ export const EXPERIMENTS = [
     chart: '/figures/batching_chart.png',
     chartCaption:
       'Batching with jax.vmap: wall-clock rises with batch size; per-protein cost worsens vs batch=1 (negative result).',
-    body: 'At batch sizes 1, 2, 4, and 8, measured throughput was 2.051, 1.928, 1.487 and 1.508 proteins/sec: 0.94×, 0.73× and 0.74× the batch-1 rate. No batch size beat batch=1, and the decline is not monotonic — batch 8 is marginally above batch 4, so we report the values as measured rather than fitting a trend. Memory stayed on one chip, per the run write-up rather than a retained per-device record. vmap stacks work inside a single compiled program; it does not place work on the other seven chips.',
+    body: 'At batch sizes 1, 2, 4, and 8, measured throughput was 2.051, 1.928, 1.487 and 1.508 proteins/sec: 0.94×, 0.73× and 0.74× the batch-1 rate. No batch size beat batch=1, and the decline is not monotonic: batch 8 is marginally above batch 4, so we report the values as measured rather than fitting a trend. Memory stayed on one chip, per the run write-up rather than a retained per-device record. vmap stacks work inside a single compiled program; it does not place work on the other seven chips.',
   },
   {
     id: 'pmap',
@@ -107,7 +107,7 @@ export const EXPERIMENTS = [
     stat: '6.92×',
     statLabel: 'over the single-query baseline',
     tone: 'default',
-    body: 'Throughput went from 2.13 to 14.72 proteins/sec. That baseline uses a different input family, so the like-for-like comparison is the matched chip-count grid, where eight chips give 6.53× the throughput of one at 100 residues and 7.91× at 1000. Per-chip HBM was 644 MB on TPU_0 and 445–469 MB on the other seven, each close to a single-protein footprint, which matches eight independent runs rather than one replicated copy.',
+    body: 'Throughput went from 2.13 to 14.72 proteins/sec. That baseline uses a different input family, so the like-for-like comparison is the matched chip-count grid, where eight chips give 6.53× the throughput of one at 100 residues (81.6% parallel efficiency) and 7.91× at 1000. The 6.92× run is 86.5% efficient. Per-chip HBM was 644 MB on TPU_0 and 445–469 MB on the other seven, each close to a single-protein footprint, which matches eight independent runs rather than one replicated copy.',
   },
   {
     id: 'autoshard',
@@ -129,7 +129,7 @@ export const EXPERIMENTS = [
     stat: '8/8',
     statLabel: 'chips with nonzero memory',
     tone: 'default',
-    body: 'Left AlphaFold’s source untouched. Built 8 ensemble members externally (own random seeds), one per chip via pmap, averaged with a real jax.lax.pmean on raw predicted_lddt logits. Steady-state 0.54s. Per-chip HBM varied 427–624 MB (not the flat 463 MB replication signature). An allclose check on the first and last returned replicas passes. Honest scope: it shows that an ensemble can be distributed for one query, not that AlphaFold’s internal ensembling can, and not full Evoformer tensor sharding.',
+    body: 'Left AlphaFold’s source untouched. Built 8 ensemble members externally (own random seeds), one per chip via pmap, averaged with a real jax.lax.pmean on raw predicted_lddt logits. Steady-state 0.538 s. No speedup was measured against a sequential eight-member run, so the experiment carries no throughput or cost claim. Per-chip HBM varied 427–624 MB (not the flat 463 MB replication signature). An allclose check on the first and last returned replicas passes. Honest scope: it shows that an ensemble can be distributed for one query, not that AlphaFold’s internal ensembling can, and not full Evoformer tensor sharding.',
   },
   {
     id: 'scaling-law',
@@ -150,10 +150,10 @@ export const EXPERIMENTS = [
     phase: 'fit',
     title: 'Model pick & repeats',
     finding:
-      'model_5 was ~15% faster at steady-state; three repeats stayed under 1% stdev.',
-    stat: '<1%',
-    statLabel: 'stdev on repeats',
+      'model_5 took 14.4% less steady-state time than model_3; three repeats stayed at or below 1% CV.',
+    stat: '0.12%',
+    statLabel: 'CV on steady state, 3 repeats',
     tone: 'default',
-    body: 'model_5 beat model_3 and model_4 by about 15% in steady-state. Across three repeats, every metric we tracked had under 1% standard deviation.',
+    body: 'model_5’s steady state took 0.403 s against 0.471 s for model_3 (14.4% less time); model_4 took 0.472 s, the same as model_3. Across three repeats of one configuration the coefficient of variation was 0.12% on steady state, 0.82% on init_params and 1.00% on the first predict, so the model gap is far above the run-to-run noise.',
   },
 ]

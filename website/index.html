@@ -5,21 +5,26 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
-      AlphaFold TPU Benchmark · Lorenzo Pazienza &amp; Ihab El Bani · Stanford ME344
+      Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs · Pazienza &amp; El Bani
     </title>
     <meta
       name="description"
-      content="By Lorenzo Pazienza and Ihab El Bani (Stanford University Summer Session 2026, Introduction to High Performance Computing and AI Systems / ME344): AlphaFold 2 on Google Colab Intel Xeon CPU (2 vCPU), Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips). Steady-state 2nd predict: Google Colab Intel Xeon CPU 212.1s · Google Colab NVIDIA Tesla T4 13.1s (16.2× vs Google Colab Intel Xeon CPU) · Stanford GKE TPU v5e-8 0.47s (451× vs Google Colab Intel Xeon CPU). Transcript: /llms.txt."
+      content="Preprint (arXiv:2609.34818) by Lorenzo Pazienza and Ihab El Bani: AlphaFold2 inference on CPU, NVIDIA T4 GPU and an 8-chip Cloud TPU v5e slice. The default path uses 1 of 8 chips; jax.pmap gives 6.53–7.91× the throughput of one chip; automatic sharding leaves the per-chip footprint unchanged. Code and data open."
     />
     <meta
       name="keywords"
-      content="Lorenzo Pazienza, Ihab El Bani, Ihab Elbani, AlphaFold, AlphaFold 2, AlphaFold 3, AF3, TPU, GPU, CPU, JAX, XLA, Stanford, HPC, ME344, protein structure, ESMFold, ubiquitin, scaling, pmap, compilation cache, v5e, diffusion, Pairformer"
+      content="Lorenzo Pazienza, Ihab El Bani, Ihab Elbani, AlphaFold, AlphaFold 2, AlphaFold 3, AF3, TPU, GPU, CPU, JAX, XLA, Stanford, HPC, ME344, protein structure, ESMFold, ubiquitin, scaling, pmap, compilation cache, v5e, diffusion, Pairformer, arXiv 2609.34818, LUISS, Al Akhawayn University"
     />
     <meta name="author" content="Lorenzo Pazienza, Ihab El Bani" />
+    <meta name="citation_title" content="Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs" />
     <meta name="citation_author" content="Pazienza, Lorenzo" />
+    <meta name="citation_author_institution" content="LUISS Guido Carli University" />
     <meta name="citation_author" content="El Bani, Ihab" />
-    <meta name="citation_title" content="AlphaFold TPU Benchmark: A CPU/GPU/TPU Scaling Study" />
-    <meta name="citation_publication_date" content="2026" />
+    <meta name="citation_author_institution" content="Al Akhawayn University" />
+    <meta name="citation_publication_date" content="2026/09/28" />
+    <meta name="citation_arxiv_id" content="2609.34818" />
+    <meta name="citation_doi" content="10.48550/arXiv.2609.34818" />
+    <meta name="citation_pdf_url" content="https://arxiv.org/pdf/2609.34818" />
     <meta property="article:author" content="Lorenzo Pazienza" />
     <meta property="article:author" content="Ihab El Bani" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -28,14 +33,14 @@
     <link rel="alternate" type="text/plain" href="https://alphafold-tpu.vercel.app/llms.txt" title="Full LLM page transcript" />
     <link rel="author" href="/humans.txt" title="Authors" />
 
-    <meta property="og:site_name" content="AlphaFold TPU Benchmark" />
+    <meta property="og:site_name" content="Accelerator Choice Is Not Enough" />
     <meta
       property="og:title"
-      content="AlphaFold TPU Benchmark · Lorenzo Pazienza & Ihab El Bani · Stanford"
+      content="Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs"
     />
     <meta
       property="og:description"
-      content="Introduction to High Performance Computing and AI Systems (ME344) project by Lorenzo Pazienza and Ihab El Bani. AF2 steady-state 2nd predict: Google Colab Intel Xeon CPU (2 vCPU) 212.1s · Google Colab NVIDIA Tesla T4 13.1s (16.2× vs Google Colab Intel Xeon CPU) · Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips) 0.47s (451× vs Google Colab Intel Xeon CPU). Full text: /llms.txt"
+      content="Preprint (arXiv:2609.34818) by Lorenzo Pazienza and Ihab El Bani: AlphaFold2 inference on CPU, NVIDIA T4 GPU and an 8-chip Cloud TPU v5e slice. The default path uses 1 of 8 chips; jax.pmap gives 6.53–7.91× the throughput of one chip; automatic sharding leaves the per-chip footprint unchanged. Code and data open."
     />
     <meta property="og:type" content="article" />
     <meta property="og:url" content="https://alphafold-tpu.vercel.app/" />
@@ -48,11 +53,11 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="AlphaFold TPU Benchmark · Lorenzo Pazienza & Ihab El Bani"
+      content="Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs"
     />
     <meta
       name="twitter:description"
-      content="By Lorenzo Pazienza and Ihab El Bani. AF2 steady-state (2nd predict, model_3, 118 residues): Google Colab Intel Xeon CPU (2 vCPU) 212.1s · Google Colab NVIDIA Tesla T4 13.1s (16.2× vs Google Colab Intel Xeon CPU) · Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips) 0.47s (451× vs Google Colab Intel Xeon CPU). /llms.txt"
+      content="Preprint (arXiv:2609.34818) by Lorenzo Pazienza and Ihab El Bani: AlphaFold2 inference on CPU, NVIDIA T4 GPU and an 8-chip Cloud TPU v5e slice. The default path uses 1 of 8 chips; jax.pmap gives 6.53–7.91× the throughput of one chip; automatic sharding leaves the per-chip footprint unchanged. Code and data open."
     />
     <meta
       name="twitter:image"
@@ -61,185 +66,215 @@
 
     <script type="application/ld+json">
       {
-        "@context": "https://schema.org",
-        "@graph": [
-          {
-            "@type": "WebSite",
-            "@id": "https://alphafold-tpu.vercel.app/#website",
-            "url": "https://alphafold-tpu.vercel.app/",
-            "name": "AlphaFold TPU Benchmark",
-            "alternateName": [
-              "AlphaFold TPU Benchmark by Lorenzo Pazienza and Ihab El Bani",
-              "Lorenzo Pazienza Ihab El Bani AlphaFold TPU"
-            ],
-            "description": "Introduction to High Performance Computing and AI Systems (ME344) project by Lorenzo Pazienza and Ihab El Bani: AlphaFold 2 CPU/GPU/TPU scaling plus AlphaFold 3 Google Colab side-investigation. Full assistant transcript at /llms.txt.",
-            "inLanguage": "en",
-            "author": [
-              { "@id": "https://alphafold-tpu.vercel.app/#lorenzo-pazienza" },
-              { "@id": "https://alphafold-tpu.vercel.app/#ihab-el-bani" }
-            ],
-            "hasPart": [
-              {
-                "@type": "WebPage",
-                "url": "https://alphafold-tpu.vercel.app/llms.txt",
-                "name": "LLM page transcript"
-              },
-              {
-                "@type": "WebPage",
-                "url": "https://alphafold-tpu.vercel.app/humans.txt",
-                "name": "Authors"
-              }
+            "@context": "https://schema.org",
+            "@graph": [
+                  {
+                        "@type": "WebSite",
+                        "@id": "https://alphafold-tpu.vercel.app/#website",
+                        "url": "https://alphafold-tpu.vercel.app/",
+                        "name": "Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs",
+                        "alternateName": [
+                              "AlphaFold TPU Benchmark",
+                              "AlphaFold TPU Benchmark by Lorenzo Pazienza and Ihab El Bani",
+                              "Lorenzo Pazienza Ihab El Bani AlphaFold TPU"
+                        ],
+                        "description": "Website of the preprint Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs (arXiv:2609.34818) by Lorenzo Pazienza and Ihab El Bani. Full transcript at /llms.txt.",
+                        "inLanguage": "en",
+                        "author": [
+                              {
+                                    "@id": "https://alphafold-tpu.vercel.app/#lorenzo-pazienza"
+                              },
+                              {
+                                    "@id": "https://alphafold-tpu.vercel.app/#ihab-el-bani"
+                              }
+                        ],
+                        "hasPart": [
+                              {
+                                    "@type": "WebPage",
+                                    "url": "https://alphafold-tpu.vercel.app/llms.txt",
+                                    "name": "LLM page transcript"
+                              },
+                              {
+                                    "@type": "WebPage",
+                                    "url": "https://alphafold-tpu.vercel.app/humans.txt",
+                                    "name": "Authors"
+                              }
+                        ]
+                  },
+                  {
+                        "@type": "Person",
+                        "@id": "https://alphafold-tpu.vercel.app/#lorenzo-pazienza",
+                        "name": "Lorenzo Pazienza",
+                        "givenName": "Lorenzo",
+                        "familyName": "Pazienza",
+                        "url": "https://alphafold-tpu.vercel.app/",
+                        "affiliation": {
+                              "@type": "CollegeOrUniversity",
+                              "name": "LUISS Guido Carli University"
+                        },
+                        "jobTitle": "Student",
+                        "sameAs": [
+                              "https://github.com/lorenzopazienza"
+                        ],
+                        "knowsAbout": [
+                              "AlphaFold",
+                              "TPU",
+                              "high performance computing",
+                              "JAX"
+                        ]
+                  },
+                  {
+                        "@type": "Person",
+                        "@id": "https://alphafold-tpu.vercel.app/#ihab-el-bani",
+                        "name": "Ihab El Bani",
+                        "alternateName": [
+                              "Ihab Elbani",
+                              "Ihab El-Bani"
+                        ],
+                        "givenName": "Ihab",
+                        "familyName": "El Bani",
+                        "url": "https://alphafold-tpu.vercel.app/",
+                        "affiliation": {
+                              "@type": "CollegeOrUniversity",
+                              "name": "Al Akhawayn University"
+                        },
+                        "jobTitle": "Student",
+                        "sameAs": [
+                              "https://github.com/IhabProjects"
+                        ],
+                        "knowsAbout": [
+                              "AlphaFold",
+                              "TPU",
+                              "high performance computing",
+                              "JAX"
+                        ]
+                  },
+                  {
+                        "@type": "WebPage",
+                        "@id": "https://alphafold-tpu.vercel.app/#webpage",
+                        "url": "https://alphafold-tpu.vercel.app/",
+                        "name": "Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs · Pazienza & El Bani",
+                        "isPartOf": {
+                              "@id": "https://alphafold-tpu.vercel.app/#website"
+                        },
+                        "about": {
+                              "@id": "https://alphafold-tpu.vercel.app/#article"
+                        },
+                        "author": [
+                              {
+                                    "@id": "https://alphafold-tpu.vercel.app/#lorenzo-pazienza"
+                              },
+                              {
+                                    "@id": "https://alphafold-tpu.vercel.app/#ihab-el-bani"
+                              }
+                        ],
+                        "inLanguage": "en"
+                  },
+                  {
+                        "@type": "ScholarlyArticle",
+                        "@id": "https://alphafold-tpu.vercel.app/#article",
+                        "url": "https://arxiv.org/abs/2609.34818",
+                        "headline": "Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs",
+                        "name": "Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs",
+                        "datePublished": "2026-09-28",
+                        "dateModified": "2026-09-30",
+                        "inLanguage": "en",
+                        "isAccessibleForFree": true,
+                        "image": [
+                              "https://alphafold-tpu.vercel.app/figures/ubiquitin_structure.png",
+                              "https://alphafold-tpu.vercel.app/figures/af3_toy_test_structure.png",
+                              "https://alphafold-tpu.vercel.app/figures/scaling_charts.png",
+                              "https://alphafold-tpu.vercel.app/figures/batching_chart.png",
+                              "https://alphafold-tpu.vercel.app/figures/scaling_law_chart.png",
+                              "https://alphafold-tpu.vercel.app/figures/ubiquitin_confidence.png"
+                        ],
+                        "author": [
+                              {
+                                    "@id": "https://alphafold-tpu.vercel.app/#lorenzo-pazienza"
+                              },
+                              {
+                                    "@id": "https://alphafold-tpu.vercel.app/#ihab-el-bani"
+                              }
+                        ],
+                        "keywords": [
+                              "Lorenzo Pazienza",
+                              "Ihab El Bani",
+                              "AlphaFold",
+                              "AlphaFold 2",
+                              "AlphaFold 3",
+                              "TPU v5e",
+                              "GPU T4",
+                              "JAX",
+                              "XLA",
+                              "protein structure prediction",
+                              "pmap",
+                              "compilation cache",
+                              "diffusion",
+                              "Introduction to High Performance Computing and AI Systems",
+                              "ME344",
+                              "Stanford University Summer Session 2026"
+                        ],
+                        "abstract": "AlphaFold2 is written in JAX, so the same inference code compiles and runs unchanged on CPUs, GPUs and Google Cloud TPUs. That portability makes the accelerator look like the main decision a user has to make. We show that it is not. Running one AlphaFold2 inference workload across a Colab CPU runtime, an NVIDIA T4 GPU and a dedicated eight-chip Cloud TPU v5e slice, we find a large hardware advantage for the TPU, 0.47 s per call in steady state on a single chip against 13.1 s on the T4 in the same measurement campaign, and three ways in which the software layer decides how much of it a user actually gets. The default execution path uses one chip of the eight, and at list prices the idle capacity makes the slice cost about as much per prediction as the GPU. Batching with JAX’s vmap never exceeds single-query throughput, while mapping queries across chips with JAX’s pmap gives eight chips 6.5-7.9x the throughput of one on a matched grid; automatic sharding leaves the per-chip footprint unchanged, consistent with replication, most plausibly because AlphaFold2 carries no sharding annotations. Our retained trace analysis of a first call at a new input shape reports about three quarters of the traced span in JAX tracing and compilation rather than execution. Reruns five weeks later reproduced neither cloud baseline, the GPU one off by roughly a factor of two, so the hardware ratio above is specific to one campaign.",
+                        "citation": "https://github.com/lorenzopazienza/alphafold-tpu-benchmark",
+                        "mainEntityOfPage": "https://alphafold-tpu.vercel.app/",
+                        "sameAs": [
+                              "https://arxiv.org/abs/2609.34818",
+                              "https://doi.org/10.48550/arXiv.2609.34818",
+                              "https://github.com/lorenzopazienza/alphafold-tpu-benchmark"
+                        ],
+                        "identifier": {
+                              "@type": "PropertyValue",
+                              "propertyID": "DOI",
+                              "value": "10.48550/arXiv.2609.34818"
+                        },
+                        "description": "Work carried out during Stanford's ME344 (High Performance Computing and AI Systems, Summer Session 2026) on Stanford's TPU v5e cluster."
+                  },
+                  {
+                        "@type": "ImageObject",
+                        "contentUrl": "https://alphafold-tpu.vercel.app/figures/ubiquitin_structure.png",
+                        "name": "Human ubiquitin ESMFold structure",
+                        "description": "Cartoon ribbon of 76-residue human ubiquitin colored by pLDDT. High-confidence blue/cyan core; lower confidence (warmer colors) at the flexible C-terminal tail residues ~71–76. Mean pLDDT 90.5."
+                  },
+                  {
+                        "@type": "ImageObject",
+                        "contentUrl": "https://alphafold-tpu.vercel.app/figures/af3_toy_test_structure.png",
+                        "name": "AlphaFold 3 toy-test structure",
+                        "description": "Fallback still for the interactive AF3 CIF viewer. 118-residue no-MSA toy input, seed=1, trained weights. Low/medium confidence coloring expected; ptm 0.23 - not comparable to ubiquitin mean pLDDT."
+                  },
+                  {
+                        "@type": "Dataset",
+                        "@id": "https://alphafold-tpu.vercel.app/#af3-structure",
+                        "name": "AlphaFold 3 toy-test CIF (CPU/Google Colab)",
+                        "description": "Predicted structure for the 118-residue AF3 toy sequence (CPU/Google Colab run, seed=1). Used by the site’s interactive 3Dmol viewer.",
+                        "url": "https://alphafold-tpu.vercel.app/structure/af3_toy_test_cpu-colab_model.cif",
+                        "encodingFormat": "chemical/x-cif",
+                        "license": "https://github.com/google-deepmind/alphafold3/blob/main/OUTPUT_TERMS_OF_USE.md"
+                  },
+                  {
+                        "@type": "ImageObject",
+                        "contentUrl": "https://alphafold-tpu.vercel.app/figures/ubiquitin_confidence.png",
+                        "name": "Per-residue pLDDT chart",
+                        "description": "Line chart of pLDDT vs residue index 1–76 for ubiquitin. Confidence high through the core; shaded drop in residues 70–76."
+                  },
+                  {
+                        "@type": "ImageObject",
+                        "contentUrl": "https://alphafold-tpu.vercel.app/figures/scaling_charts.png",
+                        "name": "TPU sequence length and recycle scaling",
+                        "description": "Two panels on TPU v5e-8: left latency vs sequence length, right latency vs recycle depth. Orange = first call (compile+run), blue = steady-state second call."
+                  },
+                  {
+                        "@type": "ImageObject",
+                        "contentUrl": "https://alphafold-tpu.vercel.app/figures/batching_chart.png",
+                        "name": "Multi-query batching results",
+                        "description": "Batching with jax.vmap: at batch sizes 2, 4 and 8, throughput is 0.94×, 0.73× and 0.74× the batch-size-1 rate, never above it; work stays on one chip."
+                  },
+                  {
+                        "@type": "ImageObject",
+                        "contentUrl": "https://alphafold-tpu.vercel.app/figures/scaling_law_chart.png",
+                        "name": "Empirical TPU scaling law",
+                        "description": "Throughput vs chip count and sequence length on a 16-run grid fitting throughput ≈ 4527.77 · chips^0.963 · length^−1.572 (R² 0.981). Descriptive fit; deviations from the measured grid reach 32%."
+                  }
             ]
-          },
-          {
-            "@type": "Person",
-            "@id": "https://alphafold-tpu.vercel.app/#lorenzo-pazienza",
-            "name": "Lorenzo Pazienza",
-            "givenName": "Lorenzo",
-            "familyName": "Pazienza",
-            "url": "https://alphafold-tpu.vercel.app/",
-            "affiliation": {
-              "@type": "CollegeOrUniversity",
-              "name": "Stanford University"
-            },
-            "jobTitle": "Student",
-            "sameAs": ["https://github.com/lorenzopazienza"],
-            "knowsAbout": [
-              "AlphaFold",
-              "TPU",
-              "high performance computing",
-              "JAX"
-            ]
-          },
-          {
-            "@type": "Person",
-            "@id": "https://alphafold-tpu.vercel.app/#ihab-el-bani",
-            "name": "Ihab El Bani",
-            "alternateName": ["Ihab Elbani", "Ihab El-Bani"],
-            "givenName": "Ihab",
-            "familyName": "El Bani",
-            "url": "https://alphafold-tpu.vercel.app/",
-            "affiliation": {
-              "@type": "CollegeOrUniversity",
-              "name": "Stanford University"
-            },
-            "jobTitle": "Student",
-            "sameAs": ["https://github.com/IhabProjects"],
-            "knowsAbout": [
-              "AlphaFold",
-              "TPU",
-              "high performance computing",
-              "JAX"
-            ]
-          },
-          {
-            "@type": "WebPage",
-            "@id": "https://alphafold-tpu.vercel.app/#webpage",
-            "url": "https://alphafold-tpu.vercel.app/",
-            "name": "AlphaFold TPU Benchmark by Lorenzo Pazienza and Ihab El Bani",
-            "isPartOf": { "@id": "https://alphafold-tpu.vercel.app/#website" },
-            "about": { "@id": "https://alphafold-tpu.vercel.app/#article" },
-            "author": [
-              { "@id": "https://alphafold-tpu.vercel.app/#lorenzo-pazienza" },
-              { "@id": "https://alphafold-tpu.vercel.app/#ihab-el-bani" }
-            ],
-            "inLanguage": "en"
-          },
-          {
-            "@type": "ScholarlyArticle",
-            "@id": "https://alphafold-tpu.vercel.app/#article",
-            "url": "https://alphafold-tpu.vercel.app/",
-            "headline": "AlphaFold TPU Benchmark: A CPU/GPU/TPU Scaling Study",
-            "name": "AlphaFold TPU Benchmark by Lorenzo Pazienza and Ihab El Bani",
-            "datePublished": "2026-08-01",
-            "dateModified": "2026-08-13",
-            "inLanguage": "en",
-            "isAccessibleForFree": true,
-            "image": [
-              "https://alphafold-tpu.vercel.app/figures/ubiquitin_structure.png",
-              "https://alphafold-tpu.vercel.app/figures/af3_toy_test_structure.png",
-              "https://alphafold-tpu.vercel.app/figures/scaling_charts.png",
-              "https://alphafold-tpu.vercel.app/figures/batching_chart.png",
-              "https://alphafold-tpu.vercel.app/figures/scaling_law_chart.png",
-              "https://alphafold-tpu.vercel.app/figures/ubiquitin_confidence.png"
-            ],
-            "author": [
-              { "@id": "https://alphafold-tpu.vercel.app/#lorenzo-pazienza" },
-              { "@id": "https://alphafold-tpu.vercel.app/#ihab-el-bani" }
-            ],
-            "contributor": [
-              { "@type": "Person", "name": "Steve Jones", "jobTitle": "Professor" },
-              { "@type": "Person", "name": "Mourad Bouache", "jobTitle": "Professor" }
-            ],
-            "sourceOrganization": { "@type": "Organization", "name": "Stanford University" },
-            "keywords": [
-              "Lorenzo Pazienza",
-              "Ihab El Bani",
-              "AlphaFold",
-              "AlphaFold 2",
-              "AlphaFold 3",
-              "TPU v5e",
-              "GPU T4",
-              "JAX",
-              "XLA",
-              "protein structure prediction",
-              "pmap",
-              "compilation cache",
-              "diffusion",
-              "Introduction to High Performance Computing and AI Systems",
-              "ME344",
-              "Stanford University Summer Session 2026"
-            ],
-            "abstract": "Lorenzo Pazienza and Ihab El Bani (Stanford University Summer Session 2026, Introduction to High Performance Computing and AI Systems / ME344) timed AlphaFold 2’s JAX/Haiku forward pass on Google Colab Intel Xeon CPU (2 vCPU), Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips). Steady-state 2nd predict: 212.1s vs 0.47s (451× vs Google Colab Intel Xeon CPU). Full transcript: https://alphafold-tpu.vercel.app/llms.txt",
-            "citation": "https://github.com/lorenzopazienza/alphafold-tpu-benchmark",
-            "mainEntityOfPage": "https://alphafold-tpu.vercel.app/"
-          },
-          {
-            "@type": "ImageObject",
-            "contentUrl": "https://alphafold-tpu.vercel.app/figures/ubiquitin_structure.png",
-            "name": "Human ubiquitin ESMFold structure",
-            "description": "Cartoon ribbon of 76-residue human ubiquitin colored by pLDDT. High-confidence blue/cyan core; lower confidence (warmer colors) at the flexible C-terminal tail residues ~71–76. Mean pLDDT 90.5."
-          },
-          {
-            "@type": "ImageObject",
-            "contentUrl": "https://alphafold-tpu.vercel.app/figures/af3_toy_test_structure.png",
-            "name": "AlphaFold 3 toy-test structure",
-            "description": "Fallback still for the interactive AF3 CIF viewer. 118-residue no-MSA toy input, seed=1, trained weights. Low/medium confidence coloring expected; ptm 0.23 - not comparable to ubiquitin mean pLDDT."
-          },
-          {
-            "@type": "Dataset",
-            "@id": "https://alphafold-tpu.vercel.app/#af3-structure",
-            "name": "AlphaFold 3 toy-test CIF (CPU/Google Colab)",
-            "description": "Predicted structure for the 118-residue AF3 toy sequence (CPU/Google Colab run, seed=1). Used by the site’s interactive 3Dmol viewer.",
-            "url": "https://alphafold-tpu.vercel.app/structure/af3_toy_test_cpu-colab_model.cif",
-            "encodingFormat": "chemical/x-cif",
-            "license": "https://github.com/google-deepmind/alphafold3/blob/main/OUTPUT_TERMS_OF_USE.md"
-          },
-          {
-            "@type": "ImageObject",
-            "contentUrl": "https://alphafold-tpu.vercel.app/figures/ubiquitin_confidence.png",
-            "name": "Per-residue pLDDT chart",
-            "description": "Line chart of pLDDT vs residue index 1–76 for ubiquitin. Confidence high through the core; shaded drop in residues 70–76."
-          },
-          {
-            "@type": "ImageObject",
-            "contentUrl": "https://alphafold-tpu.vercel.app/figures/scaling_charts.png",
-            "name": "TPU sequence length and recycle scaling",
-            "description": "Two panels on TPU v5e-8: left latency vs sequence length, right latency vs recycle depth. Orange = first call (compile+run), blue = steady-state second call."
-          },
-          {
-            "@type": "ImageObject",
-            "contentUrl": "https://alphafold-tpu.vercel.app/figures/batching_chart.png",
-            "name": "Multi-query batching results",
-            "description": "Batching with jax.vmap: wall-clock grows roughly linearly with batch size; per-protein cost rises; work stays on one chip (negative result vs batch=1)."
-          },
-          {
-            "@type": "ImageObject",
-            "contentUrl": "https://alphafold-tpu.vercel.app/figures/scaling_law_chart.png",
-            "name": "Empirical TPU scaling law",
-            "description": "Throughput vs chip count and sequence length on a 16-run grid fitting throughput ≈ 4527.77 · chips^0.963 · length^−1.572 (R² 0.981)."
-          }
-        ]
       }
     </script>
 
@@ -302,7 +337,7 @@
   <body>
     <div id="root"></div>
 
-    <article id="crawl-content">
+<article id="crawl-content">
       <p class="ai-banner">
         <strong>For AI assistants / crawlers:</strong> This HTML block is the
         full page content (React UI is empty without JS). Prefer the complete
@@ -313,12 +348,20 @@
         - it describes every section, chart, and image.
       </p>
 
-      <h1>AlphaFold TPU Benchmark: A CPU/GPU/TPU Scaling Study</h1>
+      <h1>
+        Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs
+      </h1>
       <p>
-        By <strong>Lorenzo Pazienza</strong> and <strong>Ihab El Bani</strong>
-        (also written Ihab Elbani) · Stanford University · Summer Session 2026 ·
-        Introduction to High Performance Computing and AI Systems (ME344) · Profs.
-        Steve Jones &amp; Mourad Bouache.
+        By <strong>Lorenzo Pazienza</strong> (LUISS Guido Carli University, Rome,
+        Italy) and <strong>Ihab El Bani</strong> (also written Ihab Elbani, Al
+        Akhawayn University, Ifrane, Morocco). arXiv preprint
+        <a href="https://arxiv.org/abs/2609.34818">arXiv:2609.34818</a> · cs.DC
+        (cross-listed cs.LG, cs.PF) · submitted 28 September 2026 · DOI
+        <a href="https://doi.org/10.48550/arXiv.2609.34818"
+          >10.48550/arXiv.2609.34818</a
+        >. The work was carried out during Stanford&rsquo;s ME344, Introduction to
+        High Performance Computing and AI Systems, Summer Session 2026, on
+        Stanford&rsquo;s TPU v5e cluster, and presented at Google.
         Author roster:
         <a href="/humans.txt">/humans.txt</a>.
       </p>
@@ -327,6 +370,8 @@
         <a href="https://alphafold-tpu.vercel.app/"
           >alphafold-tpu.vercel.app</a
         >
+        · Paper PDF:
+        <a href="https://arxiv.org/pdf/2609.34818">arxiv.org/pdf/2609.34818</a>
         · Code:
         <a href="https://github.com/lorenzopazienza/alphafold-tpu-benchmark"
           >github.com/lorenzopazienza/alphafold-tpu-benchmark</a
@@ -338,70 +383,115 @@
       <nav aria-label="On-page sections">
         <h2>Site structure (nav)</h2>
         <ol>
-          <li><a href="#top">Hero - 451× headline</a></li>
-          <li><a href="#structure">Structure - ubiquitin 3D + pLDDT</a></li>
+          <li><a href="#top">Hero - the software layer decides</a></li>
+          <li><a href="#paper">Paper - abstract, links, BibTeX</a></li>
           <li><a href="#problem">Problem</a></li>
           <li><a href="#approach">Approach - one script, three backends</a></li>
           <li><a href="#results">Results - AF2 latency bars</a></li>
           <li><a href="#experiments">Experiments - twelve TPU follow-ups</a></li>
           <li><a href="#af3">AlphaFold 3 - Google Colab compare + interactive CIF + TPU wall</a></li>
           <li><a href="#cost">Cost - scaling law + $/1k</a></li>
+          <li><a href="#next">Next - TPU Builders follow-up</a></li>
+          <li><a href="#structure">Structure - ubiquitin 3D + pLDDT</a></li>
           <li><a href="#reproduce">Reproduce - repo + docker + slides PDF</a></li>
         </ol>
       </nav>
 
       <h2 id="top">Hero</h2>
       <p>
-        Giant metric <strong>451×</strong> (AF2 steady-state TPU vs Google Colab Intel Xeon CPU). Under it: a stacked list (one row per backend), not one dense line. Context: 2nd predict · model_3 · 118 residues. Rows: (1) Google Colab Intel Xeon CPU (2 vCPU) 212.1s 1× baseline; (2) Google Colab NVIDIA Tesla T4 13.1s 16.2× vs CPU; (3) Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice · 2×4 · 8 chips) 0.47s 451× vs CPU. Title “AlphaFold TPU
-        Benchmark”. Blurb: AF2 JAX forward pass on Google Colab Intel Xeon CPU (2 vCPU),
-        Google Colab NVIDIA Tesla T4, and Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice, 2×4, 8 chips);
-        AF3 follow-up on the same Google Colab Intel Xeon CPU (2 vCPU) and Google Colab NVIDIA Tesla T4 (public AF3 has no TPU).
-        Course slides:
-        <a
-          href="/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf"
-          download
-          >Download slides PDF</a
-        >.
+        Kicker: arXiv:2609.34818 · cs.DC · September 2026. Title
+        <strong>Accelerator Choice Is Not Enough</strong>, subtitle
+        <em>AlphaFold2 Inference on Cloud TPUs</em>. Blurb: AlphaFold2 runs the
+        same JAX code on CPUs, GPUs and Google Cloud TPUs, so the accelerator
+        looks like the main decision a user has to make; we show that it is not.
+        On an eight-chip TPU v5e slice the default execution path uses one chip,
+        and how the work is expressed in JAX decides how much of the hardware a
+        user actually gets. Giant metric <strong>1 / 8</strong> (chips that hold
+        data on the default execution path, TPU v5e-8). Under it, a stacked list,
+        one row per software choice: (1) default path (jax.jit) 1 of 8 chips
+        used; (2) batching with jax.vmap never above single-query throughput;
+        (3) mapping with jax.pmap 6.53-7.91× the throughput of one chip;
+        (4) automatic sharding, per-chip footprint unchanged (463 MB). Context
+        line: single chip, steady state 0.47 s per call against 13.1 s on an
+        NVIDIA Tesla T4 (August 2026 campaign). Links: paper on arXiv, PDF, code,
+        cite.
       </p>
 
-      <h2 id="structure">Structure - Human ubiquitin</h2>
+      <h2 id="paper">Paper</h2>
       <p>
-        ESMFold prediction · 76 residues · mean pLDDT 90.5. Interactive 3D
-        (drag/zoom) colored by AlphaFold pLDDT scale. Biology demo - not the
-        systems timing workload.
+        <strong>Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud
+        TPUs</strong>. Lorenzo Pazienza, Ihab El Bani · arXiv preprint, September
+        2026 · cs.DC. Links:
+        <a href="https://arxiv.org/abs/2609.34818">arXiv page</a>,
+        <a href="https://arxiv.org/pdf/2609.34818">PDF</a>,
+        <a
+          href="https://github.com/lorenzopazienza/alphafold-tpu-benchmark/tree/main/paper/preprint/source"
+          >LaTeX source</a
+        >,
+        <a href="https://github.com/lorenzopazienza/alphafold-tpu-benchmark"
+          >code and data</a
+        >.
       </p>
-      <figure>
-        <img
-          src="/figures/ubiquitin_structure.png"
-          alt="Cartoon ribbon of human ubiquitin colored by pLDDT: blue/cyan high-confidence core, warmer lower-confidence C-terminal tail around residues 71–76"
-          width="1200"
-          height="900"
-        />
-        <figcaption>
-          Structure still / 3D fallback. PDB:
-          <a href="/structure/ubiquitin_predicted.pdb"
-            >/structure/ubiquitin_predicted.pdb</a
-          >
-        </figcaption>
-      </figure>
-      <figure>
-        <img
-          src="/figures/ubiquitin_confidence.png"
-          alt="Line chart of per-residue pLDDT for ubiquitin residues 1–76; high through the core with a drop highlighted in residues 70–76"
-          width="1200"
-          height="700"
-        />
-        <figcaption>Per-residue pLDDT chart (mean 90.5). Shaded band: 70–76.</figcaption>
-      </figure>
+      <h3>Abstract</h3>
+      <p>
+        AlphaFold2 is written in JAX, so the same inference code compiles and
+        runs unchanged on CPUs, GPUs and Google Cloud TPUs. That portability
+        makes the accelerator look like the main decision a user has to make. We
+        show that it is not. Running one AlphaFold2 inference workload across a
+        Colab CPU runtime, an NVIDIA T4 GPU and a dedicated eight-chip Cloud TPU
+        v5e slice, we find a large hardware advantage for the TPU, 0.47 s per
+        call in steady state on a single chip against 13.1 s on the T4 in the
+        same measurement campaign, and three ways in which the software layer
+        decides how much of it a user actually gets. The default execution path
+        uses one chip of the eight, and at list prices the idle capacity makes
+        the slice cost about as much per prediction as the GPU. Batching with
+        JAX&rsquo;s vmap never exceeds single-query throughput, while mapping
+        queries across chips with JAX&rsquo;s pmap gives eight chips 6.5-7.9x the
+        throughput of one on a matched grid; automatic sharding leaves the
+        per-chip footprint unchanged, consistent with replication, most plausibly
+        because AlphaFold2 carries no sharding annotations. Our retained trace
+        analysis of a first call at a new input shape reports about three
+        quarters of the traced span in JAX tracing and compilation rather than
+        execution. Reruns five weeks later reproduced neither cloud baseline, the
+        GPU one off by roughly a factor of two, so the hardware ratio above is
+        specific to one campaign.
+      </p>
+      <h3>Cite</h3>
+      <pre>
+@misc{pazienza2026accelerator,
+  title         = {Accelerator Choice Is Not Enough: {AlphaFold2} Inference on Cloud {TPUs}},
+  author        = {Pazienza, Lorenzo and El Bani, Ihab},
+  year          = {2026},
+  eprint        = {2609.34818},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.DC},
+  doi           = {10.48550/arXiv.2609.34818},
+  url           = {https://arxiv.org/abs/2609.34818}
+}
+      </pre>
+      <p>
+        The paper cites commit a63e955 of the repository (tag arxiv-v1). Every
+        number in it traces to
+        <code>paper/data/canonical_results.md</code>.
+      </p>
 
       <h2 id="problem">Problem</h2>
       <p>
-        <strong>Where does AlphaFold 2 spend time on CPU, GPU, and TPU?</strong>
-        Same model config, script, and input shape (AlphaFold 2 model_3, 0
-        recycles, 118 residues, Haiku random-init); measure init, first predict
-        (compile + run), steady-state. Hardware: Google Colab Intel Xeon (2 vCPU);
-        Google Colab NVIDIA Tesla T4; Stanford GKE TPU v5e-8 (tpu-v5-lite-podslice,
-        2×4, 8 chips). Follow-up: AlphaFold 3 on the same Google Colab Intel Xeon CPU (2 vCPU) and Google Colab NVIDIA Tesla T4 - see
+        <strong>What decides the performance a user actually gets?</strong>
+        Biology needs a protein&rsquo;s 3D shape. AlphaFold 2 (DeepMind) made
+        high-accuracy structure prediction practical with a large JAX/Haiku
+        Evoformer, but running that inference is expensive and opaque across
+        accelerators: cold XLA compiles, underused TPU pods, unclear CPU vs GPU
+        vs TPU trade-offs. What we did: we ran AlphaFold2&rsquo;s JAX forward
+        pass on a Google Colab CPU runtime (Intel Xeon, 2 vCPU), a Google Colab
+        NVIDIA Tesla T4 and a Stanford GKE TPU v5e-8 slice
+        (tpu-v5-lite-podslice, 2×4, 8 chips). Single-query timings use the same
+        118-residue input, AlphaFold 2 model_3, 0 recycles and randomly
+        initialized parameters on every backend. Then we asked where the time
+        goes on a first call, and what it takes to put all eight chips to work.
+        Follow-up: AlphaFold 3 (a separate diffusion codebase) on the same Google
+        Colab Intel Xeon CPU and NVIDIA Tesla T4, plus a confirmed finding that
+        its public release does not support TPU - see
         <a href="#af3">#af3</a>.
       </p>
 
@@ -409,12 +499,19 @@
       <p>
         One script <code>spike_tpu_forward_pass.py</code> → Google Colab Intel Xeon CPU
         (result_cpu-colab.json), Google Colab NVIDIA Tesla T4 (result_gpu-t4.json), Stanford
-        GKE TPU v5e-8 / tpu-v5-lite-podslice 2×4 (result_tpu + traces). Systems
-        timings: AlphaFold 2 model_3, Haiku random init (no ~350MB weights).
+        GKE TPU v5e-8 / tpu-v5-lite-podslice 2×4 (result_tpu + traces). Docker for
+        the CPU/GPU images; Kubernetes Job + Kueue on GKE for the TPU worker.
+        Systems timings: AlphaFold 2 model_3, 0 recycles, 118-residue input,
+        Haiku random init rather than trained weights, so the same compiled graph
+        is exercised on every backend. The multi-chip and scaling-grid
+        experiments use a different synthetic input family, so their numbers are
+        compared among themselves, not with the single-query baseline. The
+        ubiquitin structure lower down the page is separate: ESMFold with trained
+        weights, for biology, not for the clocks.
       </p>
 
       <h2 id="results">Results - Steady-state predict latency</h2>
-      <p>Callout: <strong>0.47s</strong>. model_3, 0 recycles, 118 residues. Log-scaled bars.</p>
+      <p>Callout: <strong>0.47s</strong>. model_3, 0 recycles, 118 residues. Log-scaled bars. Single-chip comparison, August 2026 campaign.</p>
       <table>
         <thead>
           <tr>
@@ -442,10 +539,24 @@
         </tbody>
       </table>
       <p>
-        First/steady-state as timed: CPU 1.28× · GPU 7.46× · TPU 59.1×. The CPU and
-        GPU first calls ran with the profiler inside the timer; removing that
-        overhead gives ~1.11× and ~4.25×. The TPU figure cannot be corrected — no
-        TPU run log survives.
+        The TPU figure is one chip of the eight in the slice.
+      </p>
+      <h3>Did the baselines reproduce?</h3>
+      <p>
+        No. Reruns five weeks later, with the same input and metrics, found the
+        CPU 1.64-1.69× slower (three September sessions) and the T4 about 2×
+        faster (6.567 s, one September session), for reasons the records cannot
+        identify. The TPU-over-GPU ratio above is therefore specific to the
+        August campaign.
+      </p>
+      <h3>First predict / steady-state</h3>
+      <p>
+        As timed: CPU 1.28× · GPU 7.46× · TPU 59.1×. The CPU and GPU first calls
+        ran with the profiler inside the timer; removing that overhead gives
+        about 1.11× and about 4.25×. The TPU figure is not correctable, because no
+        TPU run log survives. In a retained trace of one TPU first call, about
+        76% of the traced apply_fn span is self time in JAX&rsquo;s tracing and
+        compilation path rather than device execution.
       </p>
 
       <h2 id="experiments">Experiments - Twelve TPU follow-ups</h2>
@@ -485,8 +596,9 @@
           Reported from our trace analysis; the raw trace is not in the repository.
         </li>
         <li>
-          <strong>Compilation cache - 6.8×</strong> faster init_params; steady-state
-          unchanged.
+          <strong>Compilation cache - 6.81×</strong> faster init_params
+          (66.48s → 20.72s) across a process restart; first predict 1.90× faster
+          with a warm cache; steady-state unchanged.
         </li>
         <li>
           <strong>Precision bf16 - −40%</strong> steady-state HBM; little runtime
@@ -498,7 +610,10 @@
       <ol start="7">
         <li>
           <strong>Multi-query batching - lower</strong> proteins/sec vs batch=1
-          (negative). vmap stayed on one chip.
+          (negative). At batch 1, 2, 4 and 8, measured throughput was 2.051,
+          1.928, 1.487 and 1.508 proteins/sec, that is 0.94×, 0.73× and 0.74× the
+          batch-1 rate; the decline is not monotonic, so the values are reported
+          as measured. vmap stayed on one chip.
         </li>
       </ol>
       <figure>
@@ -509,27 +624,29 @@
           height="700"
         />
         <figcaption>
-          Wall-clock scales ~linearly; per-protein cost rises with batch size.
+          Wall-clock rises with batch size; per-protein cost worsens vs batch=1.
         </figcaption>
       </figure>
       <ol start="8">
         <li>
           <strong>pmap - 6.92×</strong> throughput over the single-query baseline
-          (2.13 → 14.72 proteins/sec on 8 chips). On the matched chip-count grid,
-          eight chips give 6.53× the throughput of one at 100 residues and 7.91×
-          at 1000.
+          (2.13 → 14.72 proteins/sec on 8 chips, 86.5% parallel efficiency). On
+          the matched chip-count grid, eight chips give 6.53× the throughput of
+          one at 100 residues (81.6% efficiency) and 7.91× at 1000 (98.9%).
         </li>
         <li>
           <strong>Auto-sharding (auto-mesh) - 463 MB per chip, unchanged</strong>
           (negative); consistent with replication. Best explanation: no sharding
           annotations for the partitioner to propagate from, stated as a
-          hypothesis.
+          hypothesis. Which partitioner actually ran is not recorded.
         </li>
         <li>
           <strong>External ensemble - 8/8 chips</strong> with nonzero memory via
           <code>pmap</code> + <code>pmean</code> on an ensemble built outside the
           model; an allclose check on the first and last replicas passes;
-          HBM 427–624 MB/chip.
+          steady-state 0.538s; HBM 427–624 MB/chip. No speedup was measured
+          against a sequential eight-member run, so the experiment carries no
+          throughput or cost claim.
         </li>
       </ol>
 
@@ -538,6 +655,8 @@
         <li>
           <strong>Empirical scaling law - R² 0.981</strong> on 16 runs:
           throughput ≈ 4527.77 · chips<sup>0.963</sup> · length<sup>−1.572</sup>.
+          A summary of that grid, not a model of it: deviations from the
+          measurements reach 32% at the extremes of the length range.
         </li>
       </ol>
       <figure>
@@ -553,8 +672,10 @@
       </figure>
       <ol start="12">
         <li>
-          <strong>Model pick &amp; repeats - &lt;1%</strong> stdev; model_5 ~15%
-          faster steady-state than model_3/4.
+          <strong>Model pick &amp; repeats - 0.12%</strong> coefficient of variation
+          on steady state over three repeats (0.82% on init_params, 1.00% on the
+          first predict); model_5's steady state took 0.403 s against 0.471 s for
+          model_3 (14.4% less time), and model_4 took 0.472 s, the same as model_3.
         </li>
       </ol>
 
@@ -622,19 +743,74 @@ value should be one of &lt;cpu|gpu|mps&gt;
 
       <h2 id="cost">Cost</h2>
       <p>
-        Headline: the dominant cost lever is whether the chips are kept busy, not
-        how many are rented. Baseline path 1 of 8 chips active (~87% idle) → TPU
-        $1.25 vs GPU $1.27 per 1k; CPU $11.19. On the measured chip-count grid,
-        going from 1 to 8 chips raises unit cost by 22.6% at 100 residues, 7% at
-        250, 3% at 500 and about 1% at 1000: nearly flat only at long sequences.
+        Headline: idle chips cost as much as busy ones. At list prices, the
+        default path leaves seven of eight chips idle, which makes the slice cost
+        about the same per prediction as the T4: TPU $1.25 vs GPU $1.27 per 1,000
+        predictions, CPU $11.19, on the August baselines. Rented one chip at a
+        time, the same TPU work would cost $0.157 per 1,000, about 8.1× cheaper
+        than the GPU. Running eight independent proteins with jax.pmap on the
+        full pod brings it to about $0.181 per 1,000.
       </p>
+      <p>
+        Descriptive fit over 16 TPU runs (4 chip counts × 4 lengths), R² 0.981:
+        throughput ≈ 4527.77 · chips^0.963 · length^−1.572. It is a summary of
+        that grid, not a model of it: deviations from the measurements reach 32%
+        at the extremes of the length range. On the measured grid, going from 1 to
+        8 chips raises cost per prediction by 22.6% at 100 residues, 7% at 250, 3%
+        at 500 and about 1% at 1000, so the near-flat cost the exponent suggests
+        holds only for long sequences. The external ensemble (pmap + pmean) fills
+        all eight chips, but it has no throughput measurement and is not priced.
+      </p>
+
+      <h2 id="next">Next</h2>
+      <p>
+        With Google Cloud credits from Google&rsquo;s TPU Builders program, we are
+        repeating the key experiments on TPU v5e and v6e with repeated runs,
+        adding real protein targets, testing automatic sharding with explicit
+        annotations, and rerunning the CPU and GPU baselines on fixed Compute
+        Engine machine types. New results will be added next to the summer 2026
+        numbers, not in place of them.
+      </p>
+
+      <h2 id="structure">Structure - Human ubiquitin</h2>
+      <p>
+        ESMFold prediction · 76 residues · mean pLDDT 90.5. Interactive 3D
+        (drag/zoom) colored by AlphaFold pLDDT scale. Biology demo - not the
+        systems timing workload.
+      </p>
+      <figure>
+        <img
+          src="/figures/ubiquitin_structure.png"
+          alt="Cartoon ribbon of human ubiquitin colored by pLDDT: blue/cyan high-confidence core, warmer lower-confidence C-terminal tail around residues 71–76"
+          width="1200"
+          height="900"
+        />
+        <figcaption>
+          Structure still / 3D fallback. PDB:
+          <a href="/structure/ubiquitin_predicted.pdb"
+            >/structure/ubiquitin_predicted.pdb</a
+          >
+        </figcaption>
+      </figure>
+      <figure>
+        <img
+          src="/figures/ubiquitin_confidence.png"
+          alt="Line chart of per-residue pLDDT for ubiquitin residues 1–76; high through the core with a drop highlighted in residues 70–76"
+          width="1200"
+          height="700"
+        />
+        <figcaption>Per-residue pLDDT chart (mean 90.5). Shaded band: 70–76.</figcaption>
+      </figure>
 
       <h2 id="reproduce">Reproduce</h2>
       <p>
-        Repo layout: configs/, figures/, notebooks/, profiling/, results/,
+        Repo layout: configs/, figures/, notebooks/, paper/ (preprint PDF and
+        LaTeX source, results catalogue, provenance audit), profiling/, results/,
         src/, structure/ (ubiquitin PDB + AF3 CIF), website/. AF3 notebooks:
         <code>af3_cpu_colab</code> / <code>af3_gpu_colab</code>. Write-up:
-        <code>results/sweep/af3_comparison.md</code>. Slides:
+        <code>results/sweep/af3_comparison.md</code>. Paper:
+        <a href="https://arxiv.org/abs/2609.34818">arXiv:2609.34818</a>. Course
+        slides:
         <a
           href="/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf"
           download

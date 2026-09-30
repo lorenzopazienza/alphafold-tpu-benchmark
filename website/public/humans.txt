@@ -2,21 +2,25 @@
 Lorenzo Pazienza
 Site: https://alphafold-tpu.vercel.app/
 GitHub: https://github.com/lorenzopazienza
-Role: Co-author · AlphaFold TPU Benchmark
-Affiliation: Stanford University · Summer Session 2026 · Introduction to High Performance Computing and AI Systems (ME344)
+Role: Co-author · Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs
+Affiliation: LUISS Guido Carli University · Rome, Italy
 
 Ihab El Bani
 Also known as: Ihab Elbani, Ihab El-Bani
 Site: https://alphafold-tpu.vercel.app/
 GitHub: https://github.com/IhabProjects
-Role: Co-author · AlphaFold TPU Benchmark
-Affiliation: Stanford University · Summer Session 2026 · Introduction to High Performance Computing and AI Systems (ME344)
+Role: Co-author · Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs
+Affiliation: Al Akhawayn University · Ifrane, Morocco
 
 /* PROJECT */
-Site: AlphaFold TPU Benchmark
+Site: Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs
 URL: https://alphafold-tpu.vercel.app/
+Paper: https://arxiv.org/abs/2609.34818
+PDF: https://arxiv.org/pdf/2609.34818
+DOI: 10.48550/arXiv.2609.34818
 Repo: https://github.com/lorenzopazienza/alphafold-tpu-benchmark
 Transcript: https://alphafold-tpu.vercel.app/llms.txt
 Slides: https://alphafold-tpu.vercel.app/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf
-Location: Stanford University
+Context: Work carried out during Stanford's ME344, Introduction to High Performance Computing and AI Systems, Summer Session 2026, on Stanford's TPU v5e cluster, and presented at Google.
+Thanks: Mourad Bouache (Google), who taught the course, and Steve Jones (Stanford High Performance Computing Center), for access to the TPU v5e cluster.
 Standards: HTML5, Schema.org Person + ScholarlyArticle
