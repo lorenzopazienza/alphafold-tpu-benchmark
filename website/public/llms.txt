@@ -43,7 +43,7 @@
 - Sticky top nav brand: “AlphaFold2 on Cloud TPUs”
 - Nav links (desktop): Paper · Problem · Approach · Results · Experiments · AF3 · Cost · Code, plus an outlined **arXiv** button
 - Mobile: Menu button expands the same links, with arXiv last
-- Footer: paper title, both authors with affiliations, the ME344 line, acknowledgments, and links to arXiv / PDF / GitHub / course slides / this llms.txt
+- Footer: paper title, both authors with affiliations, the ME344 line, acknowledgments, and links to arXiv / PDF / GitHub / Follow-up (https://github.com/lorenzopazienza/alphafold-on-tpu) / course slides / this llms.txt
 - Slides PDF: https://alphafold-tpu.vercel.app/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf (also in repo `presentation/`)
 - Visual design: light lab-paper background (#f7f8f9), navy ink, teal accent (#0b6e7a); fonts Bricolage Grotesque / IBM Plex / Newsreader
 
@@ -294,7 +294,8 @@ More chips are not free. On the measured grid, going from 1 to 8 chips raises co
 
 - Kicker: Next
 - Headline: “What comes next”
-- Body: With Google Cloud credits from Google’s TPU Builders program, we are repeating the key experiments on TPU v5e and v6e with repeated runs, adding real protein targets, testing automatic sharding with explicit annotations, and rerunning the CPU and GPU baselines on fixed Compute Engine machine types. New results will be added next to the summer 2026 numbers, not in place of them.
+- Body: Follow-up research continues in a separate repository, alphafold-on-tpu. The results on this page are those of the paper and are not changed there; new results are reported alongside them, not in place of them.
+- Link: https://github.com/lorenzopazienza/alphafold-on-tpu
 
 ---
 

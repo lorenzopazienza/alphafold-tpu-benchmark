@@ -1,4 +1,5 @@
 const REPO = 'https://github.com/lorenzopazienza/alphafold-tpu-benchmark'
+const FOLLOW_UP = 'https://github.com/lorenzopazienza/alphafold-on-tpu'
 const ARXIV_ABS = 'https://arxiv.org/abs/2609.34818'
 const ARXIV_PDF = 'https://arxiv.org/pdf/2609.34818'
 const SLIDES =
@@ -50,6 +51,14 @@ export default function Footer() {
             className="link-quiet inline-flex min-h-11 min-w-11 items-center text-sm"
           >
             GitHub
+          </a>
+          <a
+            href={FOLLOW_UP}
+            target="_blank"
+            rel="noreferrer"
+            className="link-quiet inline-flex min-h-11 min-w-11 items-center text-sm"
+          >
+            Follow-up
           </a>
           <a
             href={SLIDES}

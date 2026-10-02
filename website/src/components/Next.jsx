@@ -1,3 +1,5 @@
+const FOLLOW_UP = 'https://github.com/lorenzopazienza/alphafold-on-tpu'
+
 export default function Next() {
   return (
     <section id="next" className="border-t border-line bg-panel">
@@ -6,12 +8,18 @@ export default function Next() {
           <p className="kicker">Next</p>
           <h2 className="section-title">What comes next</h2>
           <p className="section-lede">
-            With Google Cloud credits from Google&rsquo;s TPU Builders program,
-            we are repeating the key experiments on TPU v5e and v6e with
-            repeated runs, adding real protein targets, testing automatic
-            sharding with explicit annotations, and rerunning the CPU and GPU
-            baselines on fixed Compute Engine machine types. New results will be
-            added next to the summer 2026 numbers, not in place of them.
+            Follow-up research continues in a separate repository,{' '}
+            <a
+              href={FOLLOW_UP}
+              target="_blank"
+              rel="noreferrer"
+              className="link-quiet font-medium text-ink"
+            >
+              alphafold-on-tpu
+            </a>
+            . The results on this page are those of the paper and are not
+            changed there; new results are reported alongside them, not in place
+            of them.
           </p>
         </div>
       </div>

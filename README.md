@@ -1,5 +1,11 @@
 # AlphaFold TPU Benchmark: Executive Technical Report
 
+> **Archived.** This repository is the frozen code and data archive of the preprint
+> [*Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs*](https://arxiv.org/abs/2609.34818)
+> (arXiv:2609.34818). The state cited in the paper is tag `arxiv-v1` (commit `a63e955`).
+> Follow-up research continues at
+> [github.com/lorenzopazienza/alphafold-on-tpu](https://github.com/lorenzopazienza/alphafold-on-tpu).
+
 **Stanford University** · Summer Session 2026         
 **Course:** Introduction to High Performance Computing and AI Systems (ME344)  
 **Pathway:** Option 2 - Custom Scientific ML Workload  
