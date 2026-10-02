@@ -12,7 +12,7 @@
 **Students:** Lorenzo Pazienza & Ihab El Bani  
 **Professors:** Steve Jones, Mourad Bouache
 
-**Live site:** [alphafold-tpu.vercel.app](https://alphafold-tpu.vercel.app) · **Repo:** [lorenzopazienza/alphafold-tpu-benchmark](https://github.com/lorenzopazienza/alphafold-tpu-benchmark) · **Slides:** [presentation PDF](presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf) (also [download from the site](https://alphafold-tpu.vercel.app/presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf))
+**Repo:** [lorenzopazienza/alphafold-tpu-benchmark](https://github.com/lorenzopazienza/alphafold-tpu-benchmark) · **Slides:** [presentation PDF](presentation/AlphaFold_on_Google_TPUs_Pazienza_Lorenzo_Ihab_El_Bani.pdf)
 
 **Paper:** *Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs*, Lorenzo Pazienza and Ihab El Bani, [arXiv:2609.34818](https://arxiv.org/abs/2609.34818) (cs.DC), 2026. [PDF](paper/preprint/Pazienza_ElBani_2026_AlphaFold2_Inference_on_Cloud_TPUs.pdf) · [arXiv PDF](https://arxiv.org/pdf/2609.34818) · [LaTeX source](paper/preprint/source/). The paper cites commit `a63e955` of this repository; every number in it traces to [`paper/data/canonical_results.md`](paper/data/canonical_results.md).
 
@@ -108,8 +108,8 @@ alphafold-tpu-benchmark/
 │   ├── af3_toy_test_model.cif                 # AF3, original Stanford CPU run
 │   ├── af3_toy_test_cpu-colab_model.cif       # AF3, Google Colab Intel Xeon CPU (2 vCPU) run
 │   └── af3_toy_test_gpu-t4_model.cif          # AF3, Google Colab NVIDIA Tesla T4 run (see af3_comparison.md Section 5b/6 for how this differs from the CPU one)
-├── vercel.json                # Root Vercel build → website/
-└── website/                   # Vite + React showcase → alphafold-tpu.vercel.app
+├── vercel.json                # Vercel build config for website/ (unused)
+└── website/                   # Vite + React showcase (archived, not deployed)
     ├── public/figures/ · public/structure/ · public/presentation/
     ├── src/components/ · src/pages/
     └── src/data/experiments.js
@@ -420,13 +420,12 @@ the same flag-validation failure logged in
 ---
 
 
-## Project website
+## Project website (not maintained)
 
-Vite + React site in [`website/`](website/).
-
-```bash
-cd website && npm install && npm run dev
-```
+The `website/` folder contains the source of the site built for the
+ME344 course presentation. It is kept here as an archive and is not
+deployed or maintained. The paper (arXiv:2609.34818) and this README are
+the reference for every result.
 
 ---
 
