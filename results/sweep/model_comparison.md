@@ -1,5 +1,13 @@
 # Model Comparison (model_3 vs model_4 vs model_5)
 
+> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
+> corrects some statements below.
+>
+> - Each model ran once. The call of `model_5` took 0.403 s, 14.4% less than the 0.471 s of `model_3`. This file
+>   attributes the difference to the architecture. The configurations of `model_3` and `model_4` set 5120 extra MSA
+>   rows, and that of `model_5` sets 1024. The smaller number of extra MSA rows may explain the shorter call. We did
+>   not test this.
+
 ## What this tests
 
 AlphaFold ships 5 official model configs (model_1 through model_5), each

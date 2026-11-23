@@ -1,5 +1,12 @@
 # Multi-Query Batching Experiment (jax.vmap, Stanford GKE TPU v5e-8 (2×4 lite))
 
+> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
+> corrects some statements below.
+>
+> - The summary file `batching_sweep.json` keeps the HBM of chip 0 only. The statement that chips 1 to 7 stayed at 0
+>   MB at every batch size rests on output that is not in the repository.
+> - The result holds for `model_3` at 118 residues and batch sizes up to 8.
+
 ## What this tests
 
 Whether processing multiple independent proteins in a single compiled XLA

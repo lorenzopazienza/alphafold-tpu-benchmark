@@ -1,5 +1,23 @@
 # Real Multi-Chip Parallelism: pmap Success vs. Auto-Sharding Failure
 
+> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
+> corrects some statements below.
+>
+> - Section A reports a speedup of 6.92. This ratio compares runs with different inputs and timed regions. The
+>   revised version takes the speedup from the grid of chip counts and lengths in
+>   `results/sweep/scaling_law_data.json`. Every point of this grid used the same script, input family, and timed
+>   region. On this grid, eight chips gave 6.53 to 7.91 times the throughput of one chip.
+> - Section A reads the memory of each chip as proof that the work was not replicated. Memory that differs between
+>   chips shows only that every chip held data. The division of the work follows from `jax.pmap`, which runs one
+>   replica per device. The values of 445 MB to 469 MB on chips 1 to 7 are close to the 463 MB of one chip alone.
+> - Section B calls the automatic-partitioning run a replication. The runs did not record which partitioner ran, nor
+>   the placement of any array. The revised version reports the experiment as a run without sharding annotations. It
+>   does not say whether the call ran on one chip or as a full copy on every chip, and it does not give a cause.
+> - Version 1 cited the GSPMD paper for the claim that a partitioner without annotations falls back to replication.
+>   That paper does not state this.
+> - Section B attributes the shorter compiling calls of 14.76 s and 14.46 s to a compilation cache left by earlier
+>   runs. The automatic-partitioning script runs no profiler. The revised version gives no cause for this difference.
+
 This experiment directly follows up on the batching experiment
 (`batching.md`), which found `jax.vmap` gives **zero** multi-chip speedup;
 it only vectorizes work within a single chip. Here we test the two real

@@ -1,5 +1,19 @@
 # Real Single-Query Sharding: Ensemble Averaging via pmap + pmean
 
+> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
+> corrects some statements below.
+>
+> - This file says that the automatic-partitioning run replicated because AlphaFold's modules carry no sharding
+>   annotations. The runs did not record which partitioner ran, nor the placement of any array. The revised version
+>   reports the experiment as a run without sharding annotations. It does not say whether the call ran on one chip
+>   or as a full copy on every chip, and it does not give a cause.
+> - This file reads the memory of each chip as proof of work on every chip. Memory that differs between chips shows
+>   only that every chip held data. The division of the work follows from `jax.pmap`, which runs one replica per
+>   device.
+> - With an MSA of one sequence, the seed changes only the random masking of the MSA row. The featurization masks
+>   about 15% of the positions of this row. The experiment shows that an ensemble can run on all chips of the slice.
+>   It does not measure an ensemble that a user would run for prediction.
+
 ## Motivation
 
 `sharding.md` showed that neither `jax.vmap` nor auto-mesh automatic sharding

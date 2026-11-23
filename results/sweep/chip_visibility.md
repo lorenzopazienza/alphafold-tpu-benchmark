@@ -1,5 +1,11 @@
 # Chip-Visibility Experiment (1 vs 8 chips on Stanford GKE TPU v5e-8, 2×4 lite)
 
+> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
+> corrects some statements below.
+>
+> - This file records that the attempts with 2 and 4 visible chips stopped with an error. We have no log of these
+>   attempts. The error messages below are reported in this file only.
+
 ## What this tests
 
 Whether the number of TPU chips *visible* to the process

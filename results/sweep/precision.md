@@ -1,5 +1,16 @@
 # Precision Experiment: float32 vs bfloat16 (Stanford GKE v5e-8, 2×4 lite)
 
+> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
+> corrects some statements below.
+>
+> - The bfloat16 setting casts the parameters to bfloat16. The script does not change the activations. On the TPU,
+>   JAX by default computes float32 matrix products in bfloat16. This default may explain why the bfloat16
+>   parameters did not shorten the call. We did not test this. This file gives the problem size as the reason
+>   instead.
+> - This file cites a log for the cast time of about 2.3 s and for the cause of the higher peak memory. The logs of
+>   the Jobs are not in the repository. The revised version reports the rise in peak memory without a cause.
+> - The times in the row "compile + run" include the time the profiler takes to close inside the timer.
+
 ## What this tests
 
 The course rubric's own list of example "Engineering Mitigations" names

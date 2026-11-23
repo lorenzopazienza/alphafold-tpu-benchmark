@@ -1,5 +1,14 @@
 # Compilation Cache: The Actual Mitigation
 
+> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
+> corrects some statements below.
+>
+> - This file says that compilation dominates the call that compiles the model, at 27 s to 55 s in every run. The
+>   call that compiles the model includes the time the profiler takes to close inside the timer. The TPU runs did
+>   not record this time.
+> - Both calls in the column "compile+run" include this time. The revised version does not attribute the 15.19 s of
+>   the second process to compilation.
+
 ## Why this experiment exists
 
 Every other experiment in this project found the same thing: **XLA

@@ -1,5 +1,13 @@
 # Methodology
 
+> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
+> corrects some statements below.
+>
+> - Section 5.1 says that the Colab notebooks embed an uncommitted version of the script. The notebooks in commit
+>   `2755250` hold this copy and the output of the August runs.
+> - Sections 1.4, 2.3, 2.4, 3.5, and 5.5 describe AlphaFold 3 runs of August 2026. The revised version does not
+>   include them. It also gives no ratio between the T4 and the CPU runtime.
+
 This section documents how every number in `paper/data/canonical_results.md`
 was produced. Every statement below is backed by a file in this repository; the
 source is cited inline. Anything the repository does not record is marked
