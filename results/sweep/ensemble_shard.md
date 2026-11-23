@@ -1,12 +1,12 @@
 # Real Single-Query Sharding: Ensemble Averaging via pmap + pmean
 
-> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
-> corrects some statements below.
+> Note (November 2026): this file is part of the record of version 1 of the paper. Version 3 of the paper
+> (arXiv:2609.34818v3) corrects some statements below.
 >
 > - This file says that the automatic-partitioning run replicated because AlphaFold's modules carry no sharding
->   annotations. The runs did not record which partitioner ran, nor the placement of any array. The revised version
->   reports the experiment as a run without sharding annotations. It does not say whether the call ran on one chip
->   or as a full copy on every chip, and it does not give a cause.
+>   annotations. The runs did not record which partitioner ran, nor the placement of any array. Version 3 reports
+>   the experiment as a run without sharding annotations. It does not say whether the call ran on one chip or as a
+>   full copy on every chip, and it does not give a cause.
 > - This file reads the memory of each chip as proof of work on every chip. Memory that differs between chips shows
 >   only that every chip held data. The division of the work follows from `jax.pmap`, which runs one replica per
 >   device.

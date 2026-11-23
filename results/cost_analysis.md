@@ -1,7 +1,7 @@
 # Cost Analysis: What Does a Prediction Actually Cost?
 
-> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
-> corrects some statements below.
+> Note (November 2026): this file is part of the record of version 1 of the paper. Version 3 of the paper
+> (arXiv:2609.34818v3) corrects some statements below.
 >
 > - This file finds that the slice with one chip working cost about as much per query as the T4, at $1.25 and $1.27
 >   per 1000 queries. This parity held only for the T4 time of August 2026. The T4 price came from a survey that the
@@ -9,13 +9,12 @@
 >   runtime had two, and the August sessions did not record theirs.
 > - The ratio of 28 between the TPU and the T4 divides times from different sessions and different copies of the
 >   script. The note at the top of `comparison.md` gives the values of September 2026.
-> - The revised version prices only the TPU, at Google's list price of $1.20 per chip-hour. On the grid in
+> - Version 3 prices only the TPU, at Google's list price of $1.20 per chip-hour. On the matched grid in
 >   `sweep/scaling_law_data.json`, 1000 queries of 100 residues would cost $0.91 on the slice with one chip working
 >   and $0.14 with all eight. A user who can rent one chip alone at the same price per chip would pay $0.11.
-> - The 6.92 times gain of `pmap` compares runs with different inputs and timed regions. The revised version takes
->   the speedup from the grid of chip counts and lengths in `results/sweep/scaling_law_data.json`. Every point of
->   this grid used the same script, input family, and timed region. On this grid, eight chips gave 6.53 to 7.91
->   times the throughput of one chip.
+> - The 6.92 times gain of `pmap` compares runs with different inputs and timed regions. Version 3 takes the speedup
+>   from the matched grid in `results/sweep/scaling_law_data.json`. Every point of this grid used the same script,
+>   input family, and timed region. On this grid, eight chips gave 6.53 to 7.91 times the throughput of one chip.
 
 ## Pricing sources (verified live, August 2026)
 

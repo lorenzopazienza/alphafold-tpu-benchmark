@@ -1,22 +1,21 @@
 # Scale-Bounds Study (Stanford GKE TPU v5e-8, 2×4 lite podslice, 8 chips)
 
-> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
-> corrects some statements below.
+> Note (November 2026): this file is part of the record of version 1 of the paper. Version 3 of the paper
+> (arXiv:2609.34818v3) corrects some statements below.
 >
 > - This file says that the experiments follow the same method as `../comparison.md`. The scripts time two different
 >   regions. The single-query script times `predict`, and the `vmap`, `pmap`, and ensemble scripts time `apply`
 >   only.
 > - Section 9 reports a speedup of 6.92 for `pmap`. This ratio compares runs with different inputs and timed
->   regions. The revised version takes the speedup from the grid of chip counts and lengths in
->   `results/sweep/scaling_law_data.json`. Every point of this grid used the same script, input family, and timed
->   region. On this grid, eight chips gave 6.53 to 7.91 times the throughput of one chip.
+>   regions. Version 3 takes the speedup from the matched grid in `results/sweep/scaling_law_data.json`. Every point
+>   of this grid used the same script, input family, and timed region. On this grid, eight chips gave 6.53 to 7.91
+>   times the throughput of one chip.
 > - Sections 9 and 10 read memory that differs between chips as proof of distributed work. Memory that differs
 >   between chips shows only that every chip held data. The division of the work follows from `jax.pmap`, which runs
 >   one replica per device.
 > - Sections 9 and 10 call the automatic-partitioning run a replication. The runs did not record which partitioner
->   ran, nor the placement of any array. The revised version reports the experiment as a run without sharding
->   annotations. It does not say whether the call ran on one chip or as a full copy on every chip, and it does not
->   give a cause.
+>   ran, nor the placement of any array. Version 3 reports the experiment as a run without sharding annotations. It
+>   does not say whether the call ran on one chip or as a full copy on every chip, and it does not give a cause.
 > - Section 11 says that the cost per query is about the same at every chip count. The parallel efficiency is
 >   below 100% at every length. A user who can rent one chip alone at the same price per chip pays less per query.
 > - Section 6 attributes the shorter call of `model_5` to its architecture. The configurations of `model_3` and
@@ -24,8 +23,8 @@
 >   explain the shorter call. We did not test this.
 > - Section 7 extends the low variation of the three repeated runs to every other measurement of the project. The
 >   repeated runs measured the TPU only. The times on the T4 and the CPU runtime changed between sessions.
-> - The AlphaFold 3 material describes runs of August 2026. The revised paper does not include it. Its statement on
->   TPU support refers to the public release of AlphaFold 3 that we tried in August 2026.
+> - The AlphaFold 3 material describes runs of August 2026. Version 3 of the paper does not include it. Its
+>   statement on TPU support refers to the public release of AlphaFold 3 that we tried in August 2026.
 
 Twelve experiments, all on the real AlphaFold JAX/Haiku forward pass, same
 methodology as the CPU/GPU/TPU comparison (Google Colab Intel Xeon CPU (2 vCPU) / Google Colab NVIDIA Tesla T4 / Stanford GKE TPU v5e-8 (2×4 lite)) (`../comparison.md`).

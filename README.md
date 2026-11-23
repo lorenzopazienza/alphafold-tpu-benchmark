@@ -10,33 +10,44 @@ Follow-up research continues at
 
 ## Paper
 
-Lorenzo Pazienza and Ihab El Bani. *Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs.*
-[arXiv:2609.34818](https://arxiv.org/abs/2609.34818) (cs.DC), 2026.
-[PDF](paper/preprint/Pazienza_ElBani_2026_AlphaFold2_Inference_on_Cloud_TPUs.pdf) ·
-[arXiv PDF](https://arxiv.org/pdf/2609.34818) · [LaTeX source](paper/preprint/source/)
+Lorenzo Pazienza and Ihab El Bani. *Using the Whole Slice: AlphaFold2 Inference on an Eight-Chip TPU v5e.*
+[arXiv:2609.34818](https://arxiv.org/abs/2609.34818) (cs.DC), 2026. Version 3.
+[PDF](paper-v3/Pazienza_ElBani_AlphaFold2_TPU_v3.pdf) · [arXiv PDF](https://arxiv.org/pdf/2609.34818) ·
+[LaTeX source and scripts](paper-v3/)
 
-This paper is version 1. It cites commit `a63e955` of this repository, which carries the tag
-[`arxiv-v1`](https://github.com/lorenzopazienza/alphafold-tpu-benchmark/tree/arxiv-v1).
+Version 3 cites the tag
+[`arxiv-v3`](https://github.com/lorenzopazienza/alphafold-tpu-benchmark/tree/arxiv-v3) of this repository. The folder
+`paper-v3/` holds the LaTeX source, the scripts that generate the tables and the figure, and the checks of the
+numbers. We wrote version 3 from the result files in this repository and ran no new experiment.
 
-A revised version of the paper is in preparation. We rewrote it from the result files in this repository and ran no
-new experiment. It corrects the following claims of version 1.
+Version 1 had the title *Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs*. It cites commit
+`a63e955` of this repository, which carries the tag
+[`arxiv-v1`](https://github.com/lorenzopazienza/alphafold-tpu-benchmark/tree/arxiv-v1). Its
+[PDF](paper/preprint/Pazienza_ElBani_2026_AlphaFold2_Inference_on_Cloud_TPUs.pdf) and
+[LaTeX source](paper/preprint/source/) are in [`paper/preprint/`](paper/preprint/). Version 2 changed only how the
+abstract on the arXiv page wrote two JAX function names.
+
+Version 3 corrects the following claims of version 1.
 
 - Version 1 reported speed ratios of 451 between one TPU chip and the CPU runtime and of 27.8 between one TPU chip and
-  the T4. These ratios divide times from different sessions and different copies of the benchmark script. The revised
-  version gives only the smallest ratio over all sessions.
+  the T4. These ratios divide times from different sessions and different copies of the benchmark script. Version 3
+  gives only the smallest ratio over all sessions.
 - Version 1 said that the Colab values came from "the same measurement campaign as the TPU numbers." Our records do
   not support this claim.
 - Version 1 reported that one query per chip with `jax.pmap` on eight chips reached 6.92 times the throughput of the
-  single-query baseline, with a parallel efficiency of 86.5%. The two runs differed in input and in timed region. The
-  revised version takes the speedup only from a grid of runs with the same script, input family, and timed region.
+  single-query baseline, with a parallel efficiency of 86.5%. The two runs differed in input and in timed region.
+  Version 3 takes the speedup only from the matched grid, in which every point used the same script, input family,
+  and timed region.
 - Version 1 gave a ratio of 59.1 between the TPU call that compiles the model and the steady-state call. The call that
-  compiles the model includes the time the profiler takes to close, and the TPU runs did not record this time. The
-  revised version drops the ratio.
+  compiles the model probably includes the time the profiler takes to close, and the TPU runs did not record this
+  time. Version 3 drops the ratio.
 - Version 1 reported that about 76% of a traced TPU call was self time in JAX tracing and compilation. We did not keep
-  the trace file, so the revised version removes this value.
+  the trace file, so version 3 removes this value.
 - Version 1 discussed the automatic-partitioning experiment in terms of GSPMD. The runs did not record which
-  partitioner ran. The revised version reports the experiment as a run without sharding annotations.
-- Version 1 had a section and an appendix on AlphaFold 3. The revised version removes them.
+  partitioner ran. Version 3 reports the experiment as a run without sharding annotations.
+- Version 1 had a section and an appendix on AlphaFold 3. Version 3 removes them.
+
+Appendix A of version 3 lists every change.
 
 ## Main Results
 
@@ -109,7 +120,7 @@ come from the files named after them.
   CPU.
 - We did not repeat the TPU runs.
 - The files in this repository that describe the results of version 1 carry a dated note at the top. The note lists
-  the statements that the revised version corrects.
+  the statements that version 3 corrects.
 
 ## Repository Layout
 
@@ -120,6 +131,7 @@ notebooks/   Colab notebooks for the T4 and the CPU runtime
 results/     Baseline results, TPU summaries in sweep/, September runs in repro/
 profiling/   Written analysis of one profiler trace
 paper/       Version 1 of the paper, results catalogue, and methodology notes
+paper-v3/    Version 3 of the paper: LaTeX source, scripts, and checks
 figures/     Figures of version 1
 structure/   Predicted structures
 scripts/     Launch and plotting scripts
@@ -138,7 +150,7 @@ longer exists, so they do not run as written.
 
 The repository also holds runs of [AlphaFold 3](https://github.com/google-deepmind/alphafold3) from August 2026. Their
 files have `af3` in the name and are in `notebooks/`, `results/`, `results/sweep/`, `structure/`, `figures/`,
-`configs/`, `scripts/`, and `src/`. The revised paper does not include them. The statement on TPU support in
+`configs/`, `scripts/`, and `src/`. Version 3 of the paper does not include them. The statement on TPU support in
 [`results/sweep/af3_comparison.md`](results/sweep/af3_comparison.md) refers to the public release of AlphaFold 3 that
 we tried in August 2026.
 
@@ -154,7 +166,7 @@ If you use this benchmark or its results, please cite the preprint.
 
 ```bibtex
 @misc{pazienza2026accelerator,
-  title         = {Accelerator Choice Is Not Enough: {AlphaFold2} Inference on Cloud {TPUs}},
+  title         = {Using the Whole Slice: {AlphaFold2} Inference on an Eight-Chip {TPU} v5e},
   author        = {Pazienza, Lorenzo and El Bani, Ihab},
   year          = {2026},
   eprint        = {2609.34818},

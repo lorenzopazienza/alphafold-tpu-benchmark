@@ -1,12 +1,12 @@
 # Empirical Scaling Law: throughput(chips, length)
 
-> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
-> corrects some statements below.
+> Note (November 2026): this file is part of the record of version 1 of the paper. Version 3 of the paper
+> (arXiv:2609.34818v3) corrects some statements below.
 >
 > - This file explains the deviations from the fit by a fixed overhead per call. We did not measure this cause, and
->   the revised version removes it. On eight chips, the call took 0.077 s to 0.095 s longer than on one chip at 100
->   to 500 residues. The revised version gives this extra time and leaves its cause open. It gives the deviations of
->   the fit as up to 31.6% above and up to 25.7% below the measured throughput.
+>   version 3 removes it. On eight chips, the call took 0.077 s to 0.095 s longer than on one chip at 100 to 500
+>   residues. Version 3 gives this extra time and leaves its cause open. It gives the deviations of the fit as up to
+>   31.6% above and up to 25.7% below the measured throughput.
 > - This file says that the cost per query is flat to within a few percent. In the table below, eight chips
 >   cost $0.139 per 1000 queries of 100 residues and one chip costs $0.114. The parallel efficiency is below 100% at
 >   every length. A user who can rent one chip alone at the same price per chip pays less per query.

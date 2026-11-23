@@ -1,14 +1,14 @@
 # XLA Profiler Trace Analysis
 
-> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
-> corrects some statements below.
+> Note (November 2026): this file is part of the record of version 1 of the paper. Version 3 of the paper
+> (arXiv:2609.34818v3) corrects some statements below.
 >
 > - We did not keep the trace file, and only this written analysis of it remains. No reader can check the values of
->   16.56 s, 12.55 s, and about 76%, so the revised version removes them.
+>   16.56 s, 12.55 s, and about 76%, so version 3 removes them.
 > - Only the single-query script and the `vmap` script run the profiler. The `pmap`, ensemble, and
 >   automatic-partitioning scripts do not.
 > - Both calls that compile the model in the compilation-cache experiment include the time the profiler takes to
->   close. The revised version does not attribute the 15.19 s of the second process to compilation.
+>   close. Version 3 does not attribute the 15.19 s of the second process to compilation.
 
 **Hardware:** Stanford GKE TPU v5e-8 (`tpu-v5-lite-podslice`, 2×4, 8 chips). Baseline CPU/GPU comparison: Google Colab Intel Xeon (2 vCPU) and Google Colab NVIDIA Tesla T4.
 

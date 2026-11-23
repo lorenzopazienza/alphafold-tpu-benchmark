@@ -1,8 +1,8 @@
 # AlphaFold2 vs AlphaFold3: Architecture, Infrastructure, and Output Comparison
 
 > Note (November 2026): this file is part of the record of version 1 of the paper. It describes runs of AlphaFold 3
-> from August 2026. The revised version of the paper does not include them. The statement on TPU support below
-> refers to the public release of AlphaFold 3 that we tried in August 2026.
+> from August 2026. Version 3 of the paper (arXiv:2609.34818v3) does not include them. The statement on TPU support
+> below refers to the public release of AlphaFold 3 that we tried in August 2026.
 
 ## Motivation
 

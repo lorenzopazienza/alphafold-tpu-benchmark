@@ -1,7 +1,7 @@
 # Statistical Rigor: 3 Repeated Runs
 
-> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
-> corrects some statements below.
+> Note (November 2026): this file is part of the record of version 1 of the paper. Version 3 of the paper
+> (arXiv:2609.34818v3) corrects some statements below.
 >
 > - The three runs measured the TPU only. This file extends their low variation to the comparison with the T4 and
 >   the CPU runtime. The times on these two platforms changed between sessions. In September 2026, the T4 took a

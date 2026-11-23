@@ -1,7 +1,7 @@
 # Model Comparison (model_3 vs model_4 vs model_5)
 
-> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
-> corrects some statements below.
+> Note (November 2026): this file is part of the record of version 1 of the paper. Version 3 of the paper
+> (arXiv:2609.34818v3) corrects some statements below.
 >
 > - Each model ran once. The call of `model_5` took 0.403 s, 14.4% less than the 0.471 s of `model_3`. This file
 >   attributes the difference to the architecture. The configurations of `model_3` and `model_4` set 5120 extra MSA

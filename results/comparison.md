@@ -1,21 +1,22 @@
 # CPU / GPU / TPU Comparison
 
-> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
-> corrects some statements below.
+> Note (November 2026): this file is part of the record of version 1 of the paper. Version 3 of the paper
+> (arXiv:2609.34818v3) corrects some statements below.
 >
 > - This file says that the three runs used the identical script. The T4 and the CPU runtime ran a copy of the
 >   script inside the notebooks. The notebooks in commit `2755250` hold this copy. We cannot identify the script
 >   that ran the TPU baseline. AlphaFold2's source ran unmodified, but the scripts differed.
 > - The ratios of 451, 27.8, and 16.2 compare platforms. These ratios divide times from different sessions and
 >   different copies of the script. In September 2026, the T4 took a mean of 6.57 s per steady-state call instead of
->   13.086 s. The CPU runtime took means of 348.9 s to 359.3 s instead of 212.113 s. The revised version gives only
->   the smallest ratio over all sessions. In every session, the mean steady-state call took more than 13.9 times as
->   long on the T4 as the recorded call on one TPU chip, and more than 450 times as long on the CPU runtime. The
->   revised version gives no ratio between the T4 and the CPU runtime.
-> - The ratios of 1.28, 7.46, and 59.1 compare the call that compiles the model with the steady-state call. The call
->   that compiles the model includes the time the profiler takes to close inside the timer. The TPU runs did not
->   record this time. The revised version drops these ratios. It gives the TPU call of 27.78 s with this condition.
->   For the T4 and the CPU runtime, it uses the September runs without the profiler.
+>   13.086 s. The CPU runtime took means of 348.9 s to 359.3 s instead of 212.113 s. Version 3 gives only the
+>   smallest ratio over all sessions. In every session, the mean steady-state call took more than 13.9 times as long
+>   on the T4 as the recorded call on one TPU chip, and more than 450 times as long on the CPU runtime. Version 3
+>   gives no ratio between the T4 and the CPU runtime.
+> - The ratios of 1.28, 7.46, and 59.1 compare the call that compiles the model with the steady-state call. On the
+>   T4 and the CPU runtime, the call that compiles the model includes the time the profiler takes to close inside
+>   the timer. On the TPU, it probably includes this time too. The TPU runs did not record this time. Version 3
+>   drops these ratios. It gives the TPU call as 27.78 s and marks that this call probably includes this time. For
+>   the T4 and the CPU runtime, it uses the September runs without the profiler.
 
 All three runs use the **identical script** (`src/spike_tpu_forward_pass.py`),
 the same 118-residue toy sequence, and the same model config (`model_3`, 0

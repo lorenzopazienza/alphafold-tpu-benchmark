@@ -1,10 +1,10 @@
 # cloud/ — running the benchmark on Cloud TPU (TPU Builders credits)
 
-> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
-> corrects some statements below.
+> Note (November 2026): this file is part of the record of version 1 of the paper. Version 3 of the paper
+> (arXiv:2609.34818v3) corrects some statements below.
 >
-> - We prepared the tooling in this folder but never ran it. No session of it is in the repository. The revised
->   version states that we did not repeat the TPU runs.
+> - We prepared the tooling in this folder but never ran it. No session of it is in the repository. Version 3 states
+>   that we did not repeat the TPU runs.
 > - This file says that the scripts run exactly as in the summer Jobs. We cannot identify the script that ran the
 >   TPU baseline.
 

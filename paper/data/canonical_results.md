@@ -1,36 +1,36 @@
 # Canonical Results
 
-> Note (November 2026): this file is part of the record of version 1 of the paper. A revised version of the paper
-> corrects some statements below.
+> Note (November 2026): this file is part of the record of version 1 of the paper. Version 3 of the paper
+> (arXiv:2609.34818v3) corrects some statements below.
 >
 > - Rows B-10, B-11, and B-12 give ratios of 16.2, 27.8, and 451 between platforms. These ratios divide times from
 >   different sessions and different copies of the script. In September 2026, the T4 took a mean of 6.57 s per
 >   steady-state call instead of 13.086 s. The CPU runtime took means of 348.9 s to 359.3 s instead of 212.113 s.
->   The revised version gives only the smallest ratio over all sessions. In every session, the mean steady-state
->   call took more than 13.9 times as long on the T4 as the recorded call on one TPU chip, and more than 450 times
->   as long on the CPU runtime. The revised version gives no ratio between the T4 and the CPU runtime.
+>   Version 3 gives only the smallest ratio over all sessions. In every session, the mean steady-state call took
+>   more than 13.9 times as long on the T4 as the recorded call on one TPU chip, and more than 450 times as long on
+>   the CPU runtime. Version 3 gives no ratio between the T4 and the CPU runtime.
 > - Rows B-13, B-14, and B-15 give ratios of 1.28, 7.46, and 59.1 between the call that compiles the model and the
->   steady-state call. The call that compiles the model includes the time the profiler takes to close inside the
->   timer. The TPU runs did not record this time. The revised version drops these ratios. For the T4 and the CPU
->   runtime, it uses the September runs without the profiler.
+>   steady-state call. On the T4 and the CPU runtime, the call that compiles the model includes the time the
+>   profiler takes to close inside the timer. On the TPU, it probably includes this time too. The TPU runs did not
+>   record this time. Version 3 drops these ratios. For the T4 and the CPU runtime, it uses the September runs
+>   without the profiler.
 > - Rows TR-01 to TR-05 come from a profiler trace that we did not keep. Only a written analysis of it remains, so
->   the revised version removes these values.
+>   version 3 removes these values.
 > - Rows MQ-06 and MQ-07 give a speedup of 6.92 and a parallel efficiency of 86.5%. They compare runs with different
->   inputs and timed regions. The revised version takes the speedup from the grid of chip counts and lengths in
+>   inputs and timed regions. Version 3 takes the speedup from the matched grid in
 >   `results/sweep/scaling_law_data.json`. Every point of this grid used the same script, input family, and timed
 >   region. On this grid, eight chips gave 6.53 to 7.91 times the throughput of one chip.
 > - Rows C-01 to C-16 assume a T4 price from a survey that the file does not cite and a CPU price for a machine with
->   four virtual CPUs. The parity of rows C-09 and C-10 held only for the T4 time of August 2026. The revised
->   version prices only the TPU, at Google's list price of $1.20 per chip-hour.
+>   four virtual CPUs. The parity of rows C-09 and C-10 held only for the T4 time of August 2026. Version 3 prices
+>   only the TPU, at Google's list price of $1.20 per chip-hour.
 > - This file marks the values in `results/sweep/` as measured. These files are summaries of the Job output. They
 >   are not the files that the scripts wrote.
 > - Discrepancy 12 says that the scripts of the August baselines were never committed. The notebooks in commit
 >   `2755250` hold the copy of the script that ran the T4 and CPU runtime baselines.
 > - Rows GS-01 to GS-04 call the automatic-partitioning run a replication. The runs did not record which partitioner
->   ran, nor the placement of any array. The revised version reports the experiment as a run without sharding
->   annotations. It does not say whether the call ran on one chip or as a full copy on every chip, and it does not
->   give a cause.
-> - Rows A3-01 onward describe AlphaFold 3 runs of August 2026. The revised version does not include them.
+>   ran, nor the placement of any array. Version 3 reports the experiment as a run without sharding annotations. It
+>   does not say whether the call ran on one chip or as a full copy on every chip, and it does not give a cause.
+> - Rows A3-01 onward describe AlphaFold 3 runs of August 2026. Version 3 does not include them.
 
 Single source of truth for every number the paper may cite. Every value was
 read directly from the raw files in `results/`, `results/sweep/` and
