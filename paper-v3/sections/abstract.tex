@@ -1,0 +1,19 @@
+% Abstract: at most 200 words. No number that is not in the body. Every number has a % src.
+\begin{abstract}
+AlphaFold2 is written in JAX. JAX treats each chip of a tensor processing unit (TPU) slice as a separate device. A JAX
+program does not spread its work over the chips by itself, so a user who runs AlphaFold2 on a slice can pay for chips
+that do nothing. We found no published measurement of how AlphaFold2 inference uses a multi-chip TPU slice. Our goal
+was to measure how much of an eight-chip TPU v5e slice AlphaFold2 inference uses, and which way of mapping the work in
+JAX uses all of it. Across 12 experiments, the model used random weights, so we studied execution, not prediction
+quality. % src: recomputed: COUNT.tpu_experiments_with_raw_data
+By default, only one chip held data.
+Batching up to eight input sequences (queries) of 118 residues on one chip with \texttt{jax.vmap} did not raise throughput. % src: results/sweep/batching_sweep.json -> [*].batch_size; recomputed: INPUT.toy_length
+Mapping independent queries to the chips with \texttt{jax.pmap} ran them in parallel on all eight chips.
+On a grid of 1 to 8 chips and 100 to 1000 residues, eight chips gave 6.5 to 7.9 times the throughput of one chip. % src: results/sweep/scaling_law_data.json -> grid[*].chips, grid[*].length; recomputed: V2.speedup_8over1_min, V2.speedup_8over1_max
+JAX's automatic partitioning did not shorten the call for one query. Our program did not tell the partitioner how to
+split any array across the chips.
+\end{abstract}
+
+\begin{IEEEkeywords}
+AlphaFold2, tensor processing units, JAX, data parallelism, protein structure prediction
+\end{IEEEkeywords}

@@ -1,0 +1,65 @@
+\section{Introduction}\label{sec:intro}
+
+AlphaFold2 predicts the three-dimensional structure of a protein from its amino-acid sequence~\cite{jumper2021alphafold}.
+Its public implementation is written in JAX~\cite{alphafoldrepo}. JAX compiles the model with the accelerated linear
+algebra (XLA) compiler for central processing units (CPUs), graphics processing units (GPUs), and tensor processing
+units (TPUs)~\cite{frostig2018jax}. A TPU slice connects several TPU chips, and JAX treats each chip as a separate
+device. A JAX program on a slice does not spread its work over every chip by itself. The program has to map its work
+to the chips, for example with \texttt{jax.pmap}~\cite{jaxpmap}. At list price, a slice costs the same whether one
+chip works or all of them do (Section~\ref{sec:res-cost}). So a user who runs AlphaFold2 on a slice without mapping
+the work can pay for chips that do nothing.
+
+Our goal is to answer two questions for a user of AlphaFold2 on a TPU slice. First, how much of the slice does
+AlphaFold2 inference use by default? Second, which way of mapping the work in JAX uses the rest, and how does
+throughput grow with the number of chips?
+
+This study began as a project in a high performance computing course at Stanford University. TPUs were a main topic of
+the course. After the course, the project grew into the study we report here.
+We ran AlphaFold2 inference on an eight-chip TPU v5e slice of the course cluster in 12 experiments. % src: recomputed: COUNT.tpu_experiments_with_raw_data
+We compared four ways of mapping the
+work. They are the default, batching with \texttt{jax.vmap}, multi-query \texttt{jax.pmap}, and automatic
+partitioning. The model used random weights, so the study concerns execution and not the quality of the predicted
+structures.
+
+Work on AlphaFold2 performance has mostly targeted GPUs. OpenFold reimplements AlphaFold2 in
+PyTorch~\cite{ahdritz2024openfold}. FastFold runs AlphaFold2 on GPU clusters~\cite{cheng2024fastfold}. ParaFold splits
+the pipeline between CPU nodes and GPUs~\cite{zhong2022parafold}. It sorts its input sequences by length, so that JAX
+compiles the model once for many of them~\cite{zhong2022parafold}. ColabFold speeds up batch predictions about 90-fold, in part by avoiding recompilation~\cite{colabfold2022}. % src: colabfold2022 ("speeds up batch predictions by ~90-fold by avoiding recompilation and adding an early stop criterion"), paper-v3/SOURCE_NOTES.md section 1
+APACE runs AlphaFold2 on 200 NVIDIA A100 GPUs~\cite{apace2024}. % src: apace2024 abstract ("Using up to 300 ensembles, distributed across 200 NVIDIA A100 GPUs"), paper-v3/SOURCE_NOTES.md section 1
+ManyFold trains a protein folding model on TPUs~\cite{villegasmorcillo2023manyfold}. JAXBench includes one AlphaFold2
+operator among its TPU kernels~\cite{jaxbench2026}. A concurrent working paper measures ColabFold and AlphaFold2 inference on one
+Cloud TPU v5e or v6e chip~\cite{forsyth2026timetoscience}. We found no published measurement of AlphaFold2 inference
+across the chips of a multi-chip TPU slice other than versions 1 and 2 of this paper.
+On 23 November 2026, we searched OpenAlex, DBLP, arXiv, IEEE Xplore, Crossref, Europe PMC, the Google Cloud blog, and the GitHub issues of AlphaFold2 and ColabFold. % src: paper-v3/LITERATURE_SEARCH.md ("23 November 2026")
+
+In this paper, a query is one input sequence that the model predicts once.
+The study also has one baseline configuration (Table~\ref{tab:experiments}).
+The baseline configuration ran on the TPU, on an NVIDIA T4 GPU, and on a Google Colab CPU runtime.
+
+By default, AlphaFold2 ran on one chip of the slice, and the other seven chips held no data. Batching up to eight
+queries on one chip with \texttt{jax.vmap} did not raise throughput. Mapping independent queries to the chips with
+\texttt{jax.pmap} ran them in parallel on all eight chips. On a grid of chip counts and sequence lengths, eight chips gave 6.53 to 7.91 times the throughput of one chip. % src: results/sweep/scaling_law_data.json -> grid; recomputed: V2.speedup_8over1_min, V2.speedup_8over1_max
+JAX's automatic partitioning did not shorten the call for one query. We also built an external ensemble, which runs
+differently featurized copies of one query outside the model. It ran on all eight chips. A compilation cache shared by
+two processes shortened parameter initialization and the first call of the second process.
+
+We report the comparison with the T4 and the CPU runtime as context, not as a result. The three platforms ran in
+different sessions and with different copies of the benchmark script. On the T4 and on the CPU runtime, the times
+changed between sessions (Section~\ref{sec:res-platforms}). The results on the slice come from one platform and one period.
+
+% The sentence never ends a column alone. \keepwithlist (macros.tex) moves it to the next column
+% together with the first item of the list when they do not fit. The text and the indent do not change.
+\keepwithlist
+This paper makes three contributions.
+\begin{itemize}
+\item We measure how AlphaFold2 inference uses an eight-chip TPU v5e slice under the four ways of mapping the work
+described above (Sections~\ref{sec:res-default} to~\ref{sec:res-auto}).
+\item We give the throughput on a grid of chip counts and sequence lengths when each chip runs one query through
+\texttt{jax.pmap}. We fit a descriptive power law to this grid and give the cost of the queries at list price
+(Sections~\ref{sec:res-pmap} and~\ref{sec:res-cost}).
+\item We list the script, the input, the timed region, and the number of runs of every experiment. We also state
+which records were not kept (Section~\ref{sec:method}).
+\end{itemize}
+
+This paper is version 3 of arXiv:2609.34818.
+\ifappendix Appendix~\ref{app:changes} lists the claims of the earlier versions that changed.\fi

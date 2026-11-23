@@ -1,0 +1,250 @@
+% Bibliography of the paper. Starts from the main.bbl of arXiv:2609.34818v1 (paper/preprint/source/main.bbl), with
+% corrections. Only entries cited in the text are kept. IEEEtran.bst v1.14 drops the doi field, so every DOI is in
+% note. Web pages use url and the access date, and corporate authors are written as the pages print them. Every entry
+% was opened and checked on 2026-11-23.
+
+@IEEEtranBSTCTL{BSTcontrol,
+  CTLuse_forced_etal = "yes",
+  CTLmax_names_forced_etal = "6",
+  CTLnames_show_etal = "1",
+  CTLdash_repeated_names = "no"
+}
+
+@article{jumper2021alphafold,
+  author = {John Jumper and Richard Evans and Alexander Pritzel and Tim Green and Michael Figurnov and Olaf Ronneberger and Kathryn Tunyasuvunakool and Russ Bates and Augustin {\v Z}{\'i}dek and Anna Potapenko and Alex Bridgland and Clemens Meyer and Simon A. A. Kohl and Andrew J. Ballard and Andrew Cowie and Bernardino Romera-Paredes and Stanislav Nikolov and Rishub Jain and Jonas Adler and Trevor Back and Stig Petersen and David Reiman and Ellen Clancy and Michal Zielinski and Martin Steinegger and Michalina Pacholska and Tamas Berghammer and Sebastian Bodenstein and David Silver and Oriol Vinyals and Andrew W. Senior and Koray Kavukcuoglu and Pushmeet Kohli and Demis Hassabis},
+  title = {Highly accurate protein structure prediction with {AlphaFold}},
+  journal = {Nature},
+  volume = {596},
+  number = {7873},
+  pages = {583--589},
+  year = {2021},
+  note = {doi: 10.1038/s41586-021-03819-2}
+}
+
+@misc{alphafoldrepo,
+  author = {{Google DeepMind}},
+  title = {{AlphaFold}},
+  howpublished = {GitHub repository, commit c77e5d2},
+  url = {https://github.com/google-deepmind/alphafold},
+  note = {{A}ccessed: Nov. 23, 2026},
+  year = {2026}
+}
+
+@inproceedings{frostig2018jax,
+  author = {Roy Frostig and Matthew James Johnson and Chris Leary},
+  title = {Compiling machine learning programs via high-level tracing},
+  booktitle = {Proceedings of the Conference on Systems and Machine Learning (SysML)},
+  year = {2018},
+  url = {https://mlsys.org/Conferences/doc/2018/146.pdf}
+}
+
+@misc{haiku2020github,
+  author = {Tom Hennigan and Trevor Cai and Tamara Norman and Lena Martens and Igor Babuschkin},
+  title = {{Haiku}: {Sonnet} for {JAX}},
+  url = {https://github.com/google-deepmind/dm-haiku},
+  note = {{A}ccessed: Nov. 23, 2026},
+  year = {2020}
+}
+
+% The page changed on 2026-11-11 (16 GiB, 819 GBps). It is cited as read on 2026-11-23.
+@misc{googletpuv5e,
+  author = {{Google Cloud}},
+  title = {{Cloud TPU} v5e},
+  url = {https://docs.cloud.google.com/tpu/docs/v5e},
+  note = {{A}ccessed: Nov. 23, 2026},
+  year = {2026}
+}
+
+% Read on 2026-11-23 ($1.20 per chip-hour on demand in us-west4).
+@misc{googletpupricing,
+  author = {{Google Cloud}},
+  title = {{Cloud TPU} pricing},
+  url = {https://cloud.google.com/tpu/pricing},
+  note = {{A}ccessed: Nov. 23, 2026},
+  year = {2026}
+}
+
+@misc{jaxjit,
+  author = {{The JAX Authors}},
+  title = {Just-in-time compilation},
+  url = {https://docs.jax.dev/en/latest/201/jit.html},
+  note = {{A}ccessed: Nov. 23, 2026},
+  year = {2026}
+}
+
+@misc{jaxcache,
+  author = {{The JAX Authors}},
+  title = {Persistent compilation cache},
+  url = {https://docs.jax.dev/en/latest/501/compilation-cache.html},
+  note = {{A}ccessed: Nov. 23, 2026},
+  year = {2026}
+}
+
+@misc{jaxpmap,
+  author = {{The JAX Authors}},
+  title = {jax.pmap},
+  url = {https://docs.jax.dev/en/latest/_autosummary/jax.pmap.html},
+  note = {{A}ccessed: Nov. 23, 2026},
+  year = {2026}
+}
+
+@misc{jaxvmap,
+  author = {{The JAX Authors}},
+  title = {jax.vmap},
+  url = {https://docs.jax.dev/en/latest/_autosummary/jax.vmap.html},
+  note = {{A}ccessed: Nov. 23, 2026},
+  year = {2026}
+}
+
+% The page says that on TPU, with the default precision, float32 dot products are computed in bfloat16.
+@misc{jaxmatmulprecision,
+  author = {{The JAX Authors}},
+  title = {Matmul precision},
+  url = {https://docs.jax.dev/en/latest/201/precision.html},
+  note = {{A}ccessed: Nov. 23, 2026},
+  year = {2026}
+}
+
+@misc{jaxpmean,
+  author = {{The JAX Authors}},
+  title = {jax.lax.pmean},
+  url = {https://docs.jax.dev/en/latest/_autosummary/jax.lax.pmean.html},
+  note = {{A}ccessed: Nov. 23, 2026},
+  year = {2026}
+}
+
+% The page is the OpenXLA "Shardy Guide for JAX Users", not JAX documentation.
+@misc{shardy2026,
+  author = {{OpenXLA Project}},
+  title = {Shardy guide for {JAX} users},
+  url = {https://openxla.org/shardy/getting_started_jax},
+  note = {{A}ccessed: Nov. 23, 2026},
+  year = {2026}
+}
+
+% The Shardy page that says unused mesh axes are implicitly replicated ("Last updated 2025-07-01").
+@misc{shardyrepr,
+  author = {{OpenXLA Project}},
+  title = {Sharding representation},
+  url = {https://openxla.org/shardy/sharding_representation},
+  note = {{A}ccessed: Nov. 23, 2026},
+  year = {2025}
+}
+
+@misc{xu2021gspmd,
+  author = {Yuanzhong Xu and HyoukJoong Lee and Dehao Chen and Blake Hechtman and Yanping Huang and Rahul Joshi and Maxim Krikun and Dmitry Lepikhin and Andy Ly and Marcello Maggioni and Ruoming Pang and Noam Shazeer and Shibo Wang and Tao Wang and Yonghui Wu and Zhifeng Chen},
+  title = {{GSPMD}: General and scalable parallelization for {ML} computation graphs},
+  howpublished = {arXiv:2105.04663},
+  year = {2021}
+}
+
+@article{ahdritz2024openfold,
+  author = {Gustaf Ahdritz and Nazim Bouatta and Christina Floristean and Sachin Kadyan and Qinghui Xia and William Gerecke and Timothy J. O'Donnell and Daniel Berenberg and Ian Fisk and Niccol{\`o} Zanichelli and others},
+  title = {{OpenFold}: Retraining {AlphaFold2} yields new insights into its learning mechanisms and capacity for generalization},
+  journal = {Nature Methods},
+  volume = {21},
+  number = {8},
+  pages = {1514--1524},
+  year = {2024},
+  note = {doi: 10.1038/s41592-024-02272-z}
+}
+
+% Pages and "Proceedings of the" added to the entry of version 1.
+@inproceedings{zhong2022parafold,
+  author = {Bozitao Zhong and Xiaoming Su and Minhua Wen and Sicheng Zuo and Liang Hong and James Lin},
+  title = {{ParaFold}: Paralleling {AlphaFold} for large-scale predictions},
+  booktitle = {Proceedings of the International Conference on High Performance Computing in Asia-Pacific Region Workshops (HPC Asia 2022 Workshops)},
+  pages = {1--9},
+  year = {2022},
+  note = {doi: 10.1145/3503470.3503471}
+}
+
+@inproceedings{cheng2024fastfold,
+  author = {Shenggan Cheng and Xuanlei Zhao and Guangyang Lu and Jiarui Fang and Tian Zheng and Ruidong Wu and Xiwen Zhang and Jian Peng and Yang You},
+  title = {{FastFold}: Optimizing {AlphaFold} training and inference on {GPU} clusters},
+  booktitle = {Proceedings of the 29th ACM SIGPLAN Annual Symposium on Principles and Practice of Parallel Programming (PPoPP)},
+  pages = {417--430},
+  year = {2024},
+  note = {doi: 10.1145/3627535.3638465}
+}
+
+@article{apace2024,
+  author = {Hyun Park and Parth Patel and Roland Haas and E. A. Huerta},
+  title = {{APACE}: {AlphaFold2} and advanced computing as a service for accelerated discovery in biophysics},
+  journal = {Proceedings of the National Academy of Sciences},
+  volume = {121},
+  number = {27},
+  pages = {e2311888121},
+  year = {2024},
+  note = {doi: 10.1073/pnas.2311888121}
+}
+
+@article{colabfold2022,
+  author = {Milot Mirdita and Konstantin Sch{\"u}tze and Yoshitaka Moriwaki and Lim Heo and Sergey Ovchinnikov and Martin Steinegger},
+  title = {{ColabFold}: Making protein folding accessible to all},
+  journal = {Nature Methods},
+  volume = {19},
+  number = {6},
+  pages = {679--682},
+  year = {2022},
+  note = {doi: 10.1038/s41592-022-01488-1}
+}
+
+@article{villegasmorcillo2023manyfold,
+  author = {Amelia Villegas-Morcillo and Louis Robinson and Arthur Flajolet and Thomas D. Barrett},
+  title = {{ManyFold}: An efficient and flexible library for training and validating protein folding models},
+  journal = {Bioinformatics},
+  volume = {39},
+  number = {1},
+  pages = {btac773},
+  year = {2023},
+  note = {doi: 10.1093/bioinformatics/btac773}
+}
+
+@misc{jaxbench2026,
+  author = {Arya Tschand and Charles Hong and Julian Walker and Nina Cai and Shangkun Wang and Suvinay Subramanian and Sundar Dev and Vijay {Janapa Reddi} and Amir Yazdanbakhsh and Sethu Sankaran},
+  title = {{JAXBench}: Benchmarking autonomous {TPU} kernel optimization},
+  howpublished = {arXiv:2607.20466},
+  year = {2026}
+}
+
+% Concurrent work found by the literature search (LITERATURE_SEARCH.md). Zenodo
+% record 24224726 opened on 2026-11-23 (working paper, version 2.0.0, published 2026-11-14).
+@misc{forsyth2026timetoscience,
+  author = {Forsyth, III, Charles E.},
+  title = {Decreasing time-to-science with cloud {TPUs} on a campus {Slurm} cluster: Roofline, compiler, and cost measurements across {NVIDIA} {V100}, {NVIDIA} {L4}, {Cloud} {TPU} v5e, and {Cloud} {TPU} v6e {Trillium}},
+  howpublished = {Zenodo working paper, version 2.0.0},
+  year = {2026},
+  note = {doi: 10.5281/zenodo.24224726}
+}
+
+@inproceedings{hoefler2015benchmarking,
+  author = {Torsten Hoefler and Roberto Belli},
+  title = {Scientific benchmarking of parallel computing systems: Twelve ways to tell the masses when reporting performance results},
+  booktitle = {Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis (SC)},
+  pages = {73:1--73:12},
+  year = {2015},
+  note = {doi: 10.1145/2807591.2807644}
+}
+
+@article{papadopoulos2021principles,
+  author = {Alessandro Vittorio Papadopoulos and Laurens Versluis and Andr{\'e} Bauer and Nikolas Herbst and J{\'o}akim von Kistowski and Ahmed Ali-Eldin and Cristina L. Abad and Jos{\'e} Nelson Amaral and Petr T{\r u}ma and Alexandru Iosup},
+  title = {Methodological principles for reproducible performance evaluation in cloud computing},
+  journal = {IEEE Transactions on Software Engineering},
+  volume = {47},
+  number = {8},
+  pages = {1528--1543},
+  year = {2021},
+  note = {doi: 10.1109/TSE.2019.2927908}
+}
+
+@article{leitner2016patterns,
+  author = {Philipp Leitner and J{\"u}rgen Cito},
+  title = {Patterns in the chaos{\textemdash}{A} study of performance variation and predictability in public {IaaS} clouds},
+  journal = {ACM Transactions on Internet Technology},
+  volume = {16},
+  number = {3},
+  pages = {15:1--15:23},
+  year = {2016},
+  note = {doi: 10.1145/2885497}
+}

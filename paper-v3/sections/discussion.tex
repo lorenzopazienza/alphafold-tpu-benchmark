@@ -1,0 +1,41 @@
+\section{Discussion}\label{sec:discussion}
+
+\subsection{What the Results Mean}
+In our runs, the slice did not act as one large device. The model used one chip unless the program mapped work to the
+others. A user with many independent queries can run one query on each chip in parallel, as
+multi-query \texttt{pmap} did. This behavior is expected from how JAX places work on devices. Our measurements quantify this behavior for
+AlphaFold2 on a TPU v5e slice. Each \texttt{pmap} call ran queries of one length. Batches of mixed lengths need padding
+or grouping by length. We did not compare \texttt{pmap} with eight separate processes, one per chip. We did not test
+\texttt{jax.shard\_map}. On a rented slice of eight chips, a program that uses one chip leaves seven chips idle
+(Section~\ref{sec:res-cost}).
+At 118 residues and up to eight queries per call, batching on one chip with \texttt{vmap} did not replace multi-query \texttt{pmap}. % src: recomputed: INPUT.toy_length
+
+Automatic partitioning did not shorten the call for one query. Our program gave the partitioner no sharding
+annotations, and we found none in the source of AlphaFold2. We did not try to add annotations or to change the model.
+The external ensemble ran eight featurizations of one query on eight chips. It averaged one output with a collective
+operation. We did not test whether this average helps prediction.
+
+\subsection{Limitations}\label{sec:limitations}
+The model ran with random weights. The trained weights have the same shapes, so we expect the same steady-state times.
+We did not measure the times with the trained weights. Every MSA held only the query, and no run relaxed the structure.
+We did not measure deep MSAs or the models with templates. Only the recycling sweep ran with recycles. We timed the
+network only, so our costs cover only part of the work for one query.
+
+Most settings ran once. Hoefler and Belli ask authors to report confidence intervals for nondeterministic
+measurements~\cite{hoefler2015benchmarking}. Papadopoulos et al. make repeated experiments the first of their principles
+for performance evaluation in the cloud~\cite{papadopoulos2021principles}. Most of our settings meet neither of these
+recommendations. We measured the TPU in one period only.
+In the three repeated runs, the coefficient of variation was at most 1.00\% for every timed call. % src: recomputed: RR.steady_state_seconds.cv_pct, RR.init_params_seconds.cv_pct, RR.first_predict_seconds.cv_pct
+This check does not cover changes between Jobs or between sessions. Times also differ between experiments at similar
+lengths.
+At 120 residues, the repeated-alphabet sequence took 0.408~s in \texttt{predict}. % src: results/sweep/sequence_length_sweep.json -> [1].num_residues, [1].steady_state_seconds
+At 118 residues, the fixed sequence took 0.469~s to 0.471~s in \texttt{predict}. % src: recomputed: INPUT.toy_length, TPU.single_query_steady_min_max
+With \texttt{vmap} and $B$ = 1, the repeated-alphabet sequence of 118 residues took 0.4875~s in \texttt{apply}, although \texttt{predict} includes \texttt{apply}. % src: results/sweep/batching_sweep.json -> [0].batch_size, [0].steady_state_seconds; recomputed: INPUT.toy_length
+These runs differ in Job, script, or input family. We did not study these differences. Between experiments, we draw no
+conclusion from differences as large as these. On the T4 and the CPU runtime, the changes between sessions were large.
+We measured one TPU generation, the three models without templates, and inputs of at most 1000 residues. % src: results/sweep/scaling_law_data.json -> grid[*].length
+
+The records have gaps.
+The August Colab runs used a copy of the script that exists only inside the notebooks of commit 2755250. % src: recomputed: V2.first_commit
+We cannot identify the script of the baseline run on the TPU. The TPU logs are not in the repository. The sweep files are
+summaries of the Job output. The committed TPU Jobs pinned only JAX.

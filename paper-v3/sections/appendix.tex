@@ -1,0 +1,91 @@
+% Appendix A: Changes from Earlier Versions. Printed after the references when \ifappendix is true (main.tex). The
+% build main_noappendix.tex leaves it out.
+\section{Changes from Earlier Versions}\label{app:changes}
+% arXiv versions 1 (28 September 2026) and 2 (29 September 2026) have the same source files and the same PDF text,
+% apart from the arXiv stamp. Version 2 changed only the abstract of the arXiv listing, where "this http URL"
+% (jax.vmap, jax.pmap) became "JAX's vmap" and "JAX's pmap".
+This paper is version 3 of arXiv:2609.34818. Version 2 changed only how the abstract on the arXiv page wrote two JAX
+function names. The paper itself is the same in versions 1 and 2, so every claim listed here appears in both. % src: arXiv listings of 2609.34818 as read on 2026-11-23 ("[v1] Mon, 28 Sep 2026", "[v2] Tue, 29 Sep 2026"), same e-print source files in v1 and v2
+% The title of version 1, as in paper/preprint/source/main.tex (pdftitle).
+Version 1 had the title \vonequote{Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs.} Version 3
+has a new title and a new structure.
+We ran no new experiment for this version. We checked the claims and numbers of
+version 1 against the committed result files. This appendix lists the claims that changed and the reason for each
+change.
+
+\subsection*{Ratios Between Platforms}
+Version 1 reported ratios of 451 between one TPU chip and the CPU runtime and of 27.8 between one TPU chip and the T4. % src: recomputed: B12.tpu_over_cpu, B11.tpu_over_gpu
+Its limitations section said that the Colab values came from \vonequote{the same measurement campaign as the TPU
+numbers.}\ Our records do not support this claim.
+The T4 and the CPU runtime ran in two Colab runtimes on 8 August 2026, at 04:50 and 05:19 UTC. % src: recomputed: AUG.gpu.first_epoch_utc, AUG.cpu.first_epoch_utc
+The baseline run on the TPU did not record its date. Its result was committed at 17:23 UTC on the same day. % src: recomputed: V2.first_commit
+The three values also came from different copies of the script (Table~\ref{tab:platforms}).
+In September, the T4 took a mean of 6.57~s per steady-state call instead of 13.086~s. % src: recomputed: SEP.gpu.0915.mean, B.gpu.steady
+The CPU runtime took means of 348.9~s to 359.3~s instead of 212.113~s. % src: recomputed: V2.sep_cpu_steady_min, V2.sep_cpu_steady_max, B.cpu.steady
+This version gives only the smallest ratio over all sessions (Section~\ref{sec:res-platforms}).
+In every session, the mean steady-state call on the T4 took more than 13.9 times as long as the recorded call on one TPU chip. % src: recomputed: V2.min_tpu_over_t4_with_max_tpu
+On the CPU runtime, it took more than 450 times as long. % src: recomputed: V2.min_tpu_over_cpu_with_max_tpu
+Version 1 also gave a ratio between the T4 and the CPU runtime. We removed it.
+
+\subsection*{Speedup on Eight Chips}
+Version 1 reported that multi-query \texttt{pmap} on eight chips reached 6.92 times the throughput of the baseline run on the TPU, with a parallel efficiency of 86.5\%. % src: recomputed: MQ.speedup_file, MQ.efficiency_pct
+The two runs differed in input and in timed region. This version takes the speedup only from the matched grid. There,
+every point used the same script, input family, and timed region.
+Eight chips gave 6.53 to 7.91 times the throughput of one chip. % src: recomputed: V2.speedup_8over1_min, V2.speedup_8over1_max
+Version 1 explained the lower parallel efficiency at 100 residues by a fixed overhead per call. This version gives the extra time per call and leaves its cause open (Section~\ref{sec:res-pmap}). % src: results/sweep/scaling_law_data.json -> grid[0].length
+Version 1 also wrote that \vonequote{distinct per-chip HBM allocations confirm the work is distributed.}\ Memory shows
+only that every chip held data. The division of the work follows from \texttt{jax.pmap}, which runs one replica per
+device~\cite{jaxpmap}.
+
+\subsection*{First Call and Profiler}
+Every August version of the single-query script that we have runs the first call with the profiler. The September
+version adds an option that turns the profiler off. The TPU runs did not record the duration of the profiler teardown.
+In September, the profiler teardown took 31.7~s to 31.9~s on the CPU runtime and 23.7~s on the T4. % src: recomputed: V2.sep_cpu_tail_min, V2.sep_cpu_tail_max, SEP.gpu.0915.profiler_tail_s
+Version 1 gave the TPU first call as 59.1 times the steady-state call, a ratio that it called uncorrected. % src: recomputed: B15.tpu_first_over_steady
+This version gives the first call as 27.78~s and gives no ratio. % src: recomputed: B.tpu.first
+Table~\ref{tab:platforms} marks that this call probably includes the profiler teardown.
+Version 1 also read the compilation-cache experiment as showing that more than half of the first call survives the
+cache. Both first calls of that experiment include the profiler teardown, so this version does not attribute the 15.19~s of the second process to compilation. % src: results/sweep/compilation_cache.json -> warm.first_predict_seconds
+For the T4 and the CPU runtime, version 1 subtracted the profiler teardown from the August first calls. This version
+uses the September runs without the profiler instead.
+
+\subsection*{Profiler Trace}
+Version 1 reported a trace of one TPU first call.
+In that trace, a JAX function that traces and compiles had 12.55~s of self time out of 16.56~s. This share is about 76\%. % src: profiling/trace_analysis.md ("16.56s", "12.55s"); recomputed: TR.share_pct
+We did not keep the trace file, and only a written analysis of it remains. No reader can check the value, so we
+removed it.
+
+\subsection*{Automatic Partitioning}
+Version 1 named this experiment \vonequote{automatic sharding} and discussed it in terms of GSPMD. It cited the GSPMD
+paper for the claim that a partitioner without annotations falls back to replication. That paper does not state this.
+The runs did not record which partitioner ran. This version reports the experiment as a run without sharding
+annotations. It does not say whether the call ran on one chip or on every chip (Section~\ref{sec:res-auto}).
+
+\subsection*{Cost}
+Version 1 found that the slice with one chip working cost about as much per query as the T4.
+The values were \$1.25 and \$1.27 per 1000 queries. % src: recomputed: COST.pod.per_1k, COST.gpu.per_1k ("per 1000 queries")
+This parity held only for the T4 time of August. The T4 price came from a survey that version 1 did not cite. The CPU
+price was our estimate for a machine with four virtual CPUs. The September CPU runtime had two, and the August sessions
+did not record theirs.
+Version 1 also priced hypothetical slices of one, two, and four chips in a table. This version prices only the TPU, at Google's list price of \$1.20 per chip-hour. % src: recomputed: V2.price_chip_hour
+It gives one conditional example for a chip rented alone (Section~\ref{sec:res-cost}).
+
+\subsection*{\AFthree{}}
+Version 1 had a section and an appendix on \AFthree{}. The release we tested did not accept the TPU as a platform.
+These runs do not address the question of this paper, which concerns the TPU slice. We removed the section, the
+appendix, and all their numbers.
+
+\subsection*{Other Corrections}
+Version 1 stated that the sequence-length sweep behind the power-law fit covered 100 to 1000 residues. The fit uses the
+matched grid.
+The sequence-length sweep covered 60 to 500 residues. % src: results/sweep/scaling_law_data.json -> grid[*].length; results/sweep/sequence_length_sweep.json -> [*].num_residues
+Version 1 wrote that none of the cited work reported TPU experiments, but it cited a model trained on TPUs. Version 1
+described a controlled comparison with identical code on the three platforms. AlphaFold2's source ran unmodified, but
+the scripts differed (Table~\ref{tab:platforms}). Version 1 called the copy of the script in the August notebooks
+uncommitted.
+The notebooks in commit 2755250 hold it. % src: recomputed: V2.first_commit
+Seven works cited in version 1 do not make the statements that version 1 attributed to them. We corrected these statements or
+removed the citations. Version 1 treated the files in \texttt{results/sweep/} as raw results. They are summaries of the
+Job output (Section~\ref{sec:records}). The abstract now states that the weights were random. We also renamed three
+terms. A \vonequote{pod} is now a slice, a \vonequote{protein} is a query, and \vonequote{automatic sharding} is
+automatic partitioning.

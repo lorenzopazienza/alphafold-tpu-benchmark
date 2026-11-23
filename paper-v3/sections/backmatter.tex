@@ -1,0 +1,36 @@
+\section*{Data and Code Availability}
+The benchmark scripts, the Kubernetes Job definitions, the notebooks, and the result files are in the repository
+\url{https://github.com/lorenzopazienza/alphafold-tpu-benchmark}. The files in \texttt{results/sweep/} are summaries of the Job
+output (Section~\ref{sec:records}).
+The August scripts, Jobs, notebooks, and results are in commits 2755250, cccd446, and 625c5dd. % src: recomputed: V2.first_commit, V2.grid_commit, V2.ensemble_commit
+The September runs used commits 86fca03 and 9e1a07e. The tag \texttt{arxiv-v1} marks commit a63e955. This commit is the state of
+the repository that the earlier versions cite. % src: recomputed: V2.arxiv_v1_tag_commit; results/repro/2026-09-15_gpu-t4/environment_gpu-t4-repro.json -> repo_commit
+The scripts that generate the tables and the figure of this version are in the folder \texttt{paper-v3/} at the tag
+\texttt{arxiv-v3}. The September result folders store the commit of the script, the package versions, and the host CPU
+of each session.
+
+\section*{Use of AI Tools}
+The first author conceived and directed the study, made every decision, launched every run, and checked every
+result against the files in the repository.
+He used Claude (Anthropic) to write the benchmark scripts and the summary files in \texttt{results/sweep/} in August
+2026. He used Claude Code (Anthropic) to write the later code and analyses and to assist with the writing. % src: statement of the first author ("in August 2026")
+He reviewed the code and the analyses at every step, worked on every sentence of this version by hand, and is fully
+responsible for its content. The second author assisted at times and used Cursor for his contributions. Each number was
+checked against the file or web page that it cites. A script performs most of these checks, and the others were done by
+hand.
+
+\section*{Author Contributions}
+L. Pazienza led the study. He designed it, wrote the benchmark scripts and the Kubernetes Jobs, and ran all the
+experiments. He carried out the re-analysis and wrote this version of the paper on his own. I. El Bani helped shape how
+the research was framed and presented, and he presented it with the first author at Google headquarters. He also
+assisted with the project at times, built the project website for the course, wrote parts of the first version of the
+paper, and reviewed all of that version. He approved the submission of this version.
+
+\section*{Acknowledgment}
+The TPU experiments of this work were carried out in the Stanford University course Introduction to High Performance
+Computing (ME 344), in the Summer Session 2026. They used TPU~v5e infrastructure provided by Stanford University. % src: paper/preprint/source/main.tex ("Summer Session 2026"); course title as stated by the first author ("ME 344")
+We thank Mourad Bouache (Google) and Steve Jones, who taught the course.
+Mourad Bouache guided the project and gave us the opportunity to present it at Google headquarters on 13 August 2026. % src: statement of the first author ("13 August 2026")
+Steve Jones gave us access to the TPU~v5e cluster. He is the Director of the
+Stanford High Performance Computing Center and a Research Scientist at Stanford University. We also thank the
+Department of Mechanical Engineering at Stanford University for hosting the course.
