@@ -6,7 +6,7 @@ out the study in the course ME 344, Introduction to High Performance Computing, 
 Session 2026.
 
 Follow-up research continues at
-[github.com/lorenzopazienza/alphafold-on-tpu](https://github.com/lorenzopazienza/alphafold-on-tpu).
+[github.com/lorenzopazienza/af3-cross-platform](https://github.com/lorenzopazienza/af3-cross-platform).
 
 ## Paper
 

@@ -8,7 +8,7 @@
 > - This file says that the scripts run exactly as in the summer Jobs. We cannot identify the script that ran the
 >   TPU baseline.
 
-> Superseded: this tooling is maintained in [alphafold-on-tpu](https://github.com/lorenzopazienza/alphafold-on-tpu). The copy here is kept as it was.
+> Superseded: this tooling is maintained in [af3-cross-platform](https://github.com/lorenzopazienza/af3-cross-platform). The copy here is kept as it was.
 
 Tooling for the post-summer measurements on our own Google Cloud project
 (`af2-tpu-benchmark`), paid with TPU Builders credits. It does **not** change
