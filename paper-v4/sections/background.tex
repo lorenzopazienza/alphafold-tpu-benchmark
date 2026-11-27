@@ -1,0 +1,58 @@
+\section{Background}\label{sec:background}
+
+\subsection{Chips, Slices, and Hosts}\label{sec:bg-tpu}
+A TPU v5e chip has 16~GiB of high-bandwidth memory (HBM)~\cite{googletpuv5e}. % src: googletpuv5e as read on 2026-11-23 ("16 GiB"), paper-v4/SOURCE_NOTES.md section 1
+Google's TPUs link their chips with an inter-chip interconnect (ICI)~\cite{jouppi2020domain}.
+The full TPU v5e configuration of 256 chips has a two-dimensional torus topology~\cite{googletpuv5e}. % src: googletpuv5e as read on 2026-11-23 ("TPU Pod size 256 chips", "2D torus")
+Our slice had eight chips in a 2~$\times$~4 topology. % src: configs/af_spike_job.yaml -> nodeSelector; recomputed: V2.topology
+A host is the CPU machine that runs the Python process and drives the chips. JAX treats each chip as one device of that
+process. In this paper, a chip is one TPU v5e chip. A slice is the set of eight chips that each Kubernetes Job received
+(Section~\ref{sec:platforms}).
+
+\subsection{Compilation and Mapping in JAX}\label{sec:bg-jax}
+Before compiling a function, JAX traces the function into an intermediate program. \texttt{jax.jit} compiles a function
+with XLA when the function is first called, caches the compiled code, and reuses that code in later
+calls~\cite{jaxjit}. In this paper, compilation means tracing and XLA compilation together. We do not separate the two.
+JAX can also store compiled programs on disk, so that a later run can load them instead of compiling
+again~\cite{jaxcache}. We call these stored programs the compilation cache.
+
+JAX offers several ways to run more than one query. \texttt{jax.vmap} vectorizes a function over a batch axis of its
+inputs~\cite{jaxvmap}. \texttt{jax.vmap} does not by itself spread the batch over devices. \texttt{jax.pmap} replicates
+a function and runs each replica on its own device. Each device receives one element of the leading axis of the
+input~\cite{jaxpmap}. The documentation of \texttt{jax.pmap} now recommends \texttt{jax.shard\_map}
+instead~\cite{jaxpmap}.
+Since JAX 0.10.0, \texttt{jax.pmap} is implemented as \texttt{jax.jit} applied to \texttt{jax.shard\_map}~\cite{jaxchangelog}. % src: jaxchangelog ("JAX 0.10.0", "jax.pmap will now always use the new implementation that wraps jax.jit(jax.shard_map)")
+Our external ensemble (Section~\ref{sec:res-auto}) uses \texttt{jax.lax.pmean}, which computes the mean of an array over
+the devices of a mapped axis~\cite{jaxpmean}.
+
+JAX can also partition one computation automatically over a mesh. A mesh is a grid of devices with named axes. The
+GSPMD partitioner of XLA starts from the sharding annotations that the program places on some arrays. The partitioner
+derives the placement of the other arrays from these annotations~\cite{xu2021gspmd}. The OpenXLA guide to Shardy for
+JAX users says that JAX now always uses the Shardy partitioner~\cite{shardy2026}.
+We read this guide on November 23, 2026. % src: shardy2026 ("read 2026-11-23", "Shardy is now always enabled in JAX"), paper-v4/SOURCE_NOTES.md section 2
+According to the JAX change log, Shardy became the default partitioner in JAX 0.7.0, and JAX 0.12.1 removed the GSPMD partitioner~\cite{jaxchangelog}. % src: jaxchangelog ("JAX 0.7.0", "JAX is migrating from GSPMD to Shardy by default", "JAX 0.12.1", "Removed support for the legacy GSPMD partitioner")
+The committed Jobs installed JAX 0.10.2 and set no partitioner flag, so Shardy was the default. % src: recomputed: V2.jax_pin; src/spike_meshshard_forward_pass.py ("Job pins jax[tpu]==0.10.2, which defaults to Shardy")
+The runs did not record which partitioner ran. In Shardy, an array is replicated along each mesh axis that does not
+shard one of the dimensions of the array~\cite{shardyrepr}. This rule matters for our partitioning experiment, which
+placed no sharding annotations (Section~\ref{sec:res-auto}).
+
+\subsection{AlphaFold2 Inference Pipeline}\label{sec:bg-af2}
+AlphaFold2 reads a multiple sequence alignment (MSA). An MSA lines up the query with related protein sequences. A
+stack of Evoformer blocks updates a representation of the MSA and a representation of residue pairs. Residues are the
+amino acids of the protein chain. The model also reads extra MSA rows, a second and larger set of aligned sequences.
+Before the 48 Evoformer blocks, a separate stack of four smaller blocks processes these extra rows~\cite{alphafoldrepo}. % src: AlphaFold2 at commit c77e5d2, alphafold/model/config.py:240 ("'evoformer_num_block': 48"), config.py:307-308 ("'extra_msa_channel': 64", "'extra_msa_stack_num_block': 4"), config.py:"msa_channel": 256
+A structure module then turns these representations into atom coordinates~\cite{jumper2021alphafold}. The public
+implementation uses Haiku~\cite{haiku2020github}. Haiku is a neural-network library for JAX. The model can recycle its
+output as a new input for a fixed number of iterations. The public implementation runs recycling in a
+\texttt{while\_loop}. By default, the monomer presets of the public implementation run three recycling iterations and
+predict each target with five models, \texttt{model\_1} to \texttt{model\_5}~\cite{alphafoldrepo}. % src: AlphaFold2 at commit c77e5d2, alphafold/model/config.py:146 ("'num_recycle': 3"), config.py:30-37 (MODEL_PRESETS 'monomer': model_1 to model_5)
+
+The implementation can also run an ensemble. The members of an ensemble are differently featurized copies of the same
+input. Featurization turns the sequence and the MSA into the arrays that the model reads. The implementation computes the
+first member outside a loop and the others in a sequential Haiku \texttt{while\_loop}~\cite{alphafoldrepo}. % src: AlphaFold2 at commit c77e5d2, alphafold/model/modules.py:174-205 ("hk.while_loop"), paper-v4/SOURCE_NOTES.md section 3; recomputed: SEP.cpu.0915.alphafold_commit
+The authors of AlphaFold2 turn off ensembling for most inference~\cite{jumper2021alphafold}. In the released code, the
+preset \texttt{monomer\_casp14} uses eight ensemble members, and the other presets use one~\cite{alphafoldrepo}. % src: AlphaFold2 at commit c77e5d2, run_alphafold.py:601-604 ("num_ensemble = 8", "num_ensemble = 1"); jumper2021alphafold ("we turn off ensembling for most inference")
+Our runs used one ensemble member, so the ensemble \texttt{while\_loop} ran no iteration in the timed calls. % src: src/spike_tpu_forward_pass.py ("cfg.data.eval.num_ensemble = 1")
+
+Our scripts time one of two methods of the model. The \texttt{apply} method is the forward pass on the device. The
+\texttt{predict} method runs \texttt{apply} and then computes confidence metrics on the host with NumPy.

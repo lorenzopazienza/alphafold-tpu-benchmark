@@ -11,14 +11,18 @@ Follow-up research continues at
 ## Paper
 
 Lorenzo Pazienza and Ihab El Bani. *Using the Whole Slice: AlphaFold2 Inference on an Eight-Chip TPU v5e.*
-[arXiv:2609.34818](https://arxiv.org/abs/2609.34818) (cs.DC), 2026. Version 3.
-[PDF](paper-v3/Pazienza_ElBani_AlphaFold2_TPU_v3.pdf) · [arXiv PDF](https://arxiv.org/pdf/2609.34818) ·
-[LaTeX source and scripts](paper-v3/)
+[arXiv:2609.34818](https://arxiv.org/abs/2609.34818) (cs.DC), 2026. Version 4.
+[PDF](paper-v4/Pazienza_ElBani_AlphaFold2_TPU_v4.pdf) · [arXiv PDF](https://arxiv.org/pdf/2609.34818) ·
+[LaTeX source and scripts](paper-v4/)
 
-Version 3 cites the tag
+Version 4 of arXiv:2609.34818 corrects version 3. Appendix A of version 4 lists its corrections. Version 4 cites the
+tag [`arxiv-v4`](https://github.com/lorenzopazienza/alphafold-tpu-benchmark/tree/arxiv-v4) of this repository. The
+folder `paper-v4/` holds the LaTeX source, the scripts that generate the tables and the figure, and the checks of the
+numbers. We wrote version 4 from the result files in this repository and ran no new experiment.
+
+Version 3 has the same title. It cites the tag
 [`arxiv-v3`](https://github.com/lorenzopazienza/alphafold-tpu-benchmark/tree/arxiv-v3) of this repository. The folder
-`paper-v3/` holds the LaTeX source, the scripts that generate the tables and the figure, and the checks of the
-numbers. We wrote version 3 from the result files in this repository and ran no new experiment.
+[`paper-v3/`](paper-v3/) holds its PDF, its LaTeX source, and its scripts.
 
 Version 1 had the title *Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs*. It cites commit
 `a63e955` of this repository, which carries the tag
@@ -71,8 +75,9 @@ come from the files named after them.
   queries of 118 residues, every chip had HBM in use, from 445 MB to 644 MB. We also ran it on a grid of 1, 2, 4, and
   8 chips and 100, 250, 500, and 1000 residues. Each query of the grid repeats the 20 amino-acid letters to the target
   length. Every point of the grid used the same script, input family, and timed region, and each point ran once. On
-  this grid, eight chips gave 6.53 to 7.91 times the throughput of one chip. The summary gives the one-chip throughput
-  at 1000 residues with two digits only, so the value of 7.91 is less precise than the others. The values are in
+  this grid, eight chips gave 6.53 times the throughput of one chip at 100 residues, 7.47 times at 250 residues,
+  7.76 times at 500 residues, and 7.84 to 7.98 times at 1000 residues. The summary gives the one-chip throughput at
+  1000 residues with two digits only, so the speedup at 1000 residues is a range. The values are in
   [`results/sweep/sharding.json`](results/sweep/sharding.json) and
   [`results/sweep/scaling_law_data.json`](results/sweep/scaling_law_data.json).
 - **Automatic partitioning did not shorten the call.** We ran one query inside a JAX mesh of eight chips whose axes are
@@ -89,7 +94,7 @@ come from the files named after them.
   [`results/sweep/compilation_cache.json`](results/sweep/compilation_cache.json).
 - **The steady-state call was shorter on one TPU chip than on the T4 and the CPU runtime.** In every session, the mean
   steady-state call took more than 13.9 times as long on the T4 as the recorded call on one TPU chip, and more than
-  450 times as long on the CPU runtime. Each August session timed one call, so its mean is that call. For the TPU, we
+  449 times as long on the CPU runtime. Each August session timed one call, so its mean is that call. For the TPU, we
   used 0.471 s, the longest steady-state call that the single-query script recorded in the baseline configuration.
   The three platforms ran in different sessions and with different copies of the script. On the T4, the steady-state
   call took 13.086 s in August 2026 and a mean of 6.57 s in September 2026. On the CPU runtime, it took 212.113 s in
@@ -131,6 +136,7 @@ notebooks/   Colab notebooks for the T4 and the CPU runtime
 results/     Baseline results, TPU summaries in sweep/, September runs in repro/
 profiling/   Written analysis of one profiler trace
 paper/       Version 1 of the paper, results catalogue, and methodology notes
+paper-v4/    Version 4 of the paper: LaTeX source, scripts, and checks
 paper-v3/    Version 3 of the paper: LaTeX source, scripts, and checks
 figures/     Figures of version 1
 structure/   Predicted structures

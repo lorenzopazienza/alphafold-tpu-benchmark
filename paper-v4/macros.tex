@@ -1,0 +1,19 @@
+% Macros of the paper. Version 4 keeps the title of version 3.
+\newcommand{\papertitle}{Using the Whole Slice: AlphaFold2 Inference on an Eight-Chip TPU~v5e}
+% Generated tables (tools/make_tables.py): never edited by hand. Text in tables is at least 8 pt and never scaled.
+\newcommand{\gentable}[1]{\input{tables/#1.tex}}
+% Every table note is justified over the full width, with the last line flush left. The float
+% sets \centering, so the note resets \leftskip, \rightskip, and \parfillskip to those of the running text.
+\newcommand{\gennote}[1]{\par\vspace{2pt}{\footnotesize\leftskip=0pt\rightskip=0pt\parfillskip=0pt plus 1fil
+  \input{tables/#1_note.tex}\par}}
+\newcommand{\code}[1]{\texttt{#1}}
+% Appendix A: words quoted from version 1, and a model name that the appendix uses.
+\newcommand{\vonequote}[1]{``#1''}
+\newcommand{\AFthree}{AlphaFold~3}
+% Keeps the next paragraph together with the start of the list that follows it. If less than
+% five lines are left in the column, the column ends here (same code as \needspace of the needspace package, which
+% this TeX installation does not have). It prints nothing and does not change the indent.
+\makeatletter
+\newcommand{\keepwithlist}{\par\penalty-100\begingroup\dimen@=5\baselineskip\dimen@ii=\pagegoal
+  \advance\dimen@ii-\pagetotal\ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\penalty-\@M\fi\endgroup}
+\makeatother

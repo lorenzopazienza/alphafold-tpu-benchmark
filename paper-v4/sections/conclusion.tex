@@ -1,0 +1,6 @@
+\section{Conclusion}\label{sec:conclusion}
+AlphaFold2 inference on an eight-chip TPU v5e slice used one chip unless the program mapped the work to the others.
+Among the four ways of mapping the work that we compared, only multi-query \texttt{jax.pmap} used all eight chips.
+On the matched grid, eight chips gave 6.53 to about 7.9 times the throughput of one chip. % src: recomputed: V2.speedup_8over1_min, V2.speedup_8over1_max
+Batching up to eight queries of 118 residues with \texttt{vmap} on one chip did not raise throughput. % src: results/sweep/batching_sweep.json -> [*].batch_size; recomputed: INPUT.toy_length
+Automatic partitioning without sharding annotations did not shorten the call for one query.

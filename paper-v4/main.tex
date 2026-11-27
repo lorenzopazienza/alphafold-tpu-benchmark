@@ -1,0 +1,53 @@
+% Paper: AlphaFold2 inference on an eight-chip TPU v5e slice, version 4 of arXiv:2609.34818.
+% Build: make (tables, figure, PDF). Every number in the text carries a "% src:" comment; tools/check_numbers.py checks them.
+% Appendix switch: main.tex prints Appendix A (Changes from Earlier Versions) after the references. main_noappendix.tex
+% defines \noappendix before reading this file and gives the same paper without the appendix (make builds both).
+\documentclass[letterpaper,conference]{IEEEtran}
+
+\usepackage[T1]{fontenc}
+\usepackage[nocompress]{cite}   % IEEE: citations written out ([1], [2], [3])
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{url}
+\input{macros}
+% AlphaFold2 is never hyphenated. \hyphenation accepts letters only ("Not a letter" on the 2), and TeX
+% hyphenates only the letters before the 2, so the exception is written for AlphaFold. It also covers
+% AlphaFold2's.
+\hyphenation{AlphaFold}
+\input{captions}
+\newif\ifappendix
+\ifdefined\noappendix\appendixfalse\else\appendixtrue\fi
+
+\begin{document}
+\bstctlcite{BSTcontrol}
+
+\title{\papertitle}
+
+\author{\IEEEauthorblockN{Lorenzo Pazienza}
+\IEEEauthorblockA{LUISS Guido Carli University\\Rome, Italy\\lorenzo.pazienza@gmail.com}
+\and
+\IEEEauthorblockN{Ihab El Bani}
+\IEEEauthorblockA{Al Akhawayn University\\Ifrane, Morocco\\elbani.ihab@gmail.com}}
+
+\maketitle
+
+\input{sections/abstract}
+\input{sections/introduction}
+\input{sections/background}
+\input{sections/method}
+\input{sections/results}
+\input{sections/discussion}
+\input{sections/conclusion}
+\input{sections/backmatter}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\ifappendix
+\appendices
+\input{sections/appendix}
+\fi
+
+\end{document}
