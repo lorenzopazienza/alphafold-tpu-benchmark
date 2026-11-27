@@ -10,14 +10,14 @@ process. In this paper, a chip is one TPU v5e chip. A slice is the set of eight 
 (Section~\ref{sec:platforms}).
 
 \subsection{Compilation and Mapping in JAX}\label{sec:bg-jax}
-Before compiling a function, JAX traces the function into an intermediate program. \texttt{jax.jit} compiles a function
-with XLA when the function is first called, caches the compiled code, and reuses that code in later
-calls~\cite{jaxjit}. In this paper, compilation means tracing and XLA compilation together. We do not separate the two.
-JAX can also store compiled programs on disk, so that a later run can load them instead of compiling
-again~\cite{jaxcache}. We call these stored programs the compilation cache.
+Before compiling a function, JAX traces the function into an intermediate program.
+\texttt{jax.jit} does three things~\cite{jaxjit}. It compiles a function with XLA when the function is first called, it caches the compiled code, and it reuses the cached code in later calls.
+In this paper, the word compilation covers both tracing and XLA compilation, because our measurements do not separate the two steps.
+JAX can also store compiled programs on disk in a compilation cache, so that a later run can load the programs instead of compiling again~\cite{jaxcache}.
 
 JAX offers several ways to run more than one query. \texttt{jax.vmap} vectorizes a function over a batch axis of its
-inputs~\cite{jaxvmap}. \texttt{jax.vmap} does not by itself spread the batch over devices. \texttt{jax.pmap} replicates
+inputs~\cite{jaxvmap}. By default, \texttt{jax.vmap} runs the whole batch on one device.
+\texttt{jax.pmap} replicates
 a function and runs each replica on its own device. Each device receives one element of the leading axis of the
 input~\cite{jaxpmap}. The documentation of \texttt{jax.pmap} now recommends \texttt{jax.shard\_map}
 instead~\cite{jaxpmap}.

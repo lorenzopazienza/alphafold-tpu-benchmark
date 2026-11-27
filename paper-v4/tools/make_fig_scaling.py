@@ -73,15 +73,21 @@ ax.legend(loc="upper left", ncol=2, handlelength=2.2, borderaxespad=0.3, columns
 
 # (b) parallel efficiency = throughput on n chips / (n x throughput on one chip). At 1000 residues the one-chip
 # throughput has two digits (0.066), so a vertical bar gives the range over the rounding of the records (half a unit
-# of the last digit on both throughputs), as for the ranges of Table IV.
+# of the last digit on both throughputs), as for the ranges of Table V.
+# Panel (b): the markers of the four lengths are offset horizontally by the factors
+# 2^-0.09, 2^-0.03, 2^0.03, and 2^0.09 of the log axis, so that they no longer overlap at 2, 4, and 8 chips. A thin grey
+# line joins the points of each length, and the bars at 1000 residues are drawn above the stars.
+OFFSET = dict(zip(lengths, (2 ** -0.09, 2 ** -0.03, 2 ** 0.03, 2 ** 0.09)))
 for L, m, ms in zip(lengths, markers, sizes):
     eff = [thr[(n, L)] / (n * thr[(1, L)]) * 100 for n in chips]
-    ax2.plot(chips, eff, linestyle="none", marker=m, markersize=ms, markerfacecolor="white", markeredgecolor="black",
-             markeredgewidth=0.9)
+    xs_b = [n * OFFSET[L] for n in chips]
+    ax2.plot(xs_b, eff, color="0.6", linewidth=0.6, zorder=1)
+    ax2.plot(xs_b, eff, linestyle="none", marker=m, markersize=ms, markerfacecolor="white", markeredgecolor="black",
+             markeredgewidth=0.9, zorder=2)
     if L == 1000:
         lo = [(thr[(n, L)] - 5e-4) / (n * (thr[(1, L)] + 5e-4)) * 100 for n in chips[1:]]
         hi = [(thr[(n, L)] + 5e-4) / (n * (thr[(1, L)] - 5e-4)) * 100 for n in chips[1:]]
-        ax2.vlines(chips[1:], lo, hi, color="black", linewidth=0.7)
+        ax2.vlines(xs_b[1:], lo, hi, color="black", linewidth=0.7, zorder=3)
 ax2.axhline(100, color="0.35", linestyle=(0, (1, 1.5)), linewidth=0.8)
 ax2.set_ylim(75, 104)
 ax2.yaxis.set_major_locator(FixedLocator([80, 90, 100]))

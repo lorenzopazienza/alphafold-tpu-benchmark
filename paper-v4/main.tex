@@ -17,6 +17,9 @@
 % AlphaFold2's.
 \hyphenation{AlphaFold}
 \input{captions}
+% IEEEtran sets \flushbottom, which stretches the vertical space to fill each column. With \raggedbottom every
+% heading keeps the standard spacing, and a column can end a little higher.
+\raggedbottom
 \newif\ifappendix
 \ifdefined\noappendix\appendixfalse\else\appendixtrue\fi
 

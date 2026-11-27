@@ -533,10 +533,52 @@ for B in (4, 8):
 # The minimum ratios with the longest TPU call at the upper end of its rounding (0.4715 s).
 put("V4.min_tpu_over_t4_worst", round(min(gpu_sessions) / 0.4715, 2), "min T4 session mean / 0.4715 (0.471 rounded to three decimals)")
 put("V4.min_tpu_over_cpu_worst", round(min(cpu_sessions) / 0.4715, 2), "min CPU session mean / 0.4715")
+# vmap throughput relative to B = 1, from the recorded times.
+for B in (2, 4, 8):
+    put(f"V4B.vmap_B{B}_rel_B1", round(B * _bt[1] / _bt[B], 2), "batching_sweep.json: B x call(B = 1) / call(B), from the recorded times")
+_bthr = {r["batch_size"]: r["throughput_proteins_per_sec"] for r in load("results/sweep/batching_sweep.json")}
+put("V4B.vmap_B4_rel_B1_v3", round(_bthr[4] / _bthr[1], 2), "ratio of the rounded throughputs, as version 3 printed it")
+# The TPU time that the minimum ratios divide by.
+put("V4B.tpu_call_upper_s", round(max(R["TPU.single_query_steady_min_max"]) + 0.0005, 4), "longest single-query TPU call (0.471 s) + half a unit of the third decimal")
 # Resolution of the recorded steady-state calls (1 ms) against the call (0.470 s).
 put("V4.ms_over_call_pct", round(0.001 / R["B.tpu.steady"] * 100, 2), "1 ms / 0.470 s, %")
 # Matched grid, all 16 throughputs (Table V).
 put("V4.grid_thr", {f"{n}x{L}": thr[(n, L)] for L in (100, 250, 500, 1000) for n in (1, 2, 4, 8)}, "scaling_law_data.json -> grid[*].throughput_per_sec")
+# Full dates and UTC times of the commits and of the sessions.
+for _c in ("86fca03", "9e1a07e", "53f05a7", "a63e955"):
+    put(f"V4C.commit_{_c}", git_out("show", "-s", "--format=%h %cd", "--date=format-local:%Y-%m-%dT%H:%MZ", _c), f"git show -s {_c} (commit date, UTC)")
+put("V4C.arxiv_v3_tag_commit", git_out("rev-list", "-n", "1", "--abbrev-commit", "arxiv-v3"), "git rev-list -n 1 arxiv-v3")
+# The September sessions start with the first time stamp of the log of the run without the profiler, which ran first.
+# The log clock has no time zone. The last line of the log of the run with the profiler lies within 60 s of
+# recorded_at_utc, which the notebook writes in UTC after the runs, so the log clock is UTC.
+_ts = re.compile(r"^(?:(\d{4})-(\d\d)-(\d\d) |I(\d\d)(\d\d) )(\d\d):(\d\d):(\d\d)")
+def _log_times(rel):
+    out = []
+    for l in (ROOT / rel).read_text().splitlines():
+        m = _ts.match(l)
+        if m:
+            mo, d = (m.group(2), m.group(3)) if m.group(1) else (m.group(4), m.group(5))
+            if mo == "00":          # "I0000 00:00:<epoch>" lines carry no clock time
+                continue
+            out.append(datetime(2026, int(mo), int(d), int(m.group(6)), int(m.group(7)), int(m.group(8))))
+    return out
+for _tag, _d in (("cpu", "15"), ("cpu", "16"), ("cpu", "17"), ("gpu", "15")):
+    _fold = "gpu-t4" if _tag == "gpu" else "cpu-colab"
+    _base = f"results/repro/2026-09-{_d}_{_fold}"
+    _np, _pf = _log_times(f"{_base}/log_{_fold}-repro_noprofile.txt"), _log_times(f"{_base}/log_{_fold}-repro_profile.txt")
+    _rec = datetime.fromisoformat(load(f"{_base}/environment_{_fold}-repro.json")["recorded_at_utc"]).replace(tzinfo=None)
+    if not (_np[0] < _pf[0] and 0 <= (_rec - _pf[-1]).total_seconds() <= 60):
+        raise SystemExit(f"{_base}: the log clock does not match recorded_at_utc")
+    put(f"V4C.sep_{_tag}_09{_d}_start", _np[0].strftime("%Y-%m-%dT%H:%MZ"),
+        f"{_base}/log_{_fold}-repro_noprofile.txt, first time stamp (start of the session, UTC)")
+# The description of the August CPU runtime committed on August 12, 2026. At commit 612c5a2, the description is in
+# results/comparison.md; the README gained it in commit e22f7af.
+put("V4D.commit_612c5a2", git_out("show", "-s", "--format=%h %cd", "--date=format-local:%Y-%m-%dT%H:%MZ", "612c5a2"), "git show -s 612c5a2 (commit date, UTC)")
+_cmp = git_out("show", "612c5a2:results/comparison.md")
+put("V4D.comparison_612c5a2_xeon_2vcpu", "| Device | Intel Xeon (2 vCPU) |" in _cmp and "Colab's standard free-tier allocation" in _cmp,
+    "git show 612c5a2:results/comparison.md (\"Intel Xeon (2 vCPU)\", \"Colab's standard free-tier allocation\")")
+# The author of the commit of the matched grid.
+put("V4D.grid_commit_author", git_out("show", "-s", "--format=%an", "cccd446"), "git show -s --format=%an cccd446")
 
 # ---------------------------------------------------------------- write
 OUT.mkdir(parents=True, exist_ok=True)

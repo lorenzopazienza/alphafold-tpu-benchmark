@@ -1,11 +1,14 @@
 % Macros of the paper. Version 4 keeps the title of version 3.
-\newcommand{\papertitle}{Using the Whole Slice: AlphaFold2 Inference on an Eight-Chip TPU~v5e}
+\newcommand{\papertitle}{Using the Whole Slice:\\ AlphaFold2 Inference on an Eight-Chip TPU~v5e}
 % Generated tables (tools/make_tables.py): never edited by hand. Text in tables is at least 8 pt and never scaled.
-\newcommand{\gentable}[1]{\input{tables/#1.tex}}
-% Every table note is justified over the full width, with the last line flush left. The float
+% \gentable keeps the tabular in a box, and \gennote sets the note in a block of exactly the width of that box.
+% Both are centered, so the note starts at the left edge of the table and ends at its right edge.
+\newsavebox{\gentablebox}
+\newcommand{\gentable}[1]{\sbox{\gentablebox}{\input{tables/#1.tex}}\usebox{\gentablebox}}
+% Every table note is justified over the width of the table, with the last line flush left. The float
 % sets \centering, so the note resets \leftskip, \rightskip, and \parfillskip to those of the running text.
-\newcommand{\gennote}[1]{\par\vspace{2pt}{\footnotesize\leftskip=0pt\rightskip=0pt\parfillskip=0pt plus 1fil
-  \input{tables/#1_note.tex}\par}}
+\newcommand{\gennote}[1]{\par\vspace{2pt}\begin{minipage}[t]{\wd\gentablebox}\footnotesize\leftskip=0pt\rightskip=0pt
+  \parfillskip=0pt plus 1fil\input{tables/#1_note.tex}\end{minipage}\par}
 \newcommand{\code}[1]{\texttt{#1}}
 % Appendix A: words quoted from version 1, and a model name that the appendix uses.
 \newcommand{\vonequote}[1]{``#1''}

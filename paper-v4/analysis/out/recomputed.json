@@ -657,6 +657,11 @@
   "V4.vmap_B8_over_B_calls_pct": 36.0,
   "V4.min_tpu_over_t4_worst": 13.93,
   "V4.min_tpu_over_cpu_worst": 449.87,
+  "V4B.vmap_B2_rel_B1": 0.94,
+  "V4B.vmap_B4_rel_B1": 0.72,
+  "V4B.vmap_B8_rel_B1": 0.74,
+  "V4B.vmap_B4_rel_B1_v3": 0.73,
+  "V4B.tpu_call_upper_s": 0.4715,
   "V4.ms_over_call_pct": 0.21,
   "V4.grid_thr": {
    "1x100": 2.935,
@@ -675,7 +680,19 @@
    "2x1000": 0.131,
    "4x1000": 0.262,
    "8x1000": 0.522
-  }
+  },
+  "V4C.commit_86fca03": "86fca03 2026-09-15T17:57Z",
+  "V4C.commit_9e1a07e": "9e1a07e 2026-09-16T12:35Z",
+  "V4C.commit_53f05a7": "53f05a7 2026-11-23T21:11Z",
+  "V4C.commit_a63e955": "a63e955 2026-09-22T13:05Z",
+  "V4C.arxiv_v3_tag_commit": "53f05a7",
+  "V4C.sep_cpu_0915_start": "2026-09-15T18:04Z",
+  "V4C.sep_cpu_0916_start": "2026-09-16T12:37Z",
+  "V4C.sep_cpu_0917_start": "2026-09-17T08:52Z",
+  "V4C.sep_gpu_0915_start": "2026-09-15T19:01Z",
+  "V4D.commit_612c5a2": "612c5a2 2026-08-12T17:37Z",
+  "V4D.comparison_612c5a2_xeon_2vcpu": true,
+  "V4D.grid_commit_author": "Ihab El Bani"
  },
  "sources": {
   "B.cpu.init": "results/result_cpu-colab.json -> init_params_seconds",
@@ -1056,7 +1073,24 @@
   "V4.vmap_B8_over_B_calls_pct": "batching_sweep.json: call with B queries / (B x call with B = 1) - 1, %",
   "V4.min_tpu_over_t4_worst": "min T4 session mean / 0.4715 (0.471 rounded to three decimals)",
   "V4.min_tpu_over_cpu_worst": "min CPU session mean / 0.4715",
+  "V4B.vmap_B2_rel_B1": "batching_sweep.json: B x call(B = 1) / call(B), from the recorded times",
+  "V4B.vmap_B4_rel_B1": "batching_sweep.json: B x call(B = 1) / call(B), from the recorded times",
+  "V4B.vmap_B8_rel_B1": "batching_sweep.json: B x call(B = 1) / call(B), from the recorded times",
+  "V4B.vmap_B4_rel_B1_v3": "ratio of the rounded throughputs, as version 3 printed it",
+  "V4B.tpu_call_upper_s": "longest single-query TPU call (0.471 s) + half a unit of the third decimal",
   "V4.ms_over_call_pct": "1 ms / 0.470 s, %",
-  "V4.grid_thr": "scaling_law_data.json -> grid[*].throughput_per_sec"
+  "V4.grid_thr": "scaling_law_data.json -> grid[*].throughput_per_sec",
+  "V4C.commit_86fca03": "git show -s 86fca03 (commit date, UTC)",
+  "V4C.commit_9e1a07e": "git show -s 9e1a07e (commit date, UTC)",
+  "V4C.commit_53f05a7": "git show -s 53f05a7 (commit date, UTC)",
+  "V4C.commit_a63e955": "git show -s a63e955 (commit date, UTC)",
+  "V4C.arxiv_v3_tag_commit": "git rev-list -n 1 arxiv-v3",
+  "V4C.sep_cpu_0915_start": "results/repro/2026-09-15_cpu-colab/log_cpu-colab-repro_noprofile.txt, first time stamp (start of the session, UTC)",
+  "V4C.sep_cpu_0916_start": "results/repro/2026-09-16_cpu-colab/log_cpu-colab-repro_noprofile.txt, first time stamp (start of the session, UTC)",
+  "V4C.sep_cpu_0917_start": "results/repro/2026-09-17_cpu-colab/log_cpu-colab-repro_noprofile.txt, first time stamp (start of the session, UTC)",
+  "V4C.sep_gpu_0915_start": "results/repro/2026-09-15_gpu-t4/log_gpu-t4-repro_noprofile.txt, first time stamp (start of the session, UTC)",
+  "V4D.commit_612c5a2": "git show -s 612c5a2 (commit date, UTC)",
+  "V4D.comparison_612c5a2_xeon_2vcpu": "git show 612c5a2:results/comparison.md (\"Intel Xeon (2 vCPU)\", \"Colab's standard free-tier allocation\")",
+  "V4D.grid_commit_author": "git show -s --format=%an cccd446"
  }
 }

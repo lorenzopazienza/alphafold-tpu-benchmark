@@ -1,9 +1,9 @@
 # AlphaFold2 Inference on an Eight-Chip TPU v5e Slice
 
 This repository holds the code, Kubernetes Jobs, notebooks, and results of a study of AlphaFold2 inference on an
-eight-chip TPU v5e slice. It also holds baselines on an NVIDIA T4 GPU and on a CPU runtime in Google Colab. We carried
-out the study in the course ME 344, Introduction to High Performance Computing, at Stanford University in the Summer
-Session 2026.
+eight-chip TPU v5e slice. It also holds baselines on an NVIDIA T4 GPU and on a CPU runtime with two logical CPUs of an
+Intel Xeon processor, both in Google Colab. We carried out the study in the course ME 344, Introduction to High
+Performance Computing, at Stanford University in the Summer Session 2026.
 
 Follow-up research continues at
 [github.com/lorenzopazienza/af3-cross-platform](https://github.com/lorenzopazienza/af3-cross-platform).
@@ -21,11 +21,12 @@ folder `paper-v4/` holds the LaTeX source, the scripts that generate the tables 
 numbers. We wrote version 4 from the result files in this repository and ran no new experiment.
 
 Version 3 has the same title. It cites the tag
-[`arxiv-v3`](https://github.com/lorenzopazienza/alphafold-tpu-benchmark/tree/arxiv-v3) of this repository. The folder
+[`arxiv-v3`](https://github.com/lorenzopazienza/alphafold-tpu-benchmark/tree/arxiv-v3) of this repository, which marks
+commit `53f05a7` (November 23, 2026, 21:11 UTC). The folder
 [`paper-v3/`](paper-v3/) holds its PDF, its LaTeX source, and its scripts.
 
 Version 1 had the title *Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs*. It cites commit
-`a63e955` of this repository, which carries the tag
+`a63e955` (September 22, 2026, 13:05 UTC) of this repository, which carries the tag
 [`arxiv-v1`](https://github.com/lorenzopazienza/alphafold-tpu-benchmark/tree/arxiv-v1). Its
 [PDF](paper/preprint/Pazienza_ElBani_2026_AlphaFold2_Inference_on_Cloud_TPUs.pdf) and
 [LaTeX source](paper/preprint/source/) are in [`paper/preprint/`](paper/preprint/). Version 2 changed only how the
@@ -55,8 +56,9 @@ Appendix A of version 3 lists every change.
 
 ## Main Results
 
-All runs used AlphaFold2 `model_3` with random weights. The scripts never loaded the trained checkpoint, and the MSA
-held only the query sequence. The study concerns execution, not the quality of the predicted structures.
+All runs used random weights, and the MSA held only the query sequence. Unless a sweep varied them, the runs used
+AlphaFold2 `model_3` with no recycling. The scripts never loaded the trained checkpoint. The study concerns execution,
+not the quality of the predicted structures.
 
 A query is one input sequence that the model predicts once. A steady-state call is a later call at the same input
 shape, which reuses the compiled program. Throughput is the number of queries completed per second in steady-state
@@ -94,12 +96,19 @@ come from the files named after them.
   [`results/sweep/compilation_cache.json`](results/sweep/compilation_cache.json).
 - **The steady-state call was shorter on one TPU chip than on the T4 and the CPU runtime.** In every session, the mean
   steady-state call took more than 13.9 times as long on the T4 as the recorded call on one TPU chip, and more than
-  449 times as long on the CPU runtime. Each August session timed one call, so its mean is that call. For the TPU, we
-  used 0.471 s, the longest steady-state call that the single-query script recorded in the baseline configuration.
-  The three platforms ran in different sessions and with different copies of the script. On the T4, the steady-state
-  call took 13.086 s in August 2026 and a mean of 6.57 s in September 2026. On the CPU runtime, it took 212.113 s in
-  August and means of 348.9 s to 359.3 s in three September sessions. In September, the CPU runtime had two logical
-  CPUs. Our records do not explain the change between sessions. The values are in
+  449 times as long on the CPU runtime. Each session of August 8, 2026, timed one call, so the mean of each session is
+  the time of that call. For the TPU, we used 0.471 s, the longest steady-state call that the single-query script
+  recorded in the baseline configuration. The three platforms ran in different sessions and with different copies of
+  the script. On the T4, the steady-state call took 13.086 s in the session of August 8, 2026, at 04:50 UTC and a mean
+  of 6.57 s in the session of September 15, 2026, at 19:01 UTC. On the CPU runtime, it took 212.113 s in the session
+  of August 8, 2026, at 05:19 UTC and means of 348.9 s to 359.3 s in the sessions of September 15, 2026, at 18:04 UTC,
+  September 16, 2026, at 12:37 UTC, and September 17, 2026, at 08:52 UTC. In these three sessions, the CPU runtime had
+  an Intel Xeon processor at 2.20 GHz with two logical CPUs. Each time is the start of the session, which is the first
+  time stamp in the log output of the notebook. The sessions of August 8, 2026, did not record their host CPU. The
+  file
+  [`results/comparison.md`](https://github.com/lorenzopazienza/alphafold-tpu-benchmark/blob/612c5a2/results/comparison.md)
+  at commit `612c5a2` (August 12, 2026, 17:37 UTC) describes the CPU runtime as Colab's standard allocation of an
+  Intel Xeon with two vCPUs. Our records do not explain the change between sessions. The values are in
   [`results/result_gpu-t4.json`](results/result_gpu-t4.json),
   [`results/result_cpu-colab.json`](results/result_cpu-colab.json),
   [`results/sweep/model_comparison.json`](results/sweep/model_comparison.json), and
@@ -115,13 +124,15 @@ come from the files named after them.
   and the profiler trace are not in the repository.
 - The JSON files keep the fields and labels of version 1. One example is the speedup of 6.92 in
   `results/sweep/sharding.json`. The notes in the Markdown files apply to these fields too.
-- The T4 and CPU runtime baselines ran on 8 August 2026 with a copy of the benchmark script inside the notebooks. The
-  notebooks in commit
+- The T4 and CPU runtime baselines ran on August 8, 2026, at 04:50 UTC and at 05:19 UTC, respectively, with a copy of
+  the benchmark script inside the notebooks. The notebooks in commit
   [`2755250`](https://github.com/lorenzopazienza/alphafold-tpu-benchmark/tree/2755250f734272b6cfbb0ec0cb35343e56acdc10/notebooks)
-  hold this copy and the output of the runs. This copy differs from the scripts in [`src/`](src/).
+  (August 8, 2026, 17:23 UTC) hold this copy and the output of the runs. This copy differs from the scripts in
+  [`src/`](src/).
 - We cannot identify the script that ran the TPU baseline.
-- In September 2026, we ran the committed script again on the T4 and the CPU runtime. The folder
-  [`results/repro/`](results/repro/) holds these runs. Each run stores its commit, its package versions, and its host
+- From September 15 to 17, 2026, we ran the committed script again on the T4 and the CPU runtime, in the four
+  sessions listed above. These sessions ran commits `86fca03` (September 15, 2026, 17:57 UTC) and `9e1a07e`
+  (September 16, 2026, 12:35 UTC). The folder [`results/repro/`](results/repro/) holds these runs. Each run stores its commit, its package versions, and its host
   CPU.
 - We did not repeat the TPU runs.
 - The files in this repository that describe the results of version 1 carry a dated note at the top. The note lists

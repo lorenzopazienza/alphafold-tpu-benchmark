@@ -2,37 +2,44 @@
 The benchmark scripts, the Kubernetes Job definitions, the notebooks, and the result files are in the repository
 \url{https://github.com/lorenzopazienza/alphafold-tpu-benchmark}. The code is released under the MIT license. The files
 in \texttt{results/sweep/} are summaries of the Job output (Section~\ref{sec:records}).
-Commit 2755250 (August 8, 2026, 17:23 UTC) holds the notebooks and most TPU results. Commit cccd446 (18:05 UTC on the same day) holds the matched grid, and commit 625c5dd (August 11, 2026) holds the external ensemble. % src: recomputed: V2.first_commit, V2.grid_commit, V2.ensemble_commit
-The September runs used commits 86fca03 and 9e1a07e. The tag \texttt{arxiv-v1} marks commit a63e955. Versions 1 and 2 cite this commit as the state of the repository. % src: recomputed: V2.arxiv_v1_tag_commit; results/repro/2026-09-15_gpu-t4/environment_gpu-t4-repro.json -> repo_commit
-The tag \texttt{arxiv-v3} marks commit 53f05a7. The folder \texttt{paper-v3/} at this tag holds the scripts that
+Commit 2755250 (August 8, 2026, 17:23 UTC) holds the notebooks and most TPU results. % src: recomputed: V2.first_commit
+Commit cccd446 (August 8, 2026, 18:05 UTC) holds the matched grid, and commit 625c5dd (August 11, 2026, 22:38 UTC) holds the external ensemble. % src: recomputed: V2.grid_commit, V2.ensemble_commit
+The September runs used commits 86fca03 (September 15, 2026, 17:57 UTC) and 9e1a07e (September 16, 2026, 12:35 UTC). % src: recomputed: V4C.commit_86fca03, V4C.commit_9e1a07e; results/repro/2026-09-15_gpu-t4/environment_gpu-t4-repro.json -> repo_commit
+The tag \texttt{arxiv-v1} marks commit a63e955 (September 22, 2026, 13:05 UTC). Versions 1 and 2 cite this commit as the state of the repository. % src: recomputed: V2.arxiv_v1_tag_commit, V4C.commit_a63e955
+The tag \texttt{arxiv-v3} marks commit 53f05a7 (November 23, 2026, 21:11 UTC). % src: recomputed: V4C.arxiv_v3_tag_commit, V4C.commit_53f05a7
+The folder \texttt{paper-v3/} at this tag holds the scripts that
 generate the tables and the figure of version 3. The scripts that generate the tables and the figure of this
-version are in the folder \texttt{paper-v4/} at the tag \texttt{arxiv-v4}. The September result folders store the commit of the script, the
-package versions, and the host CPU of each session.
+version are in the folder \texttt{paper-v4/} at the tag \texttt{arxiv-v4}.
+The result folders of the sessions of September 15 to 17, 2026, store the commit of the script, the package versions, and the host CPU of each session. % src: recomputed: V2.sep_dates
 
 \section*{Use of AI Tools}
 The first author conceived and directed the study and made all decisions. He launched all runs and checked each result
 against the summary files in the repository.
 In August 2026, he used Claude (Anthropic) to write the benchmark scripts and the summary files in \texttt{results/sweep/}. % src: statement of the first author ("in August 2026")
-He used Claude Code (Anthropic) to write the later code and analyses. He also used Claude Code to help with the drafting
-of the text. He reviewed the code and the analyses at each step, worked on every sentence of this version by hand, and
+He used Claude Code (Anthropic) to write the later code and analyses and to assist with the writing.
+He reviewed the code and the analyses at each step, worked on every sentence of this version by hand, and
 is fully responsible for the content of the paper. The second author assisted at times and used Cursor for his
-contributions. Each number was checked against the summary file or web page that it cites. A script checks that each
-printed number equals, after rounding, a value of the source named in the comment next to the number. The pairing of
-values and settings was checked by hand. The summary files could not be checked against the output of the TPU Jobs,
+contributions. Each number was checked against the summary file or web page that it cites. A script checks that each printed number equals the rounded value of the source named in the comment next to the number.
+The first author checked the pairing of values and settings by hand and with AI assistance, without a dedicated script.
+The summary files could not be checked against the output of the TPU Jobs,
 which is lost.
 
 \section*{Author Contributions}
-L. Pazienza led the study. He designed it, wrote the benchmark scripts with Claude (Use of AI Tools), wrote the
-Kubernetes Jobs, and ran all the experiments. He carried out the re-analysis and wrote this version of the paper without
+% Version 4 (review of 27 November 2026): B-7, R10 items 132 and 133. To be shown to the second author before the upload.
+L. Pazienza led the study.
+He designed it, wrote the benchmark scripts with the assistance of Claude (Use of AI Tools), wrote the Kubernetes Jobs, and ran all the experiments.
+ He carried out the re-analysis and wrote this version of the paper without
 the second author, with the AI assistance described in Use of AI Tools. I. El Bani helped shape how the research was
-framed and presented. With the first author, he gave a talk about the work at Google headquarters. He also assisted at
+framed and presented. He also assisted at
 times, built the project website for the course, wrote parts of the first version of the paper, and reviewed all of that
 version. He approved the submission of this version.
+Commit cccd446, which holds the results of the matched grid, was made by the second author from runs that the first author performed. % src: recomputed: V2.grid_commit, V4D.grid_commit_author
+The two authors presented the work together at Google headquarters in Mountain View, California, on August 13, 2026. % src: statement of the first author ("13 August 2026")
 
 \section*{Acknowledgment}
 The TPU experiments of this work were carried out during the Summer Session 2026 in the Stanford University course ME 344, Introduction to High Performance Computing. % src: paper/preprint/source/main.tex ("Summer Session 2026"); course title as stated by the first author ("ME 344")
 They used TPU~v5e infrastructure that the university provided. We thank Mourad Bouache (Google) and Steve Jones, who taught the course.
-Mourad Bouache guided the project and gave us the opportunity to present it at Google headquarters on August 13, 2026. % src: statement of the first author ("13 August 2026")
+Mourad Bouache evaluated our course research project, gave us feedback, and invited us to present the project at Google headquarters in Mountain View, California, on August 13, 2026. % src: statement of the first author ("13 August 2026")
 Steve Jones gave us access to the TPU~v5e cluster. He is the Director of the Stanford High Performance Computing Center
 and a Research Scientist at Stanford University. We thank the Department of Mechanical Engineering at Stanford
 University for hosting the course.

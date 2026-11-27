@@ -1,13 +1,13 @@
 % Abstract. No number that is not in the body. Every number has a % src.
 \begin{abstract}
-AlphaFold2 is written in JAX. JAX treats each chip of a tensor processing unit (TPU) slice as a separate device. A JAX
-program does not spread its work over the chips by itself, so a user who runs AlphaFold2 on a slice can pay for chips
-that do nothing. We found no published measurement of how AlphaFold2 inference uses a multi-chip TPU slice. Our goal
-was to measure how much of an eight-chip TPU v5e slice is occupied by AlphaFold2 inference and to find which way of
-mapping the work in JAX uses every chip.
-All 12 experiments ran \texttt{model\_3} with random weights, a single-sequence multiple sequence alignment, and no recycling, so we studied execution and not prediction quality. % src: recomputed: COUNT.tpu_experiments_with_raw_data; src/spike_tpu_forward_pass.py ("model_3")
+AlphaFold2 is written in JAX, a framework that treats each chip of a tensor processing unit (TPU) slice as a separate device.
+A JAX program does not spread its work over the chips by itself, so a user who runs AlphaFold2 on a slice can pay for chips
+that do nothing. We found no published measurement of how AlphaFold2 inference uses a multi-chip TPU slice.
+Our goal was to measure whether AlphaFold2 inference uses all eight chips of a TPU v5e slice and to find which way of mapping the work in JAX puts every chip to work.
+All 12 experiments used random weights and a multiple sequence alignment that contains only the input sequence, so we studied execution and not prediction quality. % src: recomputed: COUNT.tpu_experiments_with_raw_data
+Ten experiments ran \texttt{model\_3} with no recycling, and the other two varied the model and the number of recycles. % src: recomputed: COUNT.tpu_experiments_with_raw_data ("12" experiments, of which experiments 2 and 7 vary the recycles and the model: configs/*.yaml set --num_recycle=0 and model_3 in all other experiments)
 By default, only one chip held data. We call each input sequence a query.
-Batching up to eight queries of 118 residues on one chip with \texttt{jax.vmap} did not raise throughput. % src: results/sweep/batching_sweep.json -> [*].batch_size; recomputed: INPUT.toy_length
+We batched up to eight queries of 118 residues on one chip with \texttt{jax.vmap}, and the throughput did not rise. % src: results/sweep/batching_sweep.json -> [*].batch_size; recomputed: INPUT.toy_length
 With \texttt{jax.pmap}, the eight chips ran eight independent queries in parallel.
 On a grid of 1 to 8 chips and 100 to 1000 residues, the full slice gave 6.5 to 7.9 times the throughput of one chip. % src: results/sweep/scaling_law_data.json -> grid[*].chips, grid[*].length; recomputed: V2.speedup_8over1_min, V2.speedup_8over1_max
 Without sharding annotations, JAX's automatic partitioning did not make one query run faster. Most settings ran once,
@@ -15,5 +15,6 @@ and the logs of the TPU runs were not kept.
 \end{abstract}
 
 \begin{IEEEkeywords}
-AI accelerators, AlphaFold2, bioinformatics, JAX, parallel processing, performance evaluation, scalability
+AI accelerators, AlphaFold2, JAX, parallel processing, performance evaluation, protein structure prediction,
+scalability, tensor processing units
 \end{IEEEkeywords}

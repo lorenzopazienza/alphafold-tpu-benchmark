@@ -6,34 +6,37 @@
 \centering\small\gentable{tab_platforms}\gennote{tab_platforms}
 \end{table*}
 
-A platform is one of our three hardware targets. These are the TPU v5e chip, the NVIDIA T4 GPU, and the Google Colab
-CPU runtime. A session is one Colab runtime or one Kubernetes Job in which a set of runs took place.
+A platform is one of our three hardware targets, which are the TPU v5e chip of the course cluster, the NVIDIA T4 GPU on Google Colab, and the Google Colab CPU runtime with two logical CPUs of an Intel Xeon processor. % src: recomputed: SEP.cpu.0915.logical_cpus, SEP.cpu.0915.cpu_model
+A session is one Colab runtime or one Kubernetes Job in which a set of runs took place.
 Table~\ref{tab:platforms} lists the stand-alone baseline run of each session.
 
 The TPU runs used a Google Kubernetes Engine cluster of the course, in the us-west4 region. Each Kubernetes Job
 requested the whole slice of eight chips. Some Jobs ran several experiments.
 The Job definitions in the repository start from a \texttt{python:3.12-slim} image and install \texttt{jax[tpu]==0.10.2}. % src: configs/af_spike_job.yaml ("image: python:3.12-slim"); recomputed: V2.jax_pin
-These definitions pin no other package and set a lower bound only for \texttt{tensorflow-cpu}. They clone AlphaFold2
-from its default branch, and the runs did not record its commit. The TPU runs did not record their dates.
+The Job definitions pin no other package and set a lower bound only for \texttt{tensorflow-cpu}.
+The Job definitions clone AlphaFold2 from its default branch, and the runs did not record the commit of AlphaFold2.
+ The TPU runs did not record their dates.
 Most TPU results are in the first commit of our benchmark repository. This commit is dated August 8, 2026, 17:23 UTC. % src: recomputed: V2.first_commit
-We committed the results of the matched grid (Section~\ref{sec:res-pmap}) on the same day, at 18:05 UTC. We committed the results of the external ensemble on August 11, 2026. % src: recomputed: V2.grid_commit, V2.ensemble_commit
+We committed the results of the matched grid (Section~\ref{sec:res-pmap}) on August 8, 2026, at 18:05 UTC. We committed the results of the external ensemble on August 11, 2026, at 22:38 UTC. % src: recomputed: V2.grid_commit, V2.ensemble_commit
 
 The baseline runs on the T4 and on the CPU runtime took place in two Colab sessions on August 8, 2026, at 04:50 UTC and 05:19 UTC, respectively. % src: recomputed: AUG.gpu.first_epoch_utc, AUG.cpu.first_epoch_utc
 These runs used a copy of the benchmark script inside the notebooks. We call this copy the notebook copy.
 The notebooks in commit 2755250 hold this copy and the output of the runs. This copy differs from the scripts in \texttt{src/}. % src: recomputed: V2.first_commit; git show 2755250:notebooks/alphafold_cpu_benchmark.ipynb, cell 8 (script_content, output "Wrote 7449 bytes")
 The first calls of these two Colab runs used the profiler. Table~\ref{tab:platforms} does not show these first calls.
-The two August Colab sessions did not record their JAX version or their host CPU. We cannot identify the script of the
-baseline run on the TPU. The result file of the TPU baseline run has all but one of the fields that the notebook copy of
-the script writes.
-The file has none of the extra fields that the committed script writes. % src: results/result_tpu-v5e-podslice.json -> keys; results/result_cpu-colab.json -> keys; recomputed: B.tpu.has_host_processor_field
+The two Colab sessions of August 8, 2026, did not record their JAX version or their host CPU. % src: recomputed: AUG.gpu.first_epoch_utc, AUG.cpu.first_epoch_utc
+The file \texttt{results/comparison.md} of the repository on August 12, 2026 (commit 612c5a2, 17:37 UTC) describes the CPU runtime as Colab's standard allocation of an Intel Xeon with two vCPUs. % src: recomputed: V4D.commit_612c5a2, V4D.comparison_612c5a2_xeon_2vcpu; the README gained it in commit e22f7af)
+We cannot identify the script of the baseline run on the TPU.
+The result file of the TPU baseline run lacks the field \texttt{host\_processor}, which the notebook copy writes. The result file also contains none of the extra fields that the committed script writes. % src: results/result_tpu-v5e-podslice.json -> keys; results/result_cpu-colab.json -> keys; recomputed: B.tpu.has_host_processor_field
+The format of the file is closer to the notebook copy than to the committed script.
 
-In September, we ran the committed script on the T4 and on the CPU runtime.
-The CPU runtime ran in three sessions, on September 15, 16, and 17, 2026. The T4 ran in one session, on September 15, 2026. % src: recomputed: V2.sep_dates
-In the September sessions, the CPU runtime had two logical CPUs. % src: results/repro/2026-09-15_cpu-colab/environment_cpu-colab-repro.json -> hardware.logical_cpus; recomputed: SEP.cpu.0915.logical_cpus
-Each session ran the script twice. One run used the profiler, and the other did not. For the September sessions, tables
+From September 15 to 17, 2026, we ran the committed script on the T4 and on the CPU runtime. % src: recomputed: V2.sep_dates
+The CPU runtime ran in three sessions, on September 15, 2026, at 18:04 UTC, on September 16, 2026, at 12:37 UTC, and on September 17, 2026, at 08:52 UTC. % src: recomputed: V4C.sep_cpu_0915_start, V4C.sep_cpu_0916_start, V4C.sep_cpu_0917_start
+The T4 ran in one session, on September 15, 2026, at 19:01 UTC. Table~\ref{tab:platforms} explains these times. % src: recomputed: V4C.sep_gpu_0915_start
+In the three CPU sessions, the CPU runtime had an Intel Xeon processor at 2.20~GHz with two logical CPUs. % src: recomputed: SEP.cpu.0915.cpu_model, SEP.cpu.0916.cpu_model, SEP.cpu.0917.cpu_model, SEP.cpu.0915.logical_cpus, SEP.cpu.0916.logical_cpus, SEP.cpu.0917.logical_cpus
+Each session ran the script twice. One run used the profiler, and the other did not. For these four sessions, tables
 and text report the runs without the profiler. Section~\ref{sec:res-first} also uses the runs with the profiler. Each
-September session recorded its commit, its package versions, and its host CPU.
-These sessions ran commits 86fca03 and 9e1a07e, which have the same benchmark scripts. % src: recomputed: V2.sep_src_identical; results/repro/2026-09-15_gpu-t4/environment_gpu-t4-repro.json -> repo_commit; results/repro/2026-09-16_cpu-colab/environment_cpu-colab-repro.json -> repo_commit
+of the four sessions recorded its commit, its package versions, and its host CPU.
+These sessions ran commits 86fca03 (September 15, 2026, 17:57 UTC) and 9e1a07e (September 16, 2026, 12:35 UTC), which have the same benchmark scripts. % src: recomputed: V2.sep_src_identical, V4C.commit_86fca03, V4C.commit_9e1a07e; results/repro/2026-09-15_gpu-t4/environment_gpu-t4-repro.json -> repo_commit; results/repro/2026-09-16_cpu-colab/environment_cpu-colab-repro.json -> repo_commit
 All four September sessions ran JAX 0.10.2 and AlphaFold2 at commit c77e5d2~\cite{alphafoldrepo}. % src: recomputed: SEP.cpu.0915.jax, SEP.cpu.0916.jax, SEP.cpu.0917.jax, SEP.gpu.0915.jax, SEP.cpu.0915.alphafold_commit
 We did not repeat the TPU runs. Our access to the cluster ended with the course.
 % The plan of the repeat is in commit 1651c42 (18 September 2026).
@@ -46,14 +49,16 @@ prepared the repeat, and we did not run it later.
 \centering\small\setlength{\tabcolsep}{3.5pt}\gentable{tab_experiments}\gennote{tab_experiments}
 \end{table*}
 
-Every run except the model comparison used \texttt{model\_3} of AlphaFold2. This model needs no templates. Templates
+Every run, except those of the model comparison, used \texttt{model\_3} of AlphaFold2.
+This model needs no templates. Templates
 are known structures of related proteins that \texttt{model\_1} and \texttt{model\_2} take as input. % src: AlphaFold2 at commit c77e5d2, alphafold/model/config.py:56-70 (template settings only for model_1 and model_2)
-The script built the model with random weights. Haiku creates these weights in the parameter initialization call. The
+The script built the model with random weights. Haiku creates the random weights in the parameter initialization call.
+ The
 script never loaded the trained checkpoint. The MSA held only the query sequence, and no run searched a sequence
 database. The featurization pads the MSA features to a fixed number of rows.
 With one sequence, \texttt{model\_3} still runs on 512 MSA rows and 5120 extra MSA rows~\cite{alphafoldrepo}. % src: AlphaFold2 at commit c77e5d2, alphafold/model/config.py:233 ("'max_msa_clusters': 512"), config.py:73 ("'data.common.max_extra_msa': 5120"), alphafold/model/tf/data_transforms.py:389-425 (make_fixed_size); paper-v4/SOURCE_NOTES.md section 3
 Only the first MSA row holds the query, and the other rows are padding.
-Every run used no recycling, one ensemble member, float32 parameters, and random seed 0, unless an experiment varied one of these settings. % src: src/spike_tpu_forward_pass.py ("random_seed=0")
+Every run used zero recycles, one ensemble member, float32 parameters, and random seed 0, unless an experiment varied one of these settings. % src: src/spike_tpu_forward_pass.py ("random_seed=0")
 Seed 0 sets both the parameter initialization and the featurization. In the external ensemble, only the featurization seed varies, from 0 to 7. % src: src/spike_ensemble_shard_forward_pass.py ("random_seed=i", "random_seed=0"); recomputed: V2.ensemble_seeds
 AlphaFold2's source ran unmodified. Newer JAX releases renamed the arguments \texttt{a\_min} and \texttt{a\_max} of
 \texttt{jax.numpy.clip} to \texttt{min} and \texttt{max}. A small wrapper in each script renamed these arguments.
@@ -62,25 +67,29 @@ The experiments used two input families. The fixed sequence has 118 residues. % 
 The repeated-alphabet sequence cycles through the 20 amino-acid letters up to the target length. % src: recomputed: V2.alphabet_length, INPUT.per_experiment ("alphabet ACDEFGHIKLMNPQRSTVWY repeated to the length")
 In runs with several queries, each query starts one letter later in the alphabet. Table~\ref{tab:experiments} gives
 the family of each experiment. The baseline configuration is the single-query script (Section~\ref{sec:experiments})
-on the fixed sequence with \texttt{model\_3}, no recycling, and float32 parameters. The baseline configuration times
-\texttt{predict}.
+on the fixed sequence with \texttt{model\_3}, zero recycles, and float32 parameters.
+The baseline configuration times \texttt{predict}.
 
 \subsection{Timing, Memory, and Metrics}\label{sec:timing}
 The scripts time each call of the model with \texttt{time.time} on the host. They wait for the outputs of the first
 call and of the steady-state calls with \texttt{jax.block\_until\_ready}. Parameter initialization is the
 \texttt{init\_params} call, which traces the model and creates the random weights. The first call is the earliest call
 of \texttt{predict} or \texttt{apply} at a new input shape. The first call traces, compiles, and executes the model. A
-steady-state call is a later call at the same input shape. Such a call reuses the compiled program. The single-query
-and automatic-partitioning scripts time parameter initialization, the first call, and the steady-state calls. The
-\texttt{vmap}, \texttt{pmap}, and ensemble scripts time the first call and one steady-state call. The August Colab runs
-and all TPU runs timed one steady-state call, and the September runs without the profiler timed five. % src: src/spike_tpu_forward_pass.py ("--num_steady_state_runs=5")
+steady-state call is a later call at the same input shape. A steady-state call reuses the compiled program.
+ The single-query
+and automatic-partitioning scripts time the parameter initialization, the first call, and the steady-state calls.
+The
+\texttt{vmap}, \texttt{pmap}, and ensemble scripts time the first call and one steady-state call. The Colab runs of August 8, 2026,
+and all TPU runs timed one steady-state call, and the runs of September 15 to 17, 2026, without the profiler timed five. % src: src/spike_tpu_forward_pass.py ("--num_steady_state_runs=5"); recomputed: AUG.gpu.first_epoch_utc, V2.sep_dates
 
 The scripts time two different regions. The single-query script and the automatic-partitioning script time
 \texttt{predict}, which includes the confidence metrics on the host. The \texttt{vmap}, \texttt{pmap}, and ensemble
-scripts time \texttt{apply} only (Table~\ref{tab:experiments}). Except in the September runs without the profiler, the
+scripts time \texttt{apply} (Table~\ref{tab:experiments}).
+The ensemble script runs \texttt{jax.lax.pmean} inside the same \texttt{jax.pmap} call as \texttt{apply}, so the timed region of the ensemble script also contains this collective operation. % src: src/spike_ensemble_shard_forward_pass.py ("logits_mean = jax.lax.pmean", "pmapped_apply = jax.pmap(sharded_apply")
+ Except in the runs of September 15 to 17, 2026, without the profiler, the
 single-query script and the \texttt{vmap} script run the first call inside \texttt{jax.profiler.trace}. This context
 records a profile of the call. The profiler teardown is the time that the \texttt{jax.profiler.trace} context takes to
-close after the first call returns. The teardown lies inside the timer of the first call.
+close after the first call returns. The teardown lies inside the timer of the first call. % src: recomputed: V2.sep_dates
 
 Throughput is the number of queries that steady-state calls complete per second. We report throughput in queries/s.
 The speedup is the throughput on $n$ chips divided by the throughput on one chip, with the same script, input family,
@@ -101,7 +110,7 @@ includes the temporary buffers of compiled programs.
 Table~\ref{tab:experiments} lists the baseline configuration and the 12 TPU experiments, with script, input, timed region, and number of runs. % src: recomputed: COUNT.tpu_experiments_with_raw_data
 Experiments in one Job ran one after another in the same container, in a fixed order. Most settings ran once. The
 repeated-runs experiment ran the baseline configuration three times on the TPU, in one Job.
-Across these three runs, the coefficient of variation was 0.12\% for the steady-state call, 0.82\% for parameter initialization, and 1.00\% for the first call. % src: results/sweep/repeated_runs.json -> runs; recomputed: RR.steady_state_seconds.cv_pct, RR.init_params_seconds.cv_pct, RR.first_predict_seconds.cv_pct
+Across these three runs, the coefficient of variation was 0.12\% for the steady-state call, 0.82\% for the parameter initialization, and 1.00\% for the first call. % src: results/sweep/repeated_runs.json -> runs; recomputed: RR.steady_state_seconds.cv_pct, RR.init_params_seconds.cv_pct, RR.first_predict_seconds.cv_pct
 We computed the coefficient of variation with the sample standard deviation.
 The steady-state times are rounded to 1~ms, about 0.2\% of the call, so the resolution of the records limits this coefficient. % src: src/spike_tpu_forward_pass.py ("round(t_steady_state, 3)"); recomputed: V4.ms_over_call_pct ("1 ms")
 We ran the baseline configuration 11 times on the TPU. Ten of these runs started with an empty compilation cache. % src: recomputed: TPU.single_query_steady_n, V2.tpu_first_n

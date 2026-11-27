@@ -1,6 +1,9 @@
 \section{Conclusion}\label{sec:conclusion}
 AlphaFold2 inference on an eight-chip TPU v5e slice used one chip unless the program mapped the work to the others.
-Among the four ways of mapping the work that we compared, only multi-query \texttt{jax.pmap} used all eight chips.
+Among the four ways of mapping the work that we compared, only multi-query \texttt{jax.pmap} ran independent queries on all eight chips.
 On the matched grid, eight chips gave 6.53 to about 7.9 times the throughput of one chip. % src: recomputed: V2.speedup_8over1_min, V2.speedup_8over1_max
-Batching up to eight queries of 118 residues with \texttt{vmap} on one chip did not raise throughput. % src: results/sweep/batching_sweep.json -> [*].batch_size; recomputed: INPUT.toy_length
+We batched up to eight queries of 118 residues on one chip with \texttt{jax.vmap}, and the throughput did not rise. % src: results/sweep/batching_sweep.json -> [*].batch_size; recomputed: INPUT.toy_length
 Automatic partitioning without sharding annotations did not shorten the call for one query.
+For a user with many independent queries, multi-query \texttt{jax.pmap} is a simple way to put every chip of a rented slice to work.
+Our measurements used random weights, and most settings ran once on one slice. Future work should repeat the measurements with trained weights.
+It should also compare multi-query \texttt{pmap} with eight separate processes running at the same time.

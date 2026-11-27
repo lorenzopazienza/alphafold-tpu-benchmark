@@ -6,35 +6,39 @@
 % (jax.vmap, jax.pmap) became "JAX's vmap" and "JAX's pmap".
 This paper is version 4 of arXiv:2609.34818. Version 2 changed only how the abstract on the arXiv page wrote two JAX
 function names. The paper itself is the same in versions 1 and 2, so every claim listed here appears in both. % src: arXiv listings of 2609.34818 as read on 2026-11-23 ("[v1] Mon, 28 Sep 2026", "[v2] Tue, 29 Sep 2026"), same e-print source files in v1 and v2
-% The title of version 1, as in paper/preprint/source/main.tex (pdftitle).
-Version 1 had the title \vonequote{Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs.} Version 3
-introduced the present title and a new structure.
+% Independent check of part 3 (A3): the title of version 1, as in paper/preprint/source/main.tex (pdftitle).
+Version 1 had the title \vonequote{Accelerator Choice Is Not Enough: AlphaFold2 Inference on Cloud TPUs.}
+% Page counts from pdfinfo: the PDF of arXiv:2609.34818v1 has 22 pages, and paper-v3/Pazienza_ElBani_AlphaFold2_TPU_v3.pdf
+% at the tag arxiv-v3 has 10 pages.
+Version 3 rewrote the paper. It introduced the current title, shortened the paper from 22 pages to 10, reorganized the sections, and replaced the text of version 1 with a new text based on a re-analysis of the committed result files. % src: PDF of arXiv:2609.34818v1 ("Pages: 22"); PDF of version 3 at the tag arxiv-v3 ("Pages: 10")
 Version 4 corrects version 3 after a further review. We ran no new experiment for versions 3 and 4. We checked the claims and numbers of version 1 against the committed result files. This appendix
 lists the claims that changed and the reason for each.
 
 \subsection*{Corrections in Version 4}
 The note of Table~\ref{tab:experiments} now lists the runs of the baseline configuration on the TPU. Version 3 wrote that
 this configuration ran once in each session.
-At 1000 residues, version 3 gave the speedup on eight chips as 7.91 and the parallel efficiency as 98.9\%. % src: recomputed: SC.speedup_8over1_L1000, SC.eff_8_L1000_pct; results/sweep/scaling_law_data.json -> grid[3].length
-The one-chip throughput at this length has two digits, so this version gives ranges (Section~\ref{sec:res-pmap}).
+At 1000 residues, version 3 gave the speedup on eight chips as 7.91 times the throughput of one chip and the parallel efficiency as 98.9\%. % src: recomputed: SC.speedup_8over1_L1000, SC.eff_8_L1000_pct; results/sweep/scaling_law_data.json -> grid[3].length
+The one-chip throughput at this length has two digits, so this version gives ranges (Section~\ref{sec:res-pmap} and Table~\ref{tab:grid}).
 Version 3 printed the coefficients of the power-law fit with two digits. These coefficients do not reproduce the
 deviations that version 3 gave, so this version prints four digits.
 Version 3 gave the minimum ratio between the CPU runtime and one TPU chip as more than 450. % src: recomputed: V2.min_tpu_over_cpu_with_max_tpu
 With the rounding of the TPU time, the bound that holds is 449 (Section~\ref{sec:res-platforms}). % src: recomputed: V4.min_tpu_over_cpu_worst
-Version 3 concluded from the extra time per call that a copy of the parameters would not explain all of this time. The
-extra times are differences of single runs, and the script also copies the inputs inside the timed region
-(Section~\ref{sec:res-pmap}). Version 3 did not say that the logits averaged by the external ensemble are zero with
+Version 3 claimed that the copy of the parameters could not explain all of the extra time per call.
+The extra times, however, are differences of single runs, and the script also copies the inputs inside the timed region (Section~\ref{sec:res-pmap}).
+Version 3 did not say that the logits averaged by the external ensemble are zero with
 random weights (Section~\ref{sec:res-auto}).
+Version 3 gave the throughput of \texttt{vmap} with $B$ = 4 as 0.73 times the throughput of $B$ = 1. % src: recomputed: V4B.vmap_B4_rel_B1_v3; results/sweep/batching_sweep.json -> [*].batch_size
+This ratio came from the rounded throughputs. From the recorded times, the ratio is 0.72 (Section~\ref{sec:res-default}). % src: recomputed: V4B.vmap_B4_rel_B1
 
 \subsection*{Ratios Between Platforms (Section~\ref{sec:res-platforms})}
 Version 1 reported a ratio of 451 between one TPU chip and the CPU runtime. That version also gave a ratio of 27.8 between one TPU chip and the T4. % src: recomputed: B12.tpu_over_cpu, B11.tpu_over_gpu
 Its limitations section said that the Colab values came from \vonequote{the same measurement campaign as the TPU
 numbers.}\ Our records do not support this claim.
-The T4 and the CPU runtime ran in two separate Colab sessions on August 8, 2026, at 04:50 UTC and 05:19 UTC, respectively. % src: recomputed: AUG.gpu.first_epoch_utc, AUG.cpu.first_epoch_utc
-The baseline run on the TPU did not record its date. Its result was committed at 17:23 UTC on the same day. % src: recomputed: V2.first_commit
+The T4 and the CPU runtime ran in two separate Colab sessions on August 8, 2026, at 04:50 UTC and 05:19 UTC, respectively. % src: recomputed: AUG.gpu.first_epoch_utc, AUG.cpu.first_epoch_utc (A-02, H-02)
+The baseline run on the TPU did not record its date. The result of this run was committed on August 8, 2026, at 17:23 UTC. % src: recomputed: V2.first_commit
 The three values also came from different copies of the script (Table~\ref{tab:platforms}).
-In September, the T4 took a mean of 6.57~s per steady-state call instead of 13.086~s. % src: recomputed: SEP.gpu.0915.mean, B.gpu.steady
-The CPU runtime took means of 348.9~s to 359.3~s instead of 212.113~s. % src: recomputed: V2.sep_cpu_steady_min, V2.sep_cpu_steady_max, B.cpu.steady
+In the session of September 15, 2026, at 19:01 UTC, the T4 took a mean of 6.57~s per steady-state call, against 13.086~s in the session of August 8, 2026, at 04:50 UTC. % src: recomputed: SEP.gpu.0915.mean, B.gpu.steady, V4C.sep_gpu_0915_start, AUG.gpu.first_epoch_utc
+In the three CPU sessions of September 15 to 17, 2026 (Table~\ref{tab:platforms}), the CPU runtime took means of 348.9~s to 359.3~s, against 212.113~s in the session of August 8, 2026, at 05:19 UTC. % src: recomputed: V2.sep_cpu_steady_min, V2.sep_cpu_steady_max, B.cpu.steady, V2.sep_dates, AUG.cpu.first_epoch_utc
 This version gives only the smallest ratio over all sessions (Section~\ref{sec:res-platforms}).
 In every session, the mean steady-state call on the T4 took more than 13.9 times as long as the longest recorded steady-state call on one TPU chip (0.471~s). % src: recomputed: V2.min_tpu_over_t4_with_max_tpu, V4.min_tpu_over_t4_worst, TPU.single_query_steady_min_max
 On the CPU runtime, the mean steady-state call took more than 449 times as long. % src: recomputed: V4.min_tpu_over_cpu_worst
@@ -51,16 +55,18 @@ only that every chip held data. The division of the work follows from \texttt{ja
 device~\cite{jaxpmap}.
 
 \subsection*{First Call and Profiler Teardown (Section~\ref{sec:res-first})}
-In every August version that we have, the single-query script runs the first call with the profiler. The September
-version adds an option that turns the profiler off. The TPU runs did not record the duration of the profiler teardown.
-In September, the profiler teardown took 31.7~s to 31.9~s on the CPU runtime and 23.7~s on the T4. % src: recomputed: V2.sep_cpu_tail_min, V2.sep_cpu_tail_max, SEP.gpu.0915.profiler_tail_s
-Version 1 reported that the TPU first call took 59.1 times as long as the steady-state call. That version described this ratio as uncorrected. % src: recomputed: B15.tpu_first_over_steady
+In every August version that we have, the single-query script runs the first call with the profiler.
+The version of commit 86fca03 (September 15, 2026, 17:57 UTC) adds an option that turns the profiler off. % src: recomputed: V4C.commit_86fca03
+ The TPU runs did not record the duration of the profiler teardown.
+In the CPU sessions of September 15, 2026, at 18:04 UTC, September 16, 2026, at 12:37 UTC, and September 17, 2026, at 08:52 UTC, the profiler teardown took 31.7~s to 31.9~s. % src: recomputed: V2.sep_cpu_tail_min, V2.sep_cpu_tail_max, SEP.cpu.0915.profiler_tail_s, V4C.sep_cpu_0915_start, V4C.sep_cpu_0916_start, V4C.sep_cpu_0917_start (M-21, P-03)
+In the T4 session of September 15, 2026, at 19:01 UTC, the profiler teardown took 23.7~s. % src: recomputed: SEP.gpu.0915.profiler_tail_s, V4C.sep_gpu_0915_start
+Version 1 reported that the TPU first call took 59.1 times as long as the steady-state call. That version described this ratio as uncorrected. % src: recomputed: B15.tpu_first_over_steady (H-09, D-02)
 This version reports the first call as 27.78~s and gives no ratio. % src: recomputed: B.tpu.first
 Table~\ref{tab:platforms} marks that this call probably includes the profiler teardown.
 Version 1 also read the compilation-cache experiment as showing that more than half of the first call survives the
-cache. Both first calls of that experiment include the profiler teardown, so this version does not attribute the 15.19~s of the second process to compilation. % src: results/sweep/compilation_cache.json -> warm.first_predict_seconds
-For the T4 and for the CPU runtime, version 1 subtracted the profiler teardown from the August first calls. This version
-uses the September runs without the profiler instead.
+cache. Both first calls of that experiment include the profiler teardown, so this version does not attribute the 15.19~s of the second process to compilation. % src: results/sweep/compilation_cache.json -> warm.first_predict_seconds (P-05, P-07)
+For the T4 and for the CPU runtime, version 1 subtracted the profiler teardown from the first calls of August 8, 2026. % src: recomputed: AUG.gpu.first_epoch_utc
+This version uses the runs of September 15 to 17, 2026, without the profiler instead. % src: recomputed: V2.sep_dates
 
 \subsection*{Removed Profiler Trace}
 Version 1 reported a trace of one TPU first call.
@@ -76,11 +82,12 @@ without sharding annotations. It does not say whether the call ran on one chip o
 
 \subsection*{Cost Comparison (Section~\ref{sec:res-cost})}
 Version 1 found that the slice with one chip working cost about as much per query as the T4.
-The values were \$1.25 and \$1.27 per 1000 queries. % src: recomputed: COST.pod.per_1k, COST.gpu.per_1k ("per 1000 queries")
-This parity held only for the T4 time of August. The T4 price came from a survey that version 1 did not cite. The CPU
-price was our estimate for a machine with four virtual CPUs. The September CPU runtime had two virtual CPUs, and the
-August sessions did not record this number.
-Version 1 also priced hypothetical slices of one, two, and four chips in a table. This version prices only the TPU, at Google's list rate of \$1.20 per chip-hour. % src: recomputed: V2.price_chip_hour
+The values were \$1.25 and \$1.27 per 1000 queries. % src: recomputed: COST.pod.per_1k, COST.gpu.per_1k ("per 1000 queries") (A-04, I-06)
+This parity held only for the T4 time of the session of August 8, 2026. % src: recomputed: AUG.gpu.first_epoch_utc
+The T4 price came from a survey that version 1 did not cite.
+The CPU price was our estimate for an instance comparable to the Google Cloud machine type n2-standard-4, with four virtual CPUs. % src: PDF of arXiv:2609.34818v1 ("approximately $0.19/hour for an instance comparable to n2-standard-4, is our own estimate")
+In the sessions of September 15 to 17, 2026, the CPU runtime had two virtual CPUs, and the sessions of August 8, 2026, did not record this number. % src: recomputed: V2.sep_dates, SEP.cpu.0915.logical_cpus, AUG.cpu.first_epoch_utc
+Version 1 also priced hypothetical slices of one, two, and four chips in a table. This version prices only the TPU, at Google's list rate of \$1.20 per chip-hour. % src: recomputed: V2.price_chip_hour (C-04, C-11, C-12)
 It gives one conditional example for a chip rented alone.
 
 \subsection*{Removed \AFthree{} Results}
@@ -89,14 +96,14 @@ The \AFthree{} runs do not address the question of this paper. That question con
 section, the appendix, and all the \AFthree{} numbers.
 
 \subsection*{Other Corrections}
-Version 1 stated that the sequence-length sweep behind the power-law fit covered 100 to 1000 residues. The fit uses the
-matched grid.
-The sequence-length sweep covered 60 to 500 residues. % src: results/sweep/scaling_law_data.json -> grid[*].length; results/sweep/sequence_length_sweep.json -> [*].num_residues
+Version 1 stated that the power-law fit used a sequence-length sweep from 100 to 1000 residues. The fit in fact uses the matched grid. % src: results/sweep/scaling_law_data.json -> grid[*].length
+The sequence-length sweep covered 60 to 500 residues. % src: results/sweep/scaling_law_data.json -> grid[*].length; results/sweep/sequence_length_sweep.json -> [*].num_residues (L-01)
 Version 1 wrote that none of the cited work reported TPU experiments, but that version cited a model trained on TPUs.
-Version 1 described a controlled comparison with identical code on the three platforms. AlphaFold2's source ran
-unmodified, but the scripts differed (Table~\ref{tab:platforms}). Version 1 called the copy of the script in the August
-notebooks uncommitted.
-The notebooks in commit 2755250 hold this copy. % src: recomputed: V2.first_commit
+Version 1 described a controlled comparison with identical code on the three platforms.
+AlphaFold2's source ran unmodified, but the benchmark scripts differed between the platforms and between the sessions (Table~\ref{tab:platforms}).
+Version 1 called the copy of the script in the notebooks of August 8, 2026, uncommitted. % src: recomputed: AUG.gpu.first_epoch_utc
+
+The notebooks in commit 2755250 hold this copy. % src: recomputed: V2.first_commit (M-30)
 Seven works cited in version 1 do not make the statements attributed to them in that version. We corrected these
 statements or removed the citations. Version 1 treated the files in \texttt{results/sweep/} as raw results. These files
 are summaries of the Job output (Section~\ref{sec:records}). The abstract now states that the weights were random. We
